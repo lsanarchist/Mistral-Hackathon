@@ -1,40 +1,69 @@
 # COMPASS — TriageProf Direction & Status (Living)
 
 ## North Star
-Build a modular, language-agnostic profiling and bottleneck-analysis tool/library.
-It integrates with existing profilers via plugins/adapters and produces evidence-backed bottleneck findings
-(stacks/callgraphs/timelines/metrics), plus optional AI-assisted insights, and generates reports.
+Build a production-grade, modular profiling and bottleneck-analysis tool — the `osv-scanner` of performance.
+It integrates with existing profilers via a well-defined plugin SDK, produces evidence-backed bottleneck findings
+(stacks, callgraphs, timelines, metrics), and generates structured, machine-readable reports.
+**Killer feature: AI/LLM-powered analysis** — deterministic profiling data feeds an LLM that explains *why* a bottleneck exists, suggests concrete fixes with code examples, and ranks issues by impact.
+**Philosophy: go deep, not wide. Make each layer excellent before adding the next.**
 
 ## Product Shape (today)
 Pipeline: Collect → Analyze → Report.
 Plugins are separate executables, discovered via manifests, and communicate with core using JSON-RPC 2.0 over stdio.
 
 ## Non-negotiable Architecture Rules
-- Core is language-agnostic; language/profiler-specific logic must live in plugins/adapters.
-- Plugin protocol/API must remain stable; changes must be backward-compatible or explicitly versioned.
-- Deterministic analysis is the source of truth; AI/LLM features (if present) are optional and must not break the pipeline.
-- One iteration = one PR-sized change; prefer minimal diffs and safe rollbacks.
+- Core is language-agnostic; language/profiler-specific logic must live in plugins.
+- Plugin protocol/API must remain stable; breaking changes require explicit versioning.
+- Deterministic profiling data is always collected first and is the source of truth.
+- **AI/LLM analysis is a first-class feature**, not optional glue — it must be designed as a proper pipeline stage with a clean interface, not bolted on.
+- LLM calls are always backed by structured profiling data; the LLM never guesses — it reasons over real evidence.
+- LLM stage must be skippable via `--no-ai` flag so the tool works without an API key.
+- **Depth over breadth**: do not add new plugins unless the existing ones are excellent and the SDK is solid.
+- Every feature must have tests. No untested code merges.
+- Big PRs are fine when a feature warrants it. Correctness and completeness over minimal diffs.
+
+## Depth-First Roadmap (ordered — do NOT skip ahead)
+
+### Layer 1 — Core Excellence (current focus)
+- [ ] Go pprof plugin: full coverage of all profile types (cpu, heap, goroutine, mutex, block, allocs)
+- [ ] Structured, machine-readable report format (JSON schema, not just Markdown)
+- [ ] Analysis engine: flame graph data, hotspot ranking, regression detection
+- [ ] CLI: `--output json|markdown|html`, `--threshold`, `--top N` flags
+- [ ] End-to-end integration tests (collect → analyze → report)
+- [ ] 80%+ unit test coverage on core packages
+
+### Layer 2 — Plugin SDK (after Layer 1 is solid)
+- [ ] Formal plugin SDK spec (versioned JSON-RPC schema, documented lifecycle)
+- [ ] Plugin scaffolding tool: `triageprof plugin new --lang go|python|java`
+- [ ] SDK validation harness: `triageprof plugin validate <path>` checks manifest + RPC contract
+- [ ] Language-specific SDK stubs (Go SDK complete; Python/Java/Node as skeleton only — no impl)
+- [ ] Plugin SDK docs and example plugin
+
+### Layer 3 — Ecosystem (only after Layer 2)
+- [ ] Python cProfile plugin (full implementation, not skeleton)
+- [ ] Java async-profiler plugin (full implementation)
+- [ ] CI/CD integration (GitHub Actions reporter, SARIF output)
+- [ ] Historical comparison: `triageprof compare baseline.json current.json`
+- [ ] Web UI for report visualization
 
 ## Current Focus (Now)
-- Plugin discovery system with manifest-based validation
-- Enhanced error handling for plugin compatibility
-
-## Next Milestones
-- Additional plugins for other languages (Python, Java, Node.js)
-- Advanced analysis rules and heuristics
-- Historical comparison features
-- Web UI for report visualization
-
-## Feature Backlog (small + high signal)
-- [ ] Plugin marketplace/repository
-- [ ] CI/CD pipeline integration
-- [ ] Cloud deployment options
+**Layer 1 — Core Excellence**
+- Deepen go-pprof-http plugin: all profile types, structured output
+- Structured JSON report schema
+- Analysis engine improvements: hotspot ranking, callgraph depth
+- Comprehensive test coverage
 
 ## Plugins (status)
-- go-pprof-http: ✅ (cpu/heap/mutex/block/goroutine via HTTP pprof)
-- python-cprofile: ✅ (cpu profiling for Python applications)
+- go-pprof-http: 🔧 (in progress — deepening coverage and output quality)
+- python-cprofile: 🦴 skeleton only — not production-ready
 - Plugin discovery system: ✅ (manifest-based validation and capability checking)
-- <future plugin>: ⏳
+
+## Quality Bar
+- `go test ./...` must pass with zero failures
+- `go vet ./...` must produce no warnings  
+- `gofmt -d .` must produce no diff
+- `make build` must succeed
+- `make demo` must produce valid structured output
 
 ## Quick Verify
 - Build: `make build`

@@ -18,7 +18,7 @@
       "evidence": {
         "artifactPath": "out/cpu.pb.gz",
         "profileType": "cpu",
-        "extractedAt": "2026-02-28T14:43:18.909845222+01:00"
+        "extractedAt": "2026-02-28T18:18:18.628269258+01:00"
       }
     },
     {
@@ -27,6 +27,41 @@
       "severity": "medium",
       "score": 90,
       "top": [
+        {
+          "function": "main.allocHeavyHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 43,
+          "cum": 30037,
+          "flat": 30037
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 30037,
+          "flat": 30037
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 30037,
+          "flat": 30037
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 30037,
+          "flat": 30037
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 30037,
+          "flat": 30037
+        },
         {
           "function": "internal/sync.(*HashTrieMap[go.shape.struct { net/netip.isV6 bool; net/netip.zoneV6 string },go.shape.struct { weak._ [0]*go.shape.struct { net/netip.isV6 bool; net/netip.zoneV6 string }; weak.u unsafe.Pointer }]).All",
           "file": "/usr/lib/go-1.24/src/internal/sync/hashtriemap.go",
@@ -238,41 +273,6 @@
           "flat": 10923
         },
         {
-          "function": "main.allocHeavyHandler",
-          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
-          "line": 43,
-          "cum": 9996,
-          "flat": 9996
-        },
-        {
-          "function": "net/http.HandlerFunc.ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2294,
-          "cum": 9996,
-          "flat": 9996
-        },
-        {
-          "function": "net/http.(*ServeMux).ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2822,
-          "cum": 9996,
-          "flat": 9996
-        },
-        {
-          "function": "net/http.serverHandler.ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 3301,
-          "cum": 9996,
-          "flat": 9996
-        },
-        {
-          "function": "net/http.(*conn).serve",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2102,
-          "cum": 9996,
-          "flat": 9996
-        },
-        {
           "function": "runtime.allocm",
           "file": "/usr/lib/go-1.24/src/runtime/proc.go",
           "line": 2276,
@@ -476,6 +476,125 @@
           "flat": 256
         },
         {
+          "function": "bufio.NewWriterSize",
+          "file": "/usr/lib/go-1.24/src/bufio/bufio.go",
+          "line": 600,
+          "cum": 128,
+          "flat": 128
+        },
+        {
+          "function": "net/http.newBufioWriterSize",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 894,
+          "cum": 128,
+          "flat": 128
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2014,
+          "cum": 128,
+          "flat": 128
+        },
+        {
+          "function": "os.readFileContents",
+          "file": "/usr/lib/go-1.24/src/os/file.go",
+          "line": 838,
+          "cum": 128,
+          "flat": 128
+        },
+        {
+          "function": "os.ReadFile",
+          "file": "/usr/lib/go-1.24/src/os/file.go",
+          "line": 805,
+          "cum": 128,
+          "flat": 128
+        },
+        {
+          "function": "runtime/pprof.(*profileBuilder).readMapping",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/proto_other.go",
+          "line": 18,
+          "cum": 128,
+          "flat": 128
+        },
+        {
+          "function": "runtime/pprof.newProfileBuilder",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/proto.go",
+          "line": 270,
+          "cum": 128,
+          "flat": 128
+        },
+        {
+          "function": "runtime/pprof.writeHeapProto",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/protomem.go",
+          "line": 17,
+          "cum": 128,
+          "flat": 128
+        },
+        {
+          "function": "runtime/pprof.writeHeapInternal",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 634,
+          "cum": 128,
+          "flat": 128
+        },
+        {
+          "function": "runtime/pprof.writeHeap",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 593,
+          "cum": 128,
+          "flat": 128
+        },
+        {
+          "function": "runtime/pprof.(*Profile).WriteTo",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 377,
+          "cum": 128,
+          "flat": 128
+        },
+        {
+          "function": "net/http/pprof.handler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
+          "line": 272,
+          "cum": 128,
+          "flat": 128
+        },
+        {
+          "function": "net/http/pprof.Index",
+          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
+          "line": 389,
+          "cum": 128,
+          "flat": 128
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 128,
+          "flat": 128
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 128,
+          "flat": 128
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 128,
+          "flat": 128
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 128,
+          "flat": 128
+        },
+        {
           "function": "runtime/pprof.(*profileBuilder).emitLocation",
           "file": "/usr/lib/go-1.24/src/runtime/pprof/proto.go",
           "line": 606,
@@ -563,693 +682,665 @@
           "function": "compress/flate.newDeflateFast",
           "file": "/usr/lib/go-1.24/src/compress/flate/deflatefast.go",
           "line": 64,
-          "cum": 4,
-          "flat": 4
+          "cum": 8,
+          "flat": 8
         },
         {
           "function": "compress/flate.(*compressor).init",
           "file": "/usr/lib/go-1.24/src/compress/flate/deflate.go",
           "line": 586,
-          "cum": 4,
-          "flat": 4
+          "cum": 8,
+          "flat": 8
         },
         {
           "function": "compress/flate.NewWriter",
           "file": "/usr/lib/go-1.24/src/compress/flate/deflate.go",
           "line": 664,
-          "cum": 4,
-          "flat": 4
+          "cum": 8,
+          "flat": 8
         },
         {
           "function": "compress/gzip.(*Writer).Write",
           "file": "/usr/lib/go-1.24/src/compress/gzip/gzip.go",
           "line": 191,
-          "cum": 4,
-          "flat": 4
+          "cum": 8,
+          "flat": 8
         },
         {
           "function": "runtime/pprof.(*profileBuilder).build",
           "file": "/usr/lib/go-1.24/src/runtime/pprof/proto.go",
           "line": 390,
-          "cum": 4,
-          "flat": 4
-        },
-        {
-          "function": "runtime/pprof.writeHeapProto",
-          "file": "/usr/lib/go-1.24/src/runtime/pprof/protomem.go",
-          "line": 66,
-          "cum": 4,
-          "flat": 4
-        },
-        {
-          "function": "runtime/pprof.writeHeapInternal",
-          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
-          "line": 634,
-          "cum": 4,
-          "flat": 4
-        },
-        {
-          "function": "runtime/pprof.writeHeap",
-          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
-          "line": 593,
-          "cum": 4,
-          "flat": 4
-        },
-        {
-          "function": "runtime/pprof.(*Profile).WriteTo",
-          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
-          "line": 377,
-          "cum": 4,
-          "flat": 4
-        },
-        {
-          "function": "net/http/pprof.handler.ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
-          "line": 272,
-          "cum": 4,
-          "flat": 4
-        },
-        {
-          "function": "net/http/pprof.Index",
-          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
-          "line": 389,
-          "cum": 4,
-          "flat": 4
-        },
-        {
-          "function": "net/http.HandlerFunc.ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2294,
-          "cum": 4,
-          "flat": 4
-        },
-        {
-          "function": "net/http.(*ServeMux).ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2822,
-          "cum": 4,
-          "flat": 4
-        },
-        {
-          "function": "net/http.serverHandler.ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 3301,
-          "cum": 4,
-          "flat": 4
-        },
-        {
-          "function": "net/http.(*conn).serve",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2102,
-          "cum": 4,
-          "flat": 4
-        },
-        {
-          "function": "runtime/pprof.writeGoroutineStacks",
-          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
-          "line": 762,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "runtime/pprof.writeGoroutine",
-          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
-          "line": 753,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "runtime/pprof.(*Profile).WriteTo",
-          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
-          "line": 377,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "net/http/pprof.handler.ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
-          "line": 272,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "net/http/pprof.Index",
-          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
-          "line": 389,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "net/http.HandlerFunc.ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2294,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "net/http.(*ServeMux).ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2822,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "net/http.serverHandler.ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 3301,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "net/http.(*conn).serve",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2102,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "compress/flate.NewWriter",
-          "file": "/usr/lib/go-1.24/src/compress/flate/deflate.go",
-          "line": 663,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "compress/gzip.(*Writer).Write",
-          "file": "/usr/lib/go-1.24/src/compress/gzip/gzip.go",
-          "line": 191,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "runtime/pprof.(*profileBuilder).build",
-          "file": "/usr/lib/go-1.24/src/runtime/pprof/proto.go",
-          "line": 390,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "runtime/pprof.writeHeapProto",
-          "file": "/usr/lib/go-1.24/src/runtime/pprof/protomem.go",
-          "line": 66,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "runtime/pprof.writeHeapInternal",
-          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
-          "line": 634,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "runtime/pprof.writeHeap",
-          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
-          "line": 593,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "runtime/pprof.(*Profile).WriteTo",
-          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
-          "line": 377,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "net/http/pprof.handler.ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
-          "line": 272,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "net/http/pprof.Index",
-          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
-          "line": 389,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "net/http.HandlerFunc.ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2294,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "net/http.(*ServeMux).ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2822,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "net/http.serverHandler.ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 3301,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "net/http.(*conn).serve",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2102,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "compress/flate.(*compressor).init",
-          "file": "/usr/lib/go-1.24/src/compress/flate/deflate.go",
-          "line": 587,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "compress/flate.NewWriter",
-          "file": "/usr/lib/go-1.24/src/compress/flate/deflate.go",
-          "line": 664,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "compress/gzip.(*Writer).Write",
-          "file": "/usr/lib/go-1.24/src/compress/gzip/gzip.go",
-          "line": 191,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "runtime/pprof.(*profileBuilder).build",
-          "file": "/usr/lib/go-1.24/src/runtime/pprof/proto.go",
-          "line": 390,
-          "cum": 2,
-          "flat": 2
+          "cum": 8,
+          "flat": 8
         },
         {
           "function": "runtime/pprof.profileWriter",
           "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
           "line": 885,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "runtime/pprof.StartCPUProfile",
-          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
-          "line": 855,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "net/http/pprof.Profile",
-          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
-          "line": 157,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "net/http.HandlerFunc.ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2294,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "net/http.(*ServeMux).ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2822,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "net/http.serverHandler.ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 3301,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "net/http.(*conn).serve",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2102,
-          "cum": 2,
-          "flat": 2
+          "cum": 8,
+          "flat": 8
         },
         {
           "function": "compress/flate.(*compressor).init",
           "file": "/usr/lib/go-1.24/src/compress/flate/deflate.go",
-          "line": 587,
-          "cum": 2,
-          "flat": 2
+          "line": 583,
+          "cum": 8,
+          "flat": 8
         },
         {
           "function": "compress/flate.NewWriter",
           "file": "/usr/lib/go-1.24/src/compress/flate/deflate.go",
           "line": 664,
-          "cum": 2,
-          "flat": 2
+          "cum": 8,
+          "flat": 8
         },
         {
           "function": "compress/gzip.(*Writer).Write",
           "file": "/usr/lib/go-1.24/src/compress/gzip/gzip.go",
           "line": 191,
-          "cum": 2,
-          "flat": 2
+          "cum": 8,
+          "flat": 8
         },
         {
           "function": "runtime/pprof.(*profileBuilder).build",
           "file": "/usr/lib/go-1.24/src/runtime/pprof/proto.go",
           "line": 390,
-          "cum": 2,
-          "flat": 2
+          "cum": 8,
+          "flat": 8
         },
         {
           "function": "runtime/pprof.printCountCycleProfile",
           "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
           "line": 455,
-          "cum": 2,
-          "flat": 2
+          "cum": 8,
+          "flat": 8
         },
         {
           "function": "runtime/pprof.writeProfileInternal",
           "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
           "line": 944,
-          "cum": 2,
-          "flat": 2
+          "cum": 8,
+          "flat": 8
         },
         {
           "function": "runtime/pprof.writeMutex",
           "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
           "line": 923,
-          "cum": 2,
-          "flat": 2
+          "cum": 8,
+          "flat": 8
         },
         {
           "function": "runtime/pprof.(*Profile).WriteTo",
           "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
           "line": 377,
-          "cum": 2,
-          "flat": 2
+          "cum": 8,
+          "flat": 8
         },
         {
           "function": "net/http/pprof.handler.ServeHTTP",
           "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
           "line": 272,
-          "cum": 2,
-          "flat": 2
+          "cum": 8,
+          "flat": 8
         },
         {
           "function": "net/http/pprof.Index",
           "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
           "line": 389,
-          "cum": 2,
-          "flat": 2
+          "cum": 8,
+          "flat": 8
         },
         {
           "function": "net/http.HandlerFunc.ServeHTTP",
           "file": "/usr/lib/go-1.24/src/net/http/server.go",
           "line": 2294,
-          "cum": 2,
-          "flat": 2
+          "cum": 8,
+          "flat": 8
         },
         {
           "function": "net/http.(*ServeMux).ServeHTTP",
           "file": "/usr/lib/go-1.24/src/net/http/server.go",
           "line": 2822,
-          "cum": 2,
-          "flat": 2
+          "cum": 8,
+          "flat": 8
         },
         {
           "function": "net/http.serverHandler.ServeHTTP",
           "file": "/usr/lib/go-1.24/src/net/http/server.go",
           "line": 3301,
-          "cum": 2,
-          "flat": 2
+          "cum": 8,
+          "flat": 8
         },
         {
           "function": "net/http.(*conn).serve",
           "file": "/usr/lib/go-1.24/src/net/http/server.go",
           "line": 2102,
-          "cum": 2,
-          "flat": 2
-        },
-        {
-          "function": "compress/flate.NewWriter",
-          "file": "/usr/lib/go-1.24/src/compress/flate/deflate.go",
-          "line": 663,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "compress/gzip.(*Writer).Write",
-          "file": "/usr/lib/go-1.24/src/compress/gzip/gzip.go",
-          "line": 191,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime/pprof.(*profileBuilder).build",
-          "file": "/usr/lib/go-1.24/src/runtime/pprof/proto.go",
-          "line": 390,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime/pprof.printCountCycleProfile",
-          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
-          "line": 455,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime/pprof.writeProfileInternal",
-          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
-          "line": 944,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime/pprof.writeBlock",
-          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
-          "line": 918,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime/pprof.(*Profile).WriteTo",
-          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
-          "line": 377,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "net/http/pprof.handler.ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
-          "line": 272,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "net/http/pprof.Index",
-          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
-          "line": 389,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "net/http.HandlerFunc.ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2294,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "net/http.(*ServeMux).ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2822,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "net/http.serverHandler.ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 3301,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "net/http.(*conn).serve",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2102,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "compress/flate.NewWriter",
-          "file": "/usr/lib/go-1.24/src/compress/flate/deflate.go",
-          "line": 663,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "compress/gzip.(*Writer).Write",
-          "file": "/usr/lib/go-1.24/src/compress/gzip/gzip.go",
-          "line": 191,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime/pprof.(*profileBuilder).build",
-          "file": "/usr/lib/go-1.24/src/runtime/pprof/proto.go",
-          "line": 390,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime/pprof.printCountCycleProfile",
-          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
-          "line": 455,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime/pprof.writeProfileInternal",
-          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
-          "line": 944,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime/pprof.writeMutex",
-          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
-          "line": 923,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime/pprof.(*Profile).WriteTo",
-          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
-          "line": 377,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "net/http/pprof.handler.ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
-          "line": 272,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "net/http/pprof.Index",
-          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
-          "line": 389,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "net/http.HandlerFunc.ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2294,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "net/http.(*ServeMux).ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2822,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "net/http.serverHandler.ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 3301,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "net/http.(*conn).serve",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2102,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "compress/flate.NewWriter",
-          "file": "/usr/lib/go-1.24/src/compress/flate/deflate.go",
-          "line": 663,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "compress/gzip.(*Writer).Write",
-          "file": "/usr/lib/go-1.24/src/compress/gzip/gzip.go",
-          "line": 191,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime/pprof.(*profileBuilder).build",
-          "file": "/usr/lib/go-1.24/src/runtime/pprof/proto.go",
-          "line": 390,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime/pprof.profileWriter",
-          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
-          "line": 885,
-          "cum": 1,
-          "flat": 1
+          "cum": 8,
+          "flat": 8
         },
         {
           "function": "compress/flate.newDeflateFast",
           "file": "/usr/lib/go-1.24/src/compress/flate/deflatefast.go",
           "line": 64,
-          "cum": 0,
-          "flat": 0
+          "cum": 8,
+          "flat": 8
         },
         {
           "function": "compress/flate.(*compressor).init",
           "file": "/usr/lib/go-1.24/src/compress/flate/deflate.go",
           "line": 586,
-          "cum": 0,
-          "flat": 0
+          "cum": 8,
+          "flat": 8
         },
         {
           "function": "compress/flate.NewWriter",
           "file": "/usr/lib/go-1.24/src/compress/flate/deflate.go",
           "line": 664,
-          "cum": 0,
-          "flat": 0
+          "cum": 8,
+          "flat": 8
         },
         {
           "function": "compress/gzip.(*Writer).Write",
           "file": "/usr/lib/go-1.24/src/compress/gzip/gzip.go",
           "line": 191,
-          "cum": 0,
-          "flat": 0
+          "cum": 8,
+          "flat": 8
         },
         {
           "function": "runtime/pprof.(*profileBuilder).build",
           "file": "/usr/lib/go-1.24/src/runtime/pprof/proto.go",
           "line": 390,
-          "cum": 0,
-          "flat": 0
+          "cum": 8,
+          "flat": 8
+        },
+        {
+          "function": "runtime/pprof.printCountCycleProfile",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 455,
+          "cum": 8,
+          "flat": 8
+        },
+        {
+          "function": "runtime/pprof.writeProfileInternal",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 944,
+          "cum": 8,
+          "flat": 8
+        },
+        {
+          "function": "runtime/pprof.writeBlock",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 918,
+          "cum": 8,
+          "flat": 8
+        },
+        {
+          "function": "runtime/pprof.(*Profile).WriteTo",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 377,
+          "cum": 8,
+          "flat": 8
+        },
+        {
+          "function": "net/http/pprof.handler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
+          "line": 272,
+          "cum": 8,
+          "flat": 8
+        },
+        {
+          "function": "net/http/pprof.Index",
+          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
+          "line": 389,
+          "cum": 8,
+          "flat": 8
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 8,
+          "flat": 8
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 8,
+          "flat": 8
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 8,
+          "flat": 8
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 8,
+          "flat": 8
+        },
+        {
+          "function": "compress/flate.(*compressor).init",
+          "file": "/usr/lib/go-1.24/src/compress/flate/deflate.go",
+          "line": 583,
+          "cum": 8,
+          "flat": 8
+        },
+        {
+          "function": "compress/flate.NewWriter",
+          "file": "/usr/lib/go-1.24/src/compress/flate/deflate.go",
+          "line": 664,
+          "cum": 8,
+          "flat": 8
+        },
+        {
+          "function": "compress/gzip.(*Writer).Write",
+          "file": "/usr/lib/go-1.24/src/compress/gzip/gzip.go",
+          "line": 191,
+          "cum": 8,
+          "flat": 8
+        },
+        {
+          "function": "runtime/pprof.(*profileBuilder).build",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/proto.go",
+          "line": 390,
+          "cum": 8,
+          "flat": 8
+        },
+        {
+          "function": "runtime/pprof.printCountCycleProfile",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 455,
+          "cum": 8,
+          "flat": 8
+        },
+        {
+          "function": "runtime/pprof.writeProfileInternal",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 944,
+          "cum": 8,
+          "flat": 8
+        },
+        {
+          "function": "runtime/pprof.writeBlock",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 918,
+          "cum": 8,
+          "flat": 8
+        },
+        {
+          "function": "runtime/pprof.(*Profile).WriteTo",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 377,
+          "cum": 8,
+          "flat": 8
+        },
+        {
+          "function": "net/http/pprof.handler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
+          "line": 272,
+          "cum": 8,
+          "flat": 8
+        },
+        {
+          "function": "net/http/pprof.Index",
+          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
+          "line": 389,
+          "cum": 8,
+          "flat": 8
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 8,
+          "flat": 8
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 8,
+          "flat": 8
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 8,
+          "flat": 8
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 8,
+          "flat": 8
+        },
+        {
+          "function": "compress/flate.(*compressor).init",
+          "file": "/usr/lib/go-1.24/src/compress/flate/deflate.go",
+          "line": 587,
+          "cum": 7,
+          "flat": 7
+        },
+        {
+          "function": "compress/flate.NewWriter",
+          "file": "/usr/lib/go-1.24/src/compress/flate/deflate.go",
+          "line": 664,
+          "cum": 7,
+          "flat": 7
+        },
+        {
+          "function": "compress/gzip.(*Writer).Write",
+          "file": "/usr/lib/go-1.24/src/compress/gzip/gzip.go",
+          "line": 191,
+          "cum": 7,
+          "flat": 7
+        },
+        {
+          "function": "runtime/pprof.(*profileBuilder).build",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/proto.go",
+          "line": 390,
+          "cum": 7,
+          "flat": 7
         },
         {
           "function": "runtime/pprof.profileWriter",
           "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
           "line": 885,
-          "cum": 0,
-          "flat": 0
+          "cum": 7,
+          "flat": 7
+        },
+        {
+          "function": "compress/flate.NewWriter",
+          "file": "/usr/lib/go-1.24/src/compress/flate/deflate.go",
+          "line": 663,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "compress/gzip.(*Writer).Write",
+          "file": "/usr/lib/go-1.24/src/compress/gzip/gzip.go",
+          "line": 191,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "runtime/pprof.(*profileBuilder).build",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/proto.go",
+          "line": 390,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "runtime/pprof.printCountCycleProfile",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 455,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "runtime/pprof.writeProfileInternal",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 944,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "runtime/pprof.writeBlock",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 918,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "runtime/pprof.(*Profile).WriteTo",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 377,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "net/http/pprof.handler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
+          "line": 272,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "net/http/pprof.Index",
+          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
+          "line": 389,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "compress/flate.NewWriter",
+          "file": "/usr/lib/go-1.24/src/compress/flate/deflate.go",
+          "line": 663,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "compress/gzip.(*Writer).Write",
+          "file": "/usr/lib/go-1.24/src/compress/gzip/gzip.go",
+          "line": 191,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "runtime/pprof.(*profileBuilder).build",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/proto.go",
+          "line": 390,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "runtime/pprof.printCountCycleProfile",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 455,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "runtime/pprof.writeProfileInternal",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 944,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "runtime/pprof.writeMutex",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 923,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "runtime/pprof.(*Profile).WriteTo",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 377,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "net/http/pprof.handler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
+          "line": 272,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "net/http/pprof.Index",
+          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
+          "line": 389,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "compress/flate.(*compressor).init",
+          "file": "/usr/lib/go-1.24/src/compress/flate/deflate.go",
+          "line": 587,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "compress/flate.NewWriter",
+          "file": "/usr/lib/go-1.24/src/compress/flate/deflate.go",
+          "line": 664,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "compress/gzip.(*Writer).Write",
+          "file": "/usr/lib/go-1.24/src/compress/gzip/gzip.go",
+          "line": 191,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "runtime/pprof.(*profileBuilder).build",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/proto.go",
+          "line": 390,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "runtime/pprof.printCountCycleProfile",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 455,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "runtime/pprof.writeProfileInternal",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 944,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "runtime/pprof.writeMutex",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 923,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "runtime/pprof.(*Profile).WriteTo",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 377,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "net/http/pprof.handler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
+          "line": 272,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "net/http/pprof.Index",
+          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
+          "line": 389,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 5,
+          "flat": 5
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 5,
+          "flat": 5
         }
       ],
       "evidence": {
         "artifactPath": "out/heap.pb.gz",
         "profileType": "heap",
-        "extractedAt": "2026-02-28T14:43:18.910134878+01:00"
+        "extractedAt": "2026-02-28T18:18:18.629356788+01:00"
       }
     },
     {
@@ -1261,7 +1352,7 @@
       "evidence": {
         "artifactPath": "out/mutex.pb.gz",
         "profileType": "mutex",
-        "extractedAt": "2026-02-28T14:43:18.910181656+01:00"
+        "extractedAt": "2026-02-28T18:18:18.629454021+01:00"
       }
     },
     {
@@ -1273,7 +1364,7 @@
       "evidence": {
         "artifactPath": "out/block.pb.gz",
         "profileType": "block",
-        "extractedAt": "2026-02-28T14:43:18.91059259+01:00"
+        "extractedAt": "2026-02-28T18:18:18.629545102+01:00"
       }
     }
   ]

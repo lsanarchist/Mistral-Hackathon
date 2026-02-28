@@ -22,7 +22,7 @@ func main() {
 		fmt.Println("  plugins list")
 		fmt.Println("  collect --plugin <name> --target-url <url> --duration <sec> --out <path>")
 		fmt.Println("  analyze --in <bundle.json> --out <findings.json> --top <N>")
-		fmt.Println("  report --in <findings.json> --out <report.md>")
+		fmt.Println("  report --in <findings.json> --out <report.md|json> --output markdown|json")
 		fmt.Println("  llm --bundle <path> --findings <path> --out <insights.json>")
 		fmt.Println("  run --plugin <name> --target-url <url> --duration <sec> --outdir <dir>")
 		fmt.Println("\nLLM Options for 'run' command:")
@@ -177,6 +177,8 @@ func runReportCommand(pipeline *core.Pipeline) {
 	inPath := flagSet.String("in", "", "Input findings path")
 	outPath := flagSet.String("out", "", "Output report path")
 	insightsPath := flagSet.String("insights", "", "Optional insights path")
+	outputFormat := flagSet.String("output", "markdown", "Output format: markdown or json")
+	prettyPrint := flagSet.Bool("pretty", false, "Pretty print JSON output")
 	flagSet.Parse(os.Args[2:])
 
 	if *inPath == "" || *outPath == "" {
@@ -202,13 +204,31 @@ func runReportCommand(pipeline *core.Pipeline) {
 		}
 	}
 
-	err := pipeline.ReportWithInsights(ctx, *inPath, insights, *outPath)
-	if err != nil {
-		fmt.Printf("Report failed: %v\n", err)
-		os.Exit(1)
+	// Generate report based on format
+	switch *outputFormat {
+	case "json":
+		err := pipeline.ReportJSONWithInsights(ctx, *inPath, insights, *outPath, *prettyPrint)
+		if err != nil {
+			fmt.Printf("JSON report failed: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("JSON report saved to: %s\n", *outPath)
+	case "markdown":
+		err := pipeline.ReportWithInsights(ctx, *inPath, insights, *outPath)
+		if err != nil {
+			fmt.Printf("Markdown report failed: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("Markdown report saved to: %s\n", *outPath)
+	default:
+		fmt.Printf("Unknown output format: %s. Using markdown.\n", *outputFormat)
+		err := pipeline.ReportWithInsights(ctx, *inPath, insights, *outPath)
+		if err != nil {
+			fmt.Printf("Markdown report failed: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("Markdown report saved to: %s\n", *outPath)
 	}
-
-	fmt.Printf("Report saved to: %s\n", *outPath)
 }
 
 func runRunCommand(pipeline *core.Pipeline) {

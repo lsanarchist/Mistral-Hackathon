@@ -262,3 +262,28 @@ func (p *Pipeline) ReportWithInsights(ctx context.Context, findingsPath string, 
 
 	return os.WriteFile(outPath, []byte(reportData), 0644)
 }
+
+// ReportJSONWithInsights generates a JSON report with optional LLM insights
+func (p *Pipeline) ReportJSONWithInsights(ctx context.Context, findingsPath string, insights *model.InsightsBundle, outPath string, prettyPrint bool) error {
+	// Read findings
+	data, err := os.ReadFile(findingsPath)
+	if err != nil {
+		return err
+	}
+
+	var findings model.FindingsBundle
+	if err := json.Unmarshal(data, &findings); err != nil {
+		return err
+	}
+
+	// Generate JSON report with insights
+	reportData, err := p.reporter.GenerateJSON(findings, insights, model.JSONReportOptions{
+		IncludeInsights: insights != nil,
+		PrettyPrint:     prettyPrint,
+	})
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(outPath, reportData, 0644)
+}
