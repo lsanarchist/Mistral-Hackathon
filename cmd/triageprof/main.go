@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/mistral-hackathon/triageprof/internal/core"
+	"github.com/mistral-hackathon/triageprof/internal/plugin"
 )
 
 func main() {
@@ -50,8 +52,37 @@ func main() {
 }
 
 func runPluginsCommand() {
-	fmt.Println("Plugins command not yet implemented")
-	os.Exit(1)
+	// Determine plugin directory
+	pluginDir := "./plugins"
+	if envDir := os.Getenv("TRIAGEPROF_PLUGINS"); envDir != "" {
+		pluginDir = envDir
+	}
+
+	pm := plugin.NewPluginManager(pluginDir)
+	manifests, err := pm.ListPlugins()
+	if err != nil {
+		fmt.Printf("Error listing plugins: %v\n", err)
+		os.Exit(1)
+	}
+
+	if len(manifests) == 0 {
+		fmt.Println("No plugins found.")
+		return
+	}
+
+	fmt.Println("Available plugins:")
+	for _, m := range manifests {
+		fmt.Printf("  %s v%s (sdk %s)\n", m.Name, m.Version, m.SDKVersion)
+		if m.Description != "" {
+			fmt.Printf("    %s\n", m.Description)
+		}
+		fmt.Printf("    targets: %s\n", strings.Join(m.Capabilities.Targets, ", "))
+		fmt.Printf("    profiles: %s\n", strings.Join(m.Capabilities.Profiles, ", "))
+		if m.Author != "" {
+			fmt.Printf("    author: %s\n", m.Author)
+		}
+		fmt.Println()
+	}
 }
 
 func runCollectCommand(pipeline *core.Pipeline) {

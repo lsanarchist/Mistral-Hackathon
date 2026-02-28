@@ -33,6 +33,23 @@ func (p *Pipeline) Collect(ctx context.Context, pluginName, targetURL string, du
 		return nil, err
 	}
 
+	// Resolve and validate plugin before launching
+	manifest, _, err := p.pluginManager.ResolvePlugin(pluginName)
+	if err != nil {
+		return nil, err
+	}
+
+	// Validate target type compatibility
+	if err := manifest.ValidateTarget("url"); err != nil {
+		return nil, err
+	}
+
+	// Validate profile compatibility
+	requestedProfiles := []string{"cpu", "heap", "mutex", "block", "goroutine"}
+	if err := manifest.ValidateProfiles(requestedProfiles); err != nil {
+		return nil, err
+	}
+
 	// Launch plugin
 	codec, err := p.pluginManager.LaunchPlugin(pluginName, 30*time.Second)
 	if err != nil {
@@ -46,7 +63,7 @@ func (p *Pipeline) Collect(ctx context.Context, pluginName, targetURL string, du
 		return nil, err
 	}
 
-	// Validate target
+	// Validate target (plugin-side validation)
 	target := model.Target{Type: "url", BaseURL: targetURL}
 	if err := codec.Call("rpc.validateTarget", target, nil); err != nil {
 		return nil, err

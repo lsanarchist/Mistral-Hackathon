@@ -6,9 +6,8 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
+	"path/filepath"
 	"time"
-
-	"github.com/mistral-hackathon/triageprof/internal/model"
 )
 
 type JSONRPCCodec struct {
@@ -125,6 +124,7 @@ func (c *JSONRPCCodec) Close() error {
 	return c.cmd.Process.Kill()
 }
 
+// PluginManager manages plugin discovery and execution
 type PluginManager struct {
 	PluginDir string
 }
@@ -133,13 +133,28 @@ func NewPluginManager(pluginDir string) *PluginManager {
 	return &PluginManager{PluginDir: pluginDir}
 }
 
-func (m *PluginManager) ListPlugins() ([]model.PluginInfo, error) {
-	// TODO: implement plugin discovery
-	return nil, nil
+// ListPlugins returns all available plugins from manifests
+func (m *PluginManager) ListPlugins() ([]*Manifest, error) {
+	manifestsDir := filepath.Join(m.PluginDir, "manifests")
+	return DiscoverManifests(manifestsDir)
 }
 
+// ResolvePlugin finds a plugin by name and validates it
+func (m *PluginManager) ResolvePlugin(name string) (*Manifest, string, error) {
+	manifestsDir := filepath.Join(m.PluginDir, "manifests")
+	binDir := filepath.Join(m.PluginDir, "bin")
+	return ResolvePlugin(manifestsDir, binDir, name)
+}
+
+// LaunchPlugin launches a plugin process after validation
 func (m *PluginManager) LaunchPlugin(name string, timeout time.Duration) (*JSONRPCCodec, error) {
-	pluginPath := fmt.Sprintf("%s/bin/%s", m.PluginDir, name)
-	cmd := exec.Command(pluginPath)
+	// First resolve the plugin to ensure it exists and is valid
+	_, binaryPath, err := m.ResolvePlugin(name)
+	if err != nil {
+		return nil, fmt.Errorf("failed to resolve plugin %s: %w", name, err)
+	}
+
+	// Launch the plugin process
+	cmd := exec.Command(binaryPath)
 	return NewJSONRPCCodec(cmd)
 }
