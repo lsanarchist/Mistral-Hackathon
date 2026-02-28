@@ -1,5 +1,13 @@
 Your mistral key is at apikey.swaga
+Final Goal
+Build a modular, language-agnostic profiling and bottleneck-analysis library that integrates with existing profilers (e.g., Go pprof, Linux perf/eBPF, Java async-profiler/JFR, etc.) and uses a combination of heuristics and AI-assisted analysis to identify performance bottlenecks, explain likely root causes with evidence (stacks, call graphs, timelines, metrics), and produce actionable reports.
 
+The system must be extensible via a stable plugin/adapters interface so external contributors can add new languages/profilers (e.g., Java, C/C++) without changing the core. The core owns: a unified profiling schema, normalization pipeline, analyzers, reporting, and plugin lifecycle. Language/profiler-specific logic must live in plugins.
+
+
+> NOTE: This is a deep reference document.
+> Agents must read AGENTS.md and COMPASS.md first.
+> Update this file when major architecture/protocol/schema decisions change.
 # TriageProf - Plugin-based Profiling Triage Tool
 
 A Go-based tool for collecting, analyzing, and reporting performance profiles from various sources using a plugin architecture.
