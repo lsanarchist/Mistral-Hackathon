@@ -1,0 +1,11 @@
+{
+  "name": "python-cprofile",
+  "version": "0.1.0",
+  "sdkVersion": "1.0",
+  "capabilities": {
+    "targets": ["python"],
+    "profiles": ["cpu"]
+  },
+  "description": "Python cProfile plugin for collecting CPU profiles from Python applications",
+  "author": "Mistral Hackathon"
+}
