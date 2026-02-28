@@ -261,6 +261,50 @@ Plugins are separate executables, discovered via manifests, and communicate with
 **Git / Rollback**
 - Branch: `main`
 - Checkpoint tag: N/A (direct commit to main)
+- Commit: `88339de`
+- Rollback: `git revert 88339de`
+
+### Iter 20240304-1200 — UTC
+**Type:** Feature
+**Objective:** Add structured JSON report format
+
+**Acceptance criteria (feature)**
+- [x] JSON report schema defined with version 1.0
+- [x] JSON output option added to report command via --output json flag
+- [x] Pretty-print option available via --pretty flag
+- [x] Structured findings with categories, severity, scores, and hotspots
+- [x] Schema validation and proper JSON formatting
+- [x] Backward compatibility maintained - markdown still default
+- [x] All existing tests pass
+- [x] New unit tests for JSON generation
+
+**Changes**
+- `internal/model/report.go`: New JSONReport model with ReportSummary and ReportFinding types
+- `internal/report/report.go`: Added GenerateJSON method with pretty-print support
+- `internal/report/report_test.go`: Comprehensive unit tests for JSON generation
+- `internal/core/pipeline.go`: Added ReportJSONWithInsights method
+- `cmd/triageprof/main.go`: Added --output and --pretty flags to report command
+
+**Verification**
+- Tests: `go test ./...` - all passing including new JSON tests
+- Build: `make build` - successful
+- CLI: `bin/triageprof report --in findings.json --out report.json --output json`
+- CLI: `bin/triageprof report --in findings.json --out report.json --output json --pretty`
+- Backward compatibility: Default markdown output unchanged
+- JSON validation: Generated JSON is valid and parseable
+- Schema compliance: Follows version 1.0 schema structure
+
+**Risk/Notes**
+- No breaking changes - all existing functionality preserved
+- JSON schema versioned for future compatibility
+- Pretty-print optional and disabled by default
+- JSON output includes all finding data in structured format
+- LLM insights integration maintained in JSON output
+- Feature completes Layer 1 goal: "Structured, machine-readable report format"
+
+**Git / Rollback**
+- Branch: `main`
+- Checkpoint tag: N/A (direct commit to main)
 - Commit: `<to be filled after commit>`
 - Rollback: `git revert <commit-hash>`
 
