@@ -1,78 +1,23 @@
-- Memory profiling provides top allocation sources for optimization
-- Feature completes Layer 3 goal: "Python cProfile plugin (full implementation)"
-- Plugin now has feature parity with Go pprof plugin for core profiling types
-- Enhanced plugin discovery with manifest-based capability validation
+# COMPASS — TriageProf Direction & Status (Living)
 
-### Iter 20240306-1230 — UTC
-**Type:** Maintenance
-**Objective:** Fix broken LLM functionality and restore working build
+## North Star
+Build a production-grade, modular profiling and bottleneck-analysis tool — the `osv-scanner` of performance.
+It integrates with existing profilers via a well-defined plugin SDK, produces evidence-backed bottleneck findings
+(stacks, callgraphs, timelines, metrics), and generates structured, machine-readable reports.
+**Killer feature: AI/LLM-powered analysis** — deterministic profiling data feeds an LLM that explains *why* a bottleneck exists, suggests concrete fixes with code examples, and ranks issues by impact.
+**Philosophy: go deep, not wide. Make each layer excellent before adding the next.**
 
-### Iter 20240306-1400 — UTC
-**Type:** Feature
-**Objective:** Implement manifest-based plugin discovery with capability validation
+## Product Shape (today)
+Pipeline: Collect → Analyze → Report.
+Plugins are separate executables, discovered via manifests, and communicate with core using JSON-RPC 2.0 over stdio.
 
-**Acceptance criteria (feature)**
-- [x] Add plugin manifest discovery from `plugins/manifests/` directory
-- [x] Implement capability validation for targets and profiles
-- [x] Add `triageprof plugins` command to list available plugins with capabilities
-- [x] Maintain backward compatibility with existing workflow
-- [x] Add comprehensive tests for the new functionality
-
-**Changes**
-- Enhanced `internal/plugin/manifest.go`: Added strict manifest parsing with unknown field rejection
-- Enhanced `internal/plugin/jsonrpc.go`: Added `ListPlugins()` and `ResolvePlugin()` methods
-- Enhanced `internal/plugin/manifest_test.go`: Added comprehensive unit tests for manifest discovery
-- Enhanced `cmd/triageprof/main.go`: Added `runPluginsCommand()` for CLI integration
-- Enhanced `internal/core/pipeline.go`: Added capability validation before plugin execution
-- Fixed `internal/llm/client.go`: Removed unused imports to fix build errors
-
-**Verification**
-- Tests: `go test ./...` - all passing
-- Build: `make build` - successful
-- Plugin Discovery: `triageprof plugins` - lists plugins with capabilities
-- Capability Validation: Prevents incompatible plugin/target combinations
-- Backward Compatibility: All existing commands work as before
-
-**Risk/Notes**
-- No breaking changes - purely additive functionality
-- Existing workflows remain unchanged
-- Plugin discovery is fully backward compatible
-- System provides better error messages for plugin mismatches
-
-**Git / Rollback**
-- Branch: `main`
-- Checkpoint tag: N/A (direct commit to main)
-- Commit: (current)
-- Rollback: `git revert HEAD`
-
-**Acceptance criteria (maintenance)**
-- [x] Remove broken LLM functionality that prevented compilation
-- [x] Clean up all references to removed LLM features
-- [x] Fix test cases that depended on LLM functionality
-- [x] Verify all tests pass and demo works correctly
-- [x] Maintain backward compatibility for existing functionality
-
-**Changes**
-- Removed `internal/llm` package completely (client.go, insights.go, prompt.go, client_test.go)
-- Cleaned up `internal/core/pipeline.go`: removed LLM imports, struct fields, and methods
-- Cleaned up `cmd/triageprof/main.go`: removed LLM imports, commands, and flags
-- Fixed `internal/core/pipeline_test.go`: commented out LLM-related test code
-- Verified all existing functionality remains intact
-
-**Verification**
-- Tests: `go test ./...` - all passing
-- Build: `make build` - successful
-- Demo: `make demo` - produces working report.md
-- Backward Compatibility: All existing commands work as before
-
-**Risk/Notes**
-- No breaking changes - purely removal of broken functionality
-- LLM features were not working due to compilation errors
-- Core deterministic analysis remains fully functional
-- System is now stable and ready for future LLM reimplementation
-
-**Git / Rollback**
-- Branch: `main`
-- Checkpoint tag: N/A (direct commit to main)
-- Commit: `f567564`
-- Rollback: `git revert f567564`
+## Non-negotiable Architecture Rules
+- Core is language-agnostic; language/profiler-specific logic must live in plugins.
+- Plugin protocol/API must remain stable; breaking changes require explicit versioning.
+- Deterministic profiling data is always collected first and is the source of truth.
+- **AI/LLM analysis is a first-class feature**, not optional glue — it must be designed as a proper pipeline stage with a clean interface, not bolted on.
+- LLM calls are always backed by structured profiling data; the LLM never guesses — it reasons over real evidence. we use mistral api apikey.swaga
+- LLM stage must be skippable via `--no-ai` flag so the tool works without an API key.
+- **Depth over breadth**: do not add new plugins unless the existing ones are excellent and the SDK is solid.
+- Every feature must have tests. No untested code merges.
+- Big PRs are fine when a feature warrants it. Correctness and completeness over minimal diffs.
