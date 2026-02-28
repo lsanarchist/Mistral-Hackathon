@@ -16,7 +16,7 @@ Plugins are separate executables, discovered via manifests, and communicate with
 - Plugin protocol/API must remain stable; breaking changes require explicit versioning.
 - Deterministic profiling data is always collected first and is the source of truth.
 - **AI/LLM analysis is a first-class feature**, not optional glue — it must be designed as a proper pipeline stage with a clean interface, not bolted on.
-- LLM calls are always backed by structured profiling data; the LLM never guesses — it reasons over real evidence.
+- LLM calls are always backed by structured profiling data; the LLM never guesses — it reasons over real evidence. we use mistral api apikey.swaga
 - LLM stage must be skippable via `--no-ai` flag so the tool works without an API key.
 - **Depth over breadth**: do not add new plugins unless the existing ones are excellent and the SDK is solid.
 - Every feature must have tests. No untested code merges.
@@ -182,6 +182,48 @@ Plugins are separate executables, discovered via manifests, and communicate with
 - Commit: `be48271`
 - Rollback: `git revert be48271`
 
+### Iter 20240302-1830 — UTC
+**Type:** Feature
+**Objective:** Add structured JSON report format
+
+**Acceptance criteria (feature)**
+- [x] JSON report schema defined with version 1.0
+- [x] JSON output option added to report command via --output json flag
+- [x] Pretty-print option available via --pretty flag
+- [x] Structured findings with categories, severity, scores, and hotspots
+- [x] Schema validation and proper JSON formatting
+- [x] Backward compatibility maintained - markdown still default
+- [x] All existing tests pass
+- [x] New unit tests for JSON generation
+
+**Changes**
+- `internal/model/report.go`: New JSONReport model with ReportSummary and ReportFinding types
+- `internal/report/report.go`: Added GenerateJSON method with pretty-print support
+- `internal/report/report_test.go`: Comprehensive unit tests for JSON generation
+- `internal/core/pipeline.go`: Added ReportJSONWithInsights method
+- `cmd/triageprof/main.go`: Added --output and --pretty flags to report command
+
+**Verification**
+- Tests: `go test ./...` - all passing including new JSON tests
+- Build: `make build` - successful
+- Manual testing: Generated both compact and pretty JSON reports
+- CLI: `bin/triageprof report --in findings.json --out report.json --output json`
+- CLI: `bin/triageprof report --in findings.json --out report.json --output json --pretty`
+- Backward compatibility: Default markdown output unchanged
+
+**Risk/Notes**
+- No breaking changes - all existing functionality preserved
+- JSON schema versioned for future compatibility
+- Pretty-print optional and disabled by default
+- JSON output includes all finding data in structured format
+- LLM insights integration maintained in JSON output
+
+**Git / Rollback**
+- Branch: `main`
+- Checkpoint tag: N/A (direct commit to main)
+- Commit: `dba9344`
+- Rollback: `git revert dba9344`
+
 ### Iter 20240301-1200 — UTC
 **Type:** Maintenance
 **Objective:** Add comprehensive error handling for plugin compatibility
@@ -215,6 +257,43 @@ Plugins are separate executables, discovered via manifests, and communicate with
 - Error handling is backward compatible
 - User experience improved with clear, actionable error messages
 - All validation happens before plugin execution
+
+**Git / Rollback**
+- Branch: `main`
+- Checkpoint tag: N/A (direct commit to main)
+- Commit: `<to be filled after commit>`
+- Rollback: `git revert <commit-hash>`
+
+### Iter 20240303-1000 — UTC
+**Type:** Feature
+**Objective:** Add allocs profile support to Go pprof plugin
+
+**Acceptance criteria (feature)**
+- [x] Go pprof plugin updated to support allocs profile collection
+- [x] Plugin manifest includes allocs in capabilities
+- [x] Plugin collects allocs profiles from /debug/pprof/allocs endpoint
+- [x] All existing tests still pass
+- [x] Backward compatibility maintained
+- [x] Plugin discovery shows updated capabilities
+
+**Changes**
+- `plugins/manifests/go-pprof-http.json`: Added "allocs" to profiles capabilities
+- `plugins/src/go-pprof-http/main.go`: Added allocs profile collection logic in collect() method
+- `plugins/src/go-pprof-http/main.go`: Updated PluginInfo.Profiles to include "allocs"
+
+**Verification**
+- Tests: `go test ./...` - all passing
+- Build: `make build` - successful
+- Plugin discovery: `bin/triageprof plugins` - shows allocs in capabilities
+- JSON-RPC: Tested rpc.info call returns allocs in profiles list
+- Integration: Plugin responds correctly to collect requests with allocs profile
+
+**Risk/Notes**
+- No breaking changes to existing functionality
+- Allocs profile follows same pattern as other pprof profiles
+- Plugin maintains backward compatibility
+- All existing profile types continue to work unchanged
+- Feature completes Layer 1 goal: "full coverage of all profile types"
 
 **Git / Rollback**
 - Branch: `main`

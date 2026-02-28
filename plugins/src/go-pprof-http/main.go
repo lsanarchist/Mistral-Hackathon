@@ -26,7 +26,7 @@ func main() {
 			SDKVersion: "1.0",
 			Capabilities: model.Capabilities{
 				Targets:  []string{"url"},
-				Profiles: []string{"cpu", "heap", "mutex", "block", "goroutine"},
+				Profiles: []string{"cpu", "heap", "mutex", "block", "goroutine", "allocs"},
 			},
 		},
 	}
@@ -210,6 +210,20 @@ func (p *Plugin) collect(req model.CollectRequest) (model.ArtifactBundle, error)
 				ProfileType: "goroutine",
 				Path:        goroutinePath,
 				ContentType: "text/plain",
+			})
+		}
+	}
+
+	// Collect Allocs profile
+	if contains(req.Profiles, "allocs") {
+		allocsPath := filepath.Join(req.OutDir, "allocs.pb.gz")
+		allocsURL := fmt.Sprintf("%s/debug/pprof/allocs", req.Target.BaseURL)
+		if err := downloadFile(client, allocsURL, allocsPath); err == nil {
+			artifacts = append(artifacts, model.Artifact{
+				Kind:        "pprof",
+				ProfileType: "allocs",
+				Path:        allocsPath,
+				ContentType: "application/octet-stream",
 			})
 		}
 	}
