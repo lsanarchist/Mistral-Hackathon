@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/mistral-hackathon/triageprof/internal/analyzer"
+	"github.com/mistral-hackathon/triageprof/internal/llm"
 	"github.com/mistral-hackathon/triageprof/internal/model"
 	"github.com/mistral-hackathon/triageprof/internal/plugin"
 	"github.com/mistral-hackathon/triageprof/internal/report"
@@ -18,6 +19,7 @@ type Pipeline struct {
 	pluginManager *plugin.PluginManager
 	analyzer      *analyzer.Analyzer
 	reporter      *report.Reporter
+	llmGenerator  *llm.InsightsGenerator
 }
 
 func NewPipeline(pluginDir string) *Pipeline {
@@ -25,7 +27,14 @@ func NewPipeline(pluginDir string) *Pipeline {
 		pluginManager: plugin.NewPluginManager(pluginDir),
 		analyzer:      analyzer.NewAnalyzer(),
 		reporter:      report.NewReporter(),
+		llmGenerator:  nil, // LLM disabled by default
 	}
+}
+
+// WithLLM configures LLM insights generation
+func (p *Pipeline) WithLLM(apiKey, model string, timeout, maxResponse, maxPromptChars int, dryRun bool) *Pipeline {
+	p.llmGenerator = llm.NewInsightsGenerator(apiKey, model, timeout, maxResponse, maxPromptChars, dryRun)
+	return p
 }
 
 
@@ -205,6 +214,10 @@ func (p *Pipeline) AnalyzeWithOptions(ctx context.Context, bundlePath string, to
 }
 
 func (p *Pipeline) Report(ctx context.Context, findingsPath, outPath string) error {
+	return p.ReportWithInsights(ctx, findingsPath, outPath, nil)
+}
+
+func (p *Pipeline) ReportWithInsights(ctx context.Context, findingsPath, outPath string, insights *model.InsightsBundle) error {
 	// Read findings
 	data, err := os.ReadFile(findingsPath)
 	if err != nil {
@@ -217,9 +230,15 @@ func (p *Pipeline) Report(ctx context.Context, findingsPath, outPath string) err
 	}
 
 	// Generate report
-	reportData, err := p.reporter.Generate(findings)
-	if err != nil {
-		return err
+	var reportData string
+	var reportErr error
+	if insights != nil {
+		reportData, reportErr = p.reporter.GenerateWithInsights(findings, insights)
+	} else {
+		reportData, reportErr = p.reporter.Generate(findings)
+	}
+	if reportErr != nil {
+		return reportErr
 	}
 
 	return os.WriteFile(outPath, []byte(reportData), 0644)
@@ -244,7 +263,52 @@ func (p *Pipeline) RunWithTarget(ctx context.Context, pluginName, targetURL, tar
 		return err
 	}
 
-	// Report
+	// Generate LLM insights (optional)
+	var insights *model.InsightsBundle
+	if p.llmGenerator != nil {
+		// Read bundle for LLM
+		bundleData, err := os.ReadFile(bundlePath)
+		if err != nil {
+			return err
+		}
+		var profileBundle model.ProfileBundle
+		if err := json.Unmarshal(bundleData, &profileBundle); err != nil {
+			return err
+		}
+
+		// Read findings for LLM
+		findingsData, err := os.ReadFile(findingsPath)
+		if err != nil {
+			return err
+		}
+		var findingsBundle model.FindingsBundle
+		if err := json.Unmarshal(findingsData, &findingsBundle); err != nil {
+			return err
+		}
+
+		// Generate insights
+		insights, err = p.llmGenerator.GenerateInsights(ctx, &profileBundle, &findingsBundle)
+		if err != nil {
+			return err
+		}
+
+		// Save insights
+		if insights != nil {
+			insightsData, err := json.MarshalIndent(insights, "", "  ")
+			if err != nil {
+				return err
+			}
+			insightsPath := filepath.Join(outDir, "insights.json")
+			if err := os.WriteFile(insightsPath, insightsData, 0644); err != nil {
+				return err
+			}
+		}
+	}
+
+	// Report (with optional insights)
 	reportPath := filepath.Join(outDir, "report.md")
+	if insights != nil && insights.DisabledReason == "" {
+		return p.ReportWithInsights(ctx, findingsPath, reportPath, insights)
+	}
 	return p.Report(ctx, findingsPath, reportPath)
 }

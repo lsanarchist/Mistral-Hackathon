@@ -79,12 +79,12 @@ Plugins are separate executables, discovered via manifests, and communicate with
 ## Current Focus Areas
 
 1. **Plugin System Maturity**
-   - Manifest-based discovery and validation ✅
+   - Manifest-based discovery and validation 
    - Capability checking and compatibility
    - Plugin lifecycle management
 
-2. **LLM Integration**
-   - Safe prompt generation with redaction ✅
+2. **LLM Integration** !!!!!
+   - Safe prompt generation with redaction 
    - Structured insights generation
    - Report enhancement with LLM sections
 
@@ -138,6 +138,18 @@ Plugins are separate executables, discovered via manifests, and communicate with
 - **Testing**: Unit tests for client, prompt building, and integration
 - **Result**: Optional LLM insights with safety features and proper error handling
 
+### 2026-02-28 16:00: LLM Integration Completion
+- **Objective**: Complete LLM integration with core pipeline
+- **Changes**:
+  - Updated `internal/core/pipeline.go` with LLM generator support
+  - Added `WithLLM()` method to configure LLM insights
+  - Enhanced `RunWithTarget()` to generate and save insights
+  - Updated `ReportWithInsights()` for enhanced report generation
+  - Modified CLI to support LLM flags in run command
+  - Added LLM command for standalone insights generation
+- **Testing**: Integration tests for full pipeline with LLM
+- **Result**: End-to-end LLM integration with optional insights generation
+
 ---
 
 ## How to Contribute
@@ -156,3 +168,163 @@ Plugins are separate executables, discovered via manifests, and communicate with
 - This ensures traceability and accountability
 
 **Remember**: The compass points the way, but the journey is recorded in the logs.
+
+---
+
+## 🎯 Killer Feature Focus: AI-Powered Performance Triage
+
+### The Vision
+
+**TriageProf's killer feature is transforming raw profiling data into actionable insights using AI.**
+
+While traditional profilers show *what* is slow, TriageProf explains *why* it's slow and *how* to fix it.
+
+### Demo Goal: "Wow" Factor
+
+**Objective**: Create a demo that makes developers say "Wow, I need this!"
+
+**Success Criteria**:
+- Input: Complex Go application with real performance issues
+- Process: Automatic collection → analysis → LLM insights
+- Output: Professional report with:
+  - ✅ Executive summary with severity assessment
+  - ✅ Top 3 risks with impact analysis
+  - ✅ Actionable suggestions with code examples
+  - ✅ Confidence scores and caveats
+
+### Demo Flow
+
+```
+1. Start demo server with intentional issues
+   - CPU hotspots
+   - Memory allocation patterns
+   - Mutex contention
+   - Blocking operations
+
+2. Run TriageProf with LLM enabled
+   bin/triageprof run --plugin go-pprof-http --target-url http://localhost:6060 --duration 30 --outdir demo --llm
+
+3. Show the "Wow" moments:
+   - ✨ Automatic plugin discovery and validation
+   - 🔍 Detailed profile collection (CPU, heap, mutex, block, goroutine)
+   - 🤖 LLM-generated insights with root cause analysis
+   - 📊 Professional markdown report with executive summary
+
+4. Highlight key differentiators:
+   - "Traditional profilers show you the hotspots"
+   - "TriageProf explains why they're hot and how to fix them"
+   - "From data to insights in one command"
+
+### Cool Demo Features to Showcase
+
+1. **Plugin Discovery Magic**
+   - Run `triageprof plugins` to show available plugins
+   - Emphasize manifest-based discovery
+
+2. **End-to-End Workflow**
+   - Single command collects, analyzes, and reports
+   - Optional LLM augmentation for deeper insights
+
+3. **LLM Insights**
+   - Executive summary with severity assessment
+   - Per-finding narrative explanations
+   - Suggested fixes and next measurements
+
+4. **Safety Features**
+   - Sensitive data redaction
+   - Graceful degradation without API key
+   - Test verification before committing
+
+5. **Professional Output**
+   - Structured markdown reports
+   - LLM insights clearly marked
+   - Confidence indicators
+
+### Demo Script Example
+
+```bash
+# Start the demo server
+go run examples/demo-server/main.go &
+
+# Generate some load
+./examples/load.sh &
+
+# Run the full pipeline with LLM
+export MISTRAL_API_KEY="your-key"
+bin/triageprof run --plugin go-pprof-http --target-url http://localhost:6060 --duration 30 --outdir demo --llm
+
+# Show the results
+cat demo/report.md
+
+# Highlight the LLM insights
+bin/triageprof report --in demo/findings.json --insights demo/insights.json --out demo/enhanced-report.md
+```
+
+### Demo Success Metrics
+
+**Technical**:
+- ✅ All profiles collected successfully
+- ✅ Analysis completes without errors
+- ✅ LLM generates meaningful insights
+- ✅ Report includes all expected sections
+
+**User Experience**:
+- ✅ "Wow" reaction from viewers
+- ✅ Clear understanding of the value proposition
+- ✅ Desire to use the tool on their own projects
+- ✅ Appreciation of the AI augmentation
+
+**Visual Appeal**:
+- ✅ Professional markdown formatting
+- ✅ Clear separation of deterministic vs. LLM content
+- ✅ Helpful visual elements (tables, bullet points)
+- ✅ Confidence indicators for transparency
+
+### Cool Factor Checklist
+
+- [x] **Automatic**: One command does everything
+- [x] **Smart**: AI explains the why behind performance issues
+- [x] **Safe**: Redacts sensitive data automatically
+- [x] **Professional**: Generates reports suitable for stakeholders
+- [x] **Extensible**: Plugin architecture for any profiler
+- [x] **Optional**: Works great without LLM too
+
+### Demo Tips
+
+1. **Start with a problem**: Show a slow application
+2. **Run the analysis**: Single command magic
+3. **Show the insights**: Focus on LLM explanations
+4. **Compare approaches**: "Traditional vs. TriageProf"
+5. **Highlight safety**: Emphasize data redaction
+6. **Show flexibility**: Demonstrate plugin system
+
+**Goal**: Make developers excited about performance analysis again!
+
+---
+
+## 🚀 Delivery Timeline
+
+### Phase 1: Core Complete ✅
+- Plugin discovery and validation
+- Basic analysis pipeline
+- Markdown report generation
+
+### Phase 2: LLM Integration ✅
+- Mistral API client
+- Secure prompt generation
+- Insights integration
+- Enhanced reports
+
+### Phase 3: Demo Polish (Current Focus)
+- Perfect the demo script
+- Create compelling sample application
+- Refine visual output
+- Prepare presentation materials
+
+### Phase 4: Launch Ready
+- Final testing and validation
+- Documentation polish
+- Screencast recording
+- Website/update materials
+
+**Target**: Have a "wow"-worthy demo ready for showcase!
