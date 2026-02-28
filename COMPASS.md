@@ -79,6 +79,41 @@ Plugins are separate executables, discovered via manifests, and communicate with
 - Commit: `<to be filled after commit>`
 - Rollback: `git revert <commit-hash>`
 
+### Iter 20240301-1730 — UTC
+**Type:** Maintenance
+**Objective:** Verify comprehensive error handling for plugin compatibility
+
+**Acceptance criteria (maintenance)**
+- [x] Plugin discovery system with manifest-based validation is working
+- [x] All error scenarios produce clear, actionable error messages
+- [x] Backward compatibility maintained - existing workflows unchanged
+- [x] All tests passing
+- [x] Demo workflow produces expected output
+
+**Verification**
+- Tests: `go test ./...` - all passing
+- Error scenarios tested via CLI:
+  - `bin/triageprof collect --plugin non-existent` → "plugin not found. Available plugins: go-pprof-http"
+  - Missing binary → "manifest found but binary missing at ..."
+  - SDK mismatch → "plugin requires sdkVersion 2.0, but core supports 1.0"
+  - Unsupported target → "target type not supported. Supported targets: ..."
+  - Unsupported profile → "profiles not supported. Supported profiles: ..."
+- Build: `make build` - successful
+- Demo: `make demo` - produces report.md successfully
+
+**Risk/Notes**
+- No breaking changes - all existing functionality preserved
+- Error handling is backward compatible
+- User experience improved with clear, actionable error messages
+- All validation happens before plugin execution
+- Feature was already implemented in previous iteration, this commit verifies it works correctly
+
+**Git / Rollback**
+- Branch: `main`
+- Checkpoint tag: N/A (direct commit to main)
+- Commit: `1a61b9d`
+- Rollback: `git revert 1a61b9d`
+
 ### Iter 20240301-1200 — UTC
 **Type:** Maintenance
 **Objective:** Add comprehensive error handling for plugin compatibility
