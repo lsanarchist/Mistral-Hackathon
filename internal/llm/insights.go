@@ -1,116 +1,115 @@
 package llm
 
 import (
-	"context"
-	"encoding/json"
-	"fmt"
-	"os"
-	"time"
+    "context"
+    "encoding/json"
+    "fmt"
+    "os"
+    "time"
 
-	"github.com/mistral-hackathon/triageprof/internal/model"
+    "github.com/mistral-hackathon/triageprof/internal/model"
 )
 
 // InsightsGenerator orchestrates LLM insight generation
 type InsightsGenerator struct {
-	Client         *MistralClient
-	DryRun         bool
-	MaxPromptChars int
+    Client         *MistralClient
+    DryRun         bool
+    MaxPromptChars int
 }
 
 // NewInsightsGenerator creates a new insights generator
-func NewInsightsGenerator(apiKey, model string, timeout int, maxResponse, maxPromptChars int, dryRun bool) *InsightsGenerator {
-	timeoutDur := time.Duration(timeout) * time.Second
-	return &InsightsGenerator{
-		Client:         NewMistralClient(apiKey, model, timeoutDur, maxResponse),
-		DryRun:         dryRun,
-		MaxPromptChars: maxPromptChars,
-	}
+func NewInsightsGenerator(apiKey, model string, timeout, maxResponse, maxPromptChars int, dryRun bool) *InsightsGenerator {
+    client := NewMistralClient(apiKey, model,
+        WithTimeout(time.Duration(timeout)*time.Second),
+        WithMaxResponse(maxResponse))
+
+    return &InsightsGenerator{
+        Client:         client,
+        DryRun:         dryRun,
+        MaxPromptChars: maxPromptChars,
+    }
 }
 
 // GenerateInsights creates LLM insights from bundle and findings
-func (g *InsightsGenerator) GenerateInsights(ctx context.Context, bundle *model.ProfileBundle, findings *model.FindingsBundle) (*model.InsightsBundle, error) {
-	// Build prompt
-	builder := NewPromptBuilder(bundle, findings)
-	builder.MaxSize = g.MaxPromptChars
-	prompt, err := builder.Build()
-	if err != nil {
-		return nil, fmt.Errorf("failed to build prompt: %w", err)
-	}
+func (g *InsightsGenerator) GenerateInsights(ctx context.Context, 
+    bundle *model.ProfileBundle, findings *model.FindingsBundle) (*model.InsightsBundle, error) {
+    
+    // Build secure prompt
+    builder := NewPromptBuilder(bundle, findings, g.MaxPromptChars)
+    userPrompt, err := builder.BuildUserPrompt()
+    if err != nil {
+        return nil, fmt.Errorf("failed to build prompt: %w", err)
+    }
 
-	// Dry run mode - save prompt to file and return disabled insights
-	if g.DryRun {
-		if err := os.WriteFile("llm_prompt.json", []byte(prompt), 0644); err != nil {
-			return nil, fmt.Errorf("failed to write dry-run prompt: %w", err)
-		}
-		return &model.InsightsBundle{
-			SchemaVersion:  model.InsightsSchemaVersion,
-			GeneratedAt:    time.Now(),
-			DisabledReason: "Dry run mode - prompt saved to llm_prompt.json",
-			ExecutiveSummary: model.ExecutiveSummary{
-				Overview:        "LLM insights disabled: dry run mode",
-				OverallSeverity: model.SeverityLow,
-				Confidence:      0,
-			},
-		}, nil
-	}
+    // Handle dry-run mode
+    if g.DryRun {
+        // Save prompt for inspection
+        promptData := map[string]interface{}{
+            "system_prompt": BuildSystemPrompt(),
+            "user_prompt":   userPrompt,
+            "timestamp":     time.Now(),
+        }
+        
+        promptJSON, _ := json.MarshalIndent(promptData, "", "  ")
+        
+        if err := os.WriteFile("llm_prompt.json", promptJSON, 0644); err != nil {
+            return nil, fmt.Errorf("failed to save dry-run prompt: %w", err)
+        }
 
-	// Generate insights via Mistral API
-	insights, err := g.Client.GenerateInsights(ctx, prompt)
-	if err != nil {
-		return nil, fmt.Errorf("failed to generate insights: %w", err)
-	}
+        return g.Client.createDisabledBundle("dry-run mode enabled"), nil
+    }
 
-	// Validate insights structure
-	if insights.ExecutiveSummary.Overview == "" {
-		insights.ExecutiveSummary.Overview = "No specific insights generated"
-	}
-	if insights.ExecutiveSummary.Confidence == 0 {
-		insights.ExecutiveSummary.Confidence = 50 // Default confidence
-	}
+    // Call Mistral API
+    insights, err := g.Client.GenerateInsights(ctx, userPrompt)
+    if err != nil {
+        return nil, fmt.Errorf("LLM insights generation failed: %w", err)
+    }
 
-	return insights, nil
+    return insights, nil
 }
 
-// GenerateInsightsFromFiles loads bundle and findings from files and generates insights
+// GenerateInsightsFromFiles standalone file-based generation
 func GenerateInsightsFromFiles(ctx context.Context, bundlePath, findingsPath, outputPath string,
-	apiKey, llmModel string, timeout, maxResponse, maxPromptChars int, dryRun bool) error {
+    apiKey, model string, timeout, maxResponse, maxPromptChars int, dryRun bool) error {
+    
+    // Read bundle
+    bundleData, err := os.ReadFile(bundlePath)
+    if err != nil {
+        return fmt.Errorf("failed to read bundle: %w", err)
+    }
+    
+    var bundle model.ProfileBundle
+    if err := json.Unmarshal(bundleData, &bundle); err != nil {
+        return fmt.Errorf("failed to parse bundle: %w", err)
+    }
 
-	// Load bundle
-	bundleData, err := os.ReadFile(bundlePath)
-	if err != nil {
-		return fmt.Errorf("failed to read bundle: %w", err)
-	}
-	var profileBundle model.ProfileBundle
-	if err := json.Unmarshal(bundleData, &profileBundle); err != nil {
-		return fmt.Errorf("failed to parse bundle: %w", err)
-	}
+    // Read findings
+    findingsData, err := os.ReadFile(findingsPath)
+    if err != nil {
+        return fmt.Errorf("failed to read findings: %w", err)
+    }
+    
+    var findings model.FindingsBundle
+    if err := json.Unmarshal(findingsData, &findings); err != nil {
+        return fmt.Errorf("failed to parse findings: %w", err)
+    }
 
-	// Load findings
-	findingsData, err := os.ReadFile(findingsPath)
-	if err != nil {
-		return fmt.Errorf("failed to read findings: %w", err)
-	}
-	var findingsBundle model.FindingsBundle
-	if err := json.Unmarshal(findingsData, &findingsBundle); err != nil {
-		return fmt.Errorf("failed to parse findings: %w", err)
-	}
+    // Generate insights
+    generator := NewInsightsGenerator(apiKey, model, timeout, maxResponse, maxPromptChars, dryRun)
+    insights, err := generator.GenerateInsights(ctx, &bundle, &findings)
+    if err != nil {
+        return fmt.Errorf("failed to generate insights: %w", err)
+    }
 
-	// Generate insights
-	generator := NewInsightsGenerator(apiKey, llmModel, timeout, maxResponse, maxPromptChars, dryRun)
-	insights, err := generator.GenerateInsights(ctx, &profileBundle, &findingsBundle)
-	if err != nil {
-		return fmt.Errorf("failed to generate insights: %w", err)
-	}
+    // Save insights
+    insightsData, err := json.MarshalIndent(insights, "", "  ")
+    if err != nil {
+        return fmt.Errorf("failed to marshal insights: %w", err)
+    }
+    
+    if err := os.WriteFile(outputPath, insightsData, 0644); err != nil {
+        return fmt.Errorf("failed to write insights: %w", err)
+    }
 
-	// Save insights
-	insightsData, err := json.MarshalIndent(insights, "", "  ")
-	if err != nil {
-		return fmt.Errorf("failed to marshal insights: %w", err)
-	}
-
-	if err := os.WriteFile(outputPath, insightsData, 0644); err != nil {
-		return fmt.Errorf("failed to write insights: %w", err)
-	}
-
-	return nil
+    return nil
 }

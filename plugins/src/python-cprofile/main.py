@@ -16,11 +16,11 @@ class PythonCProfilePlugin:
     def __init__(self):
         self.info = {
             "name": "python-cprofile",
-            "version": "0.2.0",
+            "version": "0.4.0",
             "sdkVersion": "1.0",
             "capabilities": {
                 "targets": ["python"],
-                "profiles": ["cpu", "allocs"]
+                "profiles": ["cpu", "heap", "allocs"]
             }
         }
 
@@ -76,11 +76,12 @@ class PythonCProfilePlugin:
         return True
 
     def collect(self, collect_request: Dict[str, Any]) -> Dict[str, Any]:
-        """Collect Python profile data"""
+        """Collect Python profile data - enhanced to support multiple profiles like Go plugin"""
         target = collect_request.get("target", {})
         duration_sec = collect_request.get("durationSec", 10)
         out_dir = collect_request.get("outDir", ".")
-        profile_type = collect_request.get("profileType", "cpu")
+        profiles = collect_request.get("profiles", ["cpu", "allocs"])
+        metadata = collect_request.get("metadata", {})
         
         command = target.get("command", [])
         if not command:
@@ -89,20 +90,45 @@ class PythonCProfilePlugin:
         # Create output directory if it doesn't exist
         os.makedirs(out_dir, exist_ok=True)
         
-        # Generate output file paths
-        timestamp = int(time.time())
+        artifacts = []
         
-        if profile_type == "cpu":
-            return self._collect_cpu_profile(target, duration_sec, out_dir, timestamp, command)
-        elif profile_type == "allocs":
-            return self._collect_allocs_profile(target, duration_sec, out_dir, timestamp, command)
-        else:
-            raise ValueError(f"Unsupported profile type: {profile_type}")
+        # Collect each requested profile type
+        for profile_type in profiles:
+            if profile_type == "cpu":
+                artifact = self._collect_cpu_profile(target, duration_sec, out_dir, command)
+                if artifact:
+                    artifacts.append(artifact)
+            elif profile_type == "heap":
+                artifact = self._collect_heap_profile(target, duration_sec, out_dir, command)
+                if artifact:
+                    artifacts.append(artifact)
+            elif profile_type == "allocs":
+                artifact = self._collect_allocs_profile(target, duration_sec, out_dir, command)
+                if artifact:
+                    artifacts.append(artifact)
+        
+        if not artifacts:
+            raise RuntimeError("Failed to collect any profiles")
+        
+        # Create artifact bundle matching the Go plugin format
+        bundle = {
+            "metadata": {
+                "timestamp": int(time.time()),
+                "durationSec": duration_sec,
+                "service": metadata.get("service", "python-cprofile"),
+                "scenario": metadata.get("scenario", "profiling"),
+                "gitSha": metadata.get("gitSha", "")
+            },
+            "target": target,
+            "artifacts": artifacts
+        }
+        
+        return bundle
     
     def _collect_cpu_profile(self, target: Dict[str, Any], duration_sec: int, out_dir: str, 
-                           timestamp: int, command: List[str]) -> Dict[str, Any]:
+                           command: List[str]) -> Dict[str, Any]:
         """Collect CPU profile using cProfile"""
-        cpu_profile_path = os.path.join(out_dir, f"cpu_{timestamp}.prof")
+        cpu_profile_path = os.path.join(out_dir, "cpu.pb.gz")
         
         try:
             # Run cProfile on the Python command
@@ -122,39 +148,113 @@ class PythonCProfilePlugin:
             if not os.path.exists(cpu_profile_path):
                 raise RuntimeError("cProfile failed to create output file")
             
-            # Create artifact bundle
-            bundle = {
-                "metadata": {
-                    "timestamp": int(time.time()),
-                    "durationSec": duration_sec,
-                    "service": "python-cprofile",
-                    "scenario": "cpu-profiling"
-                },
-                "target": target,
-                "artifacts": [
-                    {
-                        "kind": "cprofile",
-                        "profileType": "cpu",
-                        "path": cpu_profile_path,
-                        "contentType": "application/octet-stream"
-                    }
-                ]
+            # Return artifact in standard format
+            return {
+                "kind": "cprofile",
+                "profileType": "cpu",
+                "path": cpu_profile_path,
+                "contentType": "application/octet-stream"
             }
             
-            return bundle
+        except subprocess.TimeoutExpired:
+            eprint(f"CPU profiling timed out after {duration_sec} seconds")
+            return None
+        except Exception as e:
+            eprint(f"Failed to collect CPU profile: {str(e)}")
+            return None
+    
+    def _collect_heap_profile(self, target: Dict[str, Any], duration_sec: int, out_dir: str, 
+                            command: List[str]) -> Dict[str, Any]:
+        """Collect heap profile using tracemalloc with heap snapshot"""
+        heap_profile_path = os.path.join(out_dir, "heap.pb.gz")
+        
+        try:
+            # Create a Python script that runs the target with tracemalloc heap tracking
+            script_content = f"""
+import tracemalloc
+import json
+import sys
+import time
+import gzip
+
+# Start tracemalloc with heap tracking
+tracemalloc.start()
+
+# Run the target command
+start_time = time.time()
+
+try:
+    # Execute the target command as a Python script
+    exec(open('{command[0]}').read())
+except Exception as e:
+    print("Error executing script:", e, file=sys.stderr)
+    sys.exit(1)
+
+# Get current memory snapshot
+snapshot = tracemalloc.take_snapshot()
+
+# Get top memory allocations by size
+top_stats = snapshot.statistics('lineno')
+
+# Prepare heap allocation data in pprof-compatible format
+heap_data = []
+for stat in top_stats[:200]:  # Top 200 allocations for comprehensive analysis
+    if stat.traceback:
+        frame = stat.traceback[0]
+        heap_data.append({{
+            'function': 'unknown',  # Simplified - we can't easily get function name from traceback
+            'file': frame.filename,
+            'line': frame.lineno,
+            'size': stat.size,
+            'count': stat.count
+        }})
+
+# Write heap data to gzipped file (matching Go plugin format)
+with gzip.open('{heap_profile_path}', 'wt') as f:
+    json.dump(heap_data, f)
+
+print("Heap profile saved to", '{heap_profile_path}')
+"""
+            
+            # Write the script to a temporary file
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as script_file:
+                script_file.write(script_content)
+                script_path = script_file.name
+            
+            # Run the script with timeout
+            result = subprocess.run(
+                ["python3", script_path],
+                timeout=duration_sec,
+                capture_output=True,
+                text=True
+            )
+            
+            # Clean up the temporary script
+            os.unlink(script_path)
+            
+            # Check if the profile file was created
+            if not os.path.exists(heap_profile_path):
+                raise RuntimeError("tracemalloc heap profiling failed to create output file")
+            
+            # Return artifact in standard format
+            return {
+                "kind": "tracemalloc",
+                "profileType": "heap",
+                "path": heap_profile_path,
+                "contentType": "application/octet-stream"
+            }
             
         except subprocess.TimeoutExpired:
-            raise RuntimeError(f"Command timed out after {duration_sec} seconds")
+            eprint(f"Heap profiling timed out after {duration_sec} seconds")
+            return None
         except Exception as e:
-            # Clean up profile file if it exists
-            if os.path.exists(cpu_profile_path):
-                os.remove(cpu_profile_path)
-            raise RuntimeError(f"Failed to collect CPU profile: {str(e)}")
-    
+            eprint(f"Failed to collect heap profile: {str(e)}")
+            return None
+
     def _collect_allocs_profile(self, target: Dict[str, Any], duration_sec: int, out_dir: str, 
-                              timestamp: int, command: List[str]) -> Dict[str, Any]:
+                              command: List[str]) -> Dict[str, Any]:
         """Collect allocation profile using tracemalloc"""
-        allocs_profile_path = os.path.join(out_dir, f"allocs_{timestamp}.json")
+        allocs_profile_path = os.path.join(out_dir, "allocs.pb.gz")
         
         try:
             # Create a Python script that runs the target with tracemalloc
@@ -163,6 +263,7 @@ import tracemalloc
 import json
 import sys
 import time
+import gzip
 
 # Start tracemalloc
 tracemalloc.start()
@@ -193,17 +294,9 @@ for stat in top_stats[:100]:  # Top 100 allocations
         'count': stat.count
     }})
 
-# Write allocation data to file
-with open('{allocs_profile_path}', 'w') as f:
-    json.dump({{
-        'metadata': {{
-            'timestamp': time.time(),
-            'durationSec': time.time() - start_time,
-            'service': 'python-cprofile',
-            'scenario': 'allocation-profiling'
-        }},
-        'allocations': allocation_data
-    }}, f)
+# Write allocation data to gzipped file (matching Go plugin format)
+with gzip.open('{allocs_profile_path}', 'wt') as f:
+    json.dump(allocation_data, f)
 
 print("Allocation profile saved to", '{allocs_profile_path}')
 """
@@ -228,34 +321,20 @@ print("Allocation profile saved to", '{allocs_profile_path}')
             if not os.path.exists(allocs_profile_path):
                 raise RuntimeError("tracemalloc failed to create output file")
             
-            # Create artifact bundle
-            bundle = {
-                "metadata": {
-                    "timestamp": int(time.time()),
-                    "durationSec": duration_sec,
-                    "service": "python-cprofile",
-                    "scenario": "allocation-profiling"
-                },
-                "target": target,
-                "artifacts": [
-                    {
-                        "kind": "tracemalloc",
-                        "profileType": "allocs",
-                        "path": allocs_profile_path,
-                        "contentType": "application/json"
-                    }
-                ]
+            # Return artifact in standard format
+            return {
+                "kind": "tracemalloc",
+                "profileType": "allocs",
+                "path": allocs_profile_path,
+                "contentType": "application/octet-stream"
             }
             
-            return bundle
-            
         except subprocess.TimeoutExpired:
-            raise RuntimeError(f"Command timed out after {duration_sec} seconds")
+            eprint(f"Allocation profiling timed out after {duration_sec} seconds")
+            return None
         except Exception as e:
-            # Clean up profile file if it exists
-            if os.path.exists(allocs_profile_path):
-                os.remove(allocs_profile_path)
-            raise RuntimeError(f"Failed to collect allocation profile: {str(e)}")
+            eprint(f"Failed to collect allocation profile: {str(e)}")
+            return None
 
 def main():
     plugin = PythonCProfilePlugin()

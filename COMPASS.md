@@ -8,6 +8,41 @@
 - Checkpoint tag: N/A (direct commit to main)
 - Commit: `<to be filled after commit>`
 - Rollback: `git revert <commit-hash>`
+
+### Iter 20240306-1215 — UTC
+**Type:** Feature
+**Objective:** Enhance Python cProfile plugin with heap memory profiling support
+
+**Acceptance criteria (feature)**
+- [x] Add heap profile collection to Python cProfile plugin
+- [x] Maintain backward compatibility with existing CPU and allocation profiles
+- [x] Update plugin manifest with new capabilities
+- [x] Verify all three profile types (cpu, heap, allocs) work correctly
+- [x] Ensure output format compatibility with analyzer
+
+**Changes**
+- `plugins/src/python-cprofile/main.py`: Added `_collect_heap_profile()` method for heap memory profiling using tracemalloc
+- `plugins/src/python-cprofile/main.py`: Updated plugin info to version 0.4.0 and added "heap" to capabilities
+- `plugins/manifests/python-cprofile.json`: Updated to version 0.4.0 and added "heap" profile capability
+- `examples/python-demo-server/demo.py`: Added comprehensive Python demo server with performance issues
+
+**Verification**
+- Manual testing: All three profile types collected successfully
+- Format validation: JSON output matches expected analyzer input format
+- Backward compatibility: Existing CPU and allocation profiles still work
+- Plugin discovery: Updated manifest reflects new capabilities
+
+**Risk/Notes**
+- No breaking changes - purely additive feature
+- Python plugin now has feature parity with Go plugin for core profiling types
+- Heap profiling uses tracemalloc for comprehensive memory analysis
+- Feature completes Layer 3 goal: "Python cProfile plugin (full implementation)"
+
+**Git / Rollback**
+- Branch: `main`
+- Checkpoint tag: N/A (direct commit to main)
+- Commit: `<to be filled after commit>`
+- Rollback: `git revert <commit-hash>`
 =======
 - Memory profiling provides top allocation sources for optimization
 - Feature completes Layer 3 goal: "Python cProfile plugin (full implementation)"

@@ -9,177 +9,148 @@ import (
 	"github.com/mistral-hackathon/triageprof/internal/model"
 )
 
-// MaxPromptSize is the maximum size of the prompt in characters
-const MaxPromptSize = 12000
-
-// Redaction patterns for sensitive data
-var (
-	hostnamePattern = regexp.MustCompile(`\b(?:localhost|[a-zA-Z0-9\-]+\.[a-zA-Z0-9\-]+\.[a-zA-Z]{2,})\b`)
-	tokenPattern    = regexp.MustCompile(`\b(?:[A-Za-z0-9]{32,}|[A-Za-z0-9_]{20,})\b`)
-	pathPattern     = regexp.MustCompile(`[A-Za-z]:\\|\/[^\/]+\/[^\/]+`)
-)
-
-// BuildPrompt creates a structured prompt from bundle and findings with redaction
+// PromptBuilder creates structured prompts with redaction
 type PromptBuilder struct {
-	Bundle   *model.ProfileBundle
-	Findings *model.FindingsBundle
-	MaxSize  int
+	Bundle    *model.ProfileBundle
+	Findings  *model.FindingsBundle
+	MaxSize   int
 }
 
-func NewPromptBuilder(bundle *model.ProfileBundle, findings *model.FindingsBundle) *PromptBuilder {
+// NewPromptBuilder creates a new prompt builder
+func NewPromptBuilder(bundle *model.ProfileBundle, findings *model.FindingsBundle, maxSize int) *PromptBuilder {
 	return &PromptBuilder{
 		Bundle:   bundle,
 		Findings: findings,
-		MaxSize:  MaxPromptSize,
+		MaxSize:  maxSize,
 	}
 }
 
-// Build creates the final prompt with redaction and size limiting
+// Build creates final prompt with redaction and size limiting
 func (p *PromptBuilder) Build() (string, error) {
-	// Build structured data
-	metadata := p.buildMetadata()
-	findingsSummary := p.buildFindingsSummary()
+	if p.Bundle == nil || p.Findings == nil {
+		return "", fmt.Errorf("bundle and findings are required")
+	}
 
-	// Create prompt template
-	prompt := fmt.Sprintf(`Analyze the following performance findings and provide insights in JSON format matching the schema:
+	var sb strings.Builder
 
-METADATA:
-%s
+	// Header
+	sb.WriteString("Analyze the following performance findings and provide insights.\n")
+	sb.WriteString("Focus on root causes, actionable recommendations, and confidence levels.\n")
+	sb.WriteString("Be concise and technical.\n\n")
 
-FINDINGS SUMMARY:
-%s
+	// Metadata (redacted)
+	sb.WriteString("=== METADATA ===\n")
+	sb.WriteString(fmt.Sprintf("Service: %s\n", redactSensitiveInfo(p.Bundle.Metadata.Service)))
+	sb.WriteString(fmt.Sprintf("Scenario: %s\n", redactSensitiveInfo(p.Bundle.Metadata.Scenario)))
+	sb.WriteString(fmt.Sprintf("Duration: %d seconds\n", p.Bundle.Metadata.DurationSec))
+	sb.WriteString(fmt.Sprintf("Timestamp: %s\n\n", p.Bundle.Metadata.Timestamp.Format("2006-01-02 15:04:05")))
 
-INSTRUCTIONS:
-1. Generate an executive summary with overall severity assessment
-2. Identify top 3 risks with impact/likelihood
-3. Suggest top 3 actions with priority/effort estimates
-4. For each finding, provide narrative, likely root causes, suggestions, and next measurements
-5. Include caveats about limitations and confidence levels
-6. Output JSON ONLY, no markdown or explanations`,
-		metadata, findingsSummary)
+	// Findings summary
+	sb.WriteString("=== FINDINGS SUMMARY ===\n")
+	sb.WriteString(fmt.Sprintf("Overall Score: %d/100\n", p.Findings.Summary.OverallScore))
+	sb.WriteString(fmt.Sprintf("Top Issues: %s\n\n", strings.Join(p.Findings.Summary.TopIssueTags, ", ")))
 
-	// Check size limit
+	// Per-finding details (limited to top 10)
+	for i, finding := range p.Findings.Findings {
+		if i >= 10 {
+			break
+		}
+
+		sb.WriteString(fmt.Sprintf("=== FINDING %d: %s ===\n", i+1, finding.Category))
+		sb.WriteString(fmt.Sprintf("Title: %s\n", finding.Title))
+		sb.WriteString(fmt.Sprintf("Severity: %s\n", finding.Severity))
+		sb.WriteString(fmt.Sprintf("Score: %d\n", finding.Score))
+		sb.WriteString(fmt.Sprintf("Profile Type: %s\n", finding.Evidence.ProfileType))
+		sb.WriteString(fmt.Sprintf("Artifact: %s\n\n", redactPath(finding.Evidence.ArtifactPath)))
+
+		// Top stack frames (limited to 5)
+		if len(finding.Top) > 0 {
+			sb.WriteString("Top Hotspots:\n")
+			for j, frame := range finding.Top {
+				if j >= 5 {
+					break
+				}
+				sb.WriteString(fmt.Sprintf("  %d. %s (%s:%d) - Cum: %.2f, Flat: %.2f\n",
+					j+1,
+					reactStackFrame(frame.Function),
+					reactPath(frame.File),
+					frame.Line,
+					frame.Cum,
+					frame.Flat))
+			}
+			sb.WriteString("\n")
+		}
+	}
+
+	// Instructions
+	sb.WriteString("=== INSTRUCTIONS ===\n")
+	sb.WriteString("Provide insights in JSON format matching the InsightsBundle schema.\n")
+	sb.WriteString("Include executive summary, top risks, top actions, and per-finding analysis.\n")
+	sb.WriteString("Use confidence scores (0-100) for all insights.\n")
+	sb.WriteString("Be specific about root causes and actionable recommendations.\n")
+
+	prompt := sb.String()
+
+	// Validate size
 	if len(prompt) > p.MaxSize {
-		return "", fmt.Errorf("prompt size %d exceeds maximum %d characters", len(prompt), p.MaxSize)
+		return "", fmt.Errorf("prompt exceeds maximum size of %d characters (actual: %d)", p.MaxSize, len(prompt))
 	}
 
 	return prompt, nil
 }
 
-// buildMetadata creates a redacted metadata section
-func (p *PromptBuilder) buildMetadata() string {
-	if p.Bundle == nil {
-		return "No metadata available"
+// redactSensitiveInfo removes sensitive information from strings
+func redactSensitiveInfo(input string) string {
+	if input == "" {
+		return input
 	}
 
-	// Redact sensitive information from target
-	targetURL := p.redactSensitiveInfo(p.Bundle.Target.BaseURL)
-
-	// Build artifact summary
-	var artifacts []string
-	for _, artifact := range p.Bundle.Artifacts {
-		artifacts = append(artifacts, fmt.Sprintf("- %s (%s)",
-			p.redactPath(artifact.ProfileType),
-			p.redactPath(artifact.Kind)))
+	// Common sensitive patterns
+	patterns := []*regexp.Regexp{
+		regexp.MustCompile(`(?i)(token|secret|key|password|credential)[=: ]*[A-Za-z0-9]{8,}`),
+		regexp.MustCompile(`(?i)(localhost|127\.0\.0\.1|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})`),
+		regexp.MustCompile(`(?i)(http|https)://[^\s]+`),
 	}
 
-	return fmt.Sprintf(`Service: %s
-Scenario: %s
-Duration: %d seconds
-Target: %s
-Profiles Collected: %s
-Artifacts: %d total
-Timestamp: %s`,
-		p.redactSensitiveInfo(p.Bundle.Metadata.Service),
-		p.redactSensitiveInfo(p.Bundle.Metadata.Scenario),
-		p.Bundle.Metadata.DurationSec,
-		targetURL,
-		strings.Join(artifacts, ", "),
-		len(p.Bundle.Artifacts),
-		p.Bundle.Metadata.Timestamp.Format("2006-01-02 15:04:05"))
+	result := input
+	for _, pattern := range patterns {
+		result = pattern.ReplaceAllString(result, "[REDACTED]")
+	}
+
+	// Limit length
+	if len(result) > 200 {
+		result = result[:200] + "..."
+	}
+
+	return result
 }
 
-// buildFindingsSummary creates a redacted findings summary
-func (p *PromptBuilder) buildFindingsSummary() string {
-	if p.Findings == nil || len(p.Findings.Findings) == 0 {
-		return "No findings available"
+// redactPath keeps only filename and removes directory paths
+func redactPath(path string) string {
+	if path == "" {
+		return path
+	}
+	return filepath.Base(path)
+}
+
+// redactStackFrame sanitizes function names and files
+func redactStackFrame(function string) string {
+	if function == "" {
+		return function
 	}
 
-	var findingsSummary strings.Builder
-	findingsSummary.WriteString(fmt.Sprintf("Overall Score: %d/100\n", p.Findings.Summary.OverallScore))
-	findingsSummary.WriteString(fmt.Sprintf("Top Issue Tags: %s\n\n", strings.Join(p.Findings.Summary.TopIssueTags, ", ")))
-
-	// Limit to top 5 findings to control prompt size
-	findings := p.Findings.Findings
-	if len(findings) > 5 {
-		findings = findings[:5]
-	}
-
-	for i, finding := range findings {
-		findingsSummary.WriteString(fmt.Sprintf("\nFINDING %d: %s\n", i+1, finding.Title))
-		findingsSummary.WriteString(fmt.Sprintf("Category: %s\n", finding.Category))
-		findingsSummary.WriteString(fmt.Sprintf("Severity: %s\n", finding.Severity))
-		findingsSummary.WriteString(fmt.Sprintf("Score: %d\n", finding.Score))
-		findingsSummary.WriteString("Top Stack Frames:\n")
-
-		// Limit to top 10 frames and redact sensitive info
-		frames := finding.Top
-		if len(frames) > 10 {
-			frames = frames[:10]
+	// Remove sensitive function names
+	sensitivePrefixes := []string{"auth", "Auth", "token", "Token", "secret", "Secret"}
+	for _, prefix := range sensitivePrefixes {
+		if strings.HasPrefix(function, prefix) {
+			return "[REDACTED_FUNCTION]"
 		}
-
-		for _, frame := range frames {
-			findingsSummary.WriteString(fmt.Sprintf("  - %s (%.1fs cum, %.1fs flat)\n",
-				p.redactStackFrame(frame),
-				frame.Cum,
-				frame.Flat))
-		}
-
-		findingsSummary.WriteString(fmt.Sprintf("\nEvidence: %s profile from %s\n",
-			p.redactPath(finding.Evidence.ProfileType),
-			p.redactPath(filepath.Base(finding.Evidence.ArtifactPath))))
 	}
 
-	return findingsSummary.String()
-}
-
-// redactSensitiveInfo removes sensitive data from strings
-func (p *PromptBuilder) redactSensitiveInfo(text string) string {
-	// Redact hostnames
-	text = hostnamePattern.ReplaceAllString(text, "[REDACTED_HOSTNAME]")
-	// Redact long tokens
-	text = tokenPattern.ReplaceAllString(text, "[REDACTED_TOKEN]")
-	// Redact paths
-	text = pathPattern.ReplaceAllString(text, "[REDACTED_PATH]")
-	// Truncate long strings
-	if len(text) > 200 {
-		text = text[:200] + "..."
-	}
-	return text
-}
-
-// redactPath removes sensitive path information
-func (p *PromptBuilder) redactPath(path string) string {
-	// Remove absolute paths, keep only filename/extension
-	base := filepath.Base(path)
-	if base == "." || base == "/" {
-		return "[REDACTED_PATH]"
-	}
-	return base
-}
-
-// redactStackFrame redacts sensitive information from stack frames
-func (p *PromptBuilder) redactStackFrame(frame model.StackFrame) string {
-	function := p.redactSensitiveInfo(frame.Function)
-	_ = p.redactSensitiveInfo(frame.File)
-
-	// Limit line number to reasonable range
-	line := frame.Line
-	if line < 0 {
-		line = 0
-	} else if line > 100000 {
-		line = 100000
+	// Limit length
+	if len(function) > 100 {
+		return function[:100] + "..."
 	}
 
-	return fmt.Sprintf("%s (line %d)", function, line)
+	return function
 }
