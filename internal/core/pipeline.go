@@ -60,6 +60,8 @@ func (p *Pipeline) CollectWithTarget(ctx context.Context, pluginName, targetURL,
 	requestedProfiles := []string{"cpu", "heap", "mutex", "block", "goroutine", "allocs"}
 	if targetType == "python" {
 		requestedProfiles = []string{"cpu", "heap", "allocs", "memory-leak"}
+	} else if targetType == "node" {
+		requestedProfiles = []string{"cpu", "heap", "allocs"}
 	}
 	
 	// Validate profile compatibility
@@ -84,8 +86,8 @@ func (p *Pipeline) CollectWithTarget(ctx context.Context, pluginName, targetURL,
 	target := model.Target{Type: targetType}
 	if targetType == "url" {
 		target.BaseURL = targetURL
-	} else if targetType == "python" {
-		// For Python targets, parse the command string into a list
+	} else if targetType == "python" || targetType == "node" {
+		// For Python and Node.js targets, parse the command string into a list
 		// Simple shell-like parsing (basic space splitting, no complex shell features)
 		cmdParts := strings.Fields(targetCommand)
 		target.Command = cmdParts
@@ -100,6 +102,8 @@ func (p *Pipeline) CollectWithTarget(ctx context.Context, pluginName, targetURL,
 	profiles := []string{"cpu", "heap", "mutex", "block", "goroutine", "allocs"}
 	if targetType == "python" {
 		profiles = []string{"cpu", "heap", "allocs", "memory-leak"}
+	} else if targetType == "node" {
+		profiles = []string{"cpu", "heap", "allocs"}
 	}
 	
 	req := model.CollectRequest{

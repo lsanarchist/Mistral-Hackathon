@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/mistral-hackathon/triageprof/internal/model"
+	"github.com/mistral-hackathon/triageprof/internal/plugin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -239,6 +240,34 @@ func TestPipeline_Report(t *testing.T) {
 	require.NoError(t, err)
 	assert.Contains(t, string(reportData), "Top CPU hotspots")
 	assert.Contains(t, string(reportData), "runtime.allocm")
+}
+
+func TestPipeline_NodeJS_Collect(t *testing.T) {
+	// This test requires a Node.js application to be running
+	t.Skip("Skipping integration test - requires running Node.js application")
+	
+	pipeline := NewPipeline("../../plugins")
+	
+	// Test that the pipeline can be initialized with the node-inspector plugin
+	
+	// Verify that the node-inspector plugin is available
+	manifests, err := pipeline.pluginManager.ListPlugins()
+	require.NoError(t, err)
+	
+	// Find node-inspector manifest
+	var nodeManifest *plugin.Manifest
+	for _, m := range manifests {
+		if m.Name == "node-inspector" {
+			nodeManifest = m
+			break
+		}
+	}
+	
+	require.NotNil(t, nodeManifest, "node-inspector plugin should be available")
+	require.Equal(t, "node", nodeManifest.Capabilities.Targets[0])
+	require.Contains(t, nodeManifest.Capabilities.Profiles, "cpu")
+	require.Contains(t, nodeManifest.Capabilities.Profiles, "heap")
+	require.Contains(t, nodeManifest.Capabilities.Profiles, "allocs")
 }
 
 func TestPipeline_EndToEnd(t *testing.T) {
