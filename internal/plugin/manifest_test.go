@@ -3,331 +3,221 @@ package plugin
 import (
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestLoadManifest_StrictParsing(t *testing.T) {
+func TestLoadManifest(t *testing.T) {
 	t.Run("valid manifest", func(t *testing.T) {
-		manifest := `{
-			"name": "test-plugin",
-			"version": "1.0.0",
-			"sdkVersion": "1.0",
-			"capabilities": {
-				"targets": ["url"],
-				"profiles": ["cpu", "heap"]
-			},
-			"description": "Test plugin",
-			"author": "Test Author"
-		}`
-
-		tmpDir := t.TempDir()
-		manifestPath := filepath.Join(tmpDir, "test.json")
-		if err := os.WriteFile(manifestPath, []byte(manifest), 0644); err != nil {
-			t.Fatalf("Failed to create test manifest: %v", err)
-		}
-
-		m, err := LoadManifest(manifestPath)
-		if err != nil {
-			t.Fatalf("LoadManifest failed: %v", err)
-		}
-
-		if m.Name != "test-plugin" {
-			t.Errorf("Expected name 'test-plugin', got %q", m.Name)
-		}
-		if m.Version != "1.0.0" {
-			t.Errorf("Expected version '1.0.0', got %q", m.Version)
-		}
-		if m.SDKVersion != "1.0" {
-			t.Errorf("Expected sdkVersion '1.0', got %q", m.SDKVersion)
-		}
-		if len(m.Capabilities.Targets) != 1 || m.Capabilities.Targets[0] != "url" {
-			t.Errorf("Expected targets ['url'], got %v", m.Capabilities.Targets)
-		}
-		if len(m.Capabilities.Profiles) != 2 {
-			t.Errorf("Expected 2 profiles, got %d", len(m.Capabilities.Profiles))
-		}
+		manifest, err := LoadManifest("../../plugins/manifests/go-pprof-http.json")
+		require.NoError(t, err)
+		assert.Equal(t, "go-pprof-http", manifest.Name)
+		assert.Equal(t, "0.1.0", manifest.Version)
+		assert.Equal(t, "1.0", manifest.SDKVersion)
+		assert.Contains(t, manifest.Capabilities.Targets, "url")
+		assert.Contains(t, manifest.Capabilities.Profiles, "cpu")
 	})
 
-	t.Run("unknown field fails", func(t *testing.T) {
-		manifest := `{
-			"name": "test-plugin",
-			"version": "1.0.0",
-			"sdkVersion": "1.0",
-			"capabilities": {
-				"targets": ["url"],
-				"profiles": ["cpu"]
-			},
-			"unknownField": "should fail"
-		}`
+	t.Run("invalid JSON", func(t *testing.T) {
+		// Create temporary invalid JSON file
+		tempDir := t.TempDir()
+		invalidPath := filepath.Join(tempDir, "invalid.json")
+		err := os.WriteFile(invalidPath, []byte("{invalid json}"), 0644)
+		require.NoError(t, err)
 
-		tmpDir := t.TempDir()
-		manifestPath := filepath.Join(tmpDir, "test.json")
-		if err := os.WriteFile(manifestPath, []byte(manifest), 0644); err != nil {
-			t.Fatalf("Failed to create test manifest: %v", err)
-		}
+		_, err = LoadManifest(invalidPath)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to parse manifest file")
+	})
 
-		_, err := LoadManifest(manifestPath)
-		if err == nil {
-			t.Fatal("Expected error for unknown field, got nil")
-		}
-		if !strings.Contains(err.Error(), "unknown field") {
-			t.Errorf("Expected error about unknown field, got: %v", err)
-		}
+	t.Run("unknown field", func(t *testing.T) {
+		// Create temporary manifest with unknown field
+		tempDir := t.TempDir()
+		unknownPath := filepath.Join(tempDir, "unknown.json")
+		content := `{"name": "test", "version": "1.0", "sdkVersion": "1.0", "unknownField": "value"}`
+		err := os.WriteFile(unknownPath, []byte(content), 0644)
+		require.NoError(t, err)
+
+		_, err = LoadManifest(unknownPath)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "unknown field")
 	})
 
 	t.Run("missing required field", func(t *testing.T) {
-		manifest := `{
-			"version": "1.0.0",
-			"sdkVersion": "1.0",
-			"capabilities": {
-				"targets": ["url"],
-				"profiles": ["cpu"]
-			}
-		}` // Missing "name"
+		// Create temporary manifest missing name field
+		tempDir := t.TempDir()
+		missingPath := filepath.Join(tempDir, "missing.json")
+		content := `{"version": "1.0", "sdkVersion": "1.0", "capabilities": {"targets": ["url"], "profiles": ["cpu"]}}`
+		err := os.WriteFile(missingPath, []byte(content), 0644)
+		require.NoError(t, err)
 
-		tmpDir := t.TempDir()
-		manifestPath := filepath.Join(tmpDir, "test.json")
-		if err := os.WriteFile(manifestPath, []byte(manifest), 0644); err != nil {
-			t.Fatalf("Failed to create test manifest: %v", err)
-		}
-
-		_, err := LoadManifest(manifestPath)
-		if err == nil {
-			t.Fatal("Expected error for missing name, got nil")
-		}
-		if !strings.Contains(err.Error(), "name is required") {
-			t.Errorf("Expected error about missing name, got: %v", err)
-		}
+		_, err = LoadManifest(missingPath)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "missing required field 'name'")
 	})
 }
 
 func TestDiscoverManifests(t *testing.T) {
-	t.Run("discovers all json files", func(t *testing.T) {
-		tmpDir := t.TempDir()
-		manifestsDir := filepath.Join(tmpDir, "manifests")
-		if err := os.MkdirAll(manifestsDir, 0755); err != nil {
-			t.Fatalf("Failed to create manifests dir: %v", err)
-		}
+	t.Run("discover valid manifests", func(t *testing.T) {
+		manifests, err := DiscoverManifests("../../plugins/manifests")
+		require.NoError(t, err)
+		assert.NotEmpty(t, manifests)
+		assert.Equal(t, "go-pprof-http", manifests[0].Name)
+	})
 
-		// Create valid manifest
-		validManifest := `{
-			"name": "plugin-a",
-			"version": "1.0.0",
-			"sdkVersion": "1.0",
-			"capabilities": {
-				"targets": ["url"],
-				"profiles": ["cpu"]
-			}
-		}`
-		if err := os.WriteFile(filepath.Join(manifestsDir, "plugin-a.json"), []byte(validManifest), 0644); err != nil {
-			t.Fatalf("Failed to create valid manifest: %v", err)
-		}
+	t.Run("empty directory", func(t *testing.T) {
+		// Create empty temp directory
+		tempDir := t.TempDir()
+		manifests, err := DiscoverManifests(tempDir)
+		require.NoError(t, err)
+		assert.Empty(t, manifests)
+	})
 
-		// Create another valid manifest
-		validManifest2 := `{
-			"name": "plugin-b",
-			"version": "2.0.0",
-			"sdkVersion": "1.0",
-			"capabilities": {
-				"targets": ["url"],
-				"profiles": ["heap"]
-			}
-		}`
-		if err := os.WriteFile(filepath.Join(manifestsDir, "plugin-b.json"), []byte(validManifest2), 0644); err != nil {
-			t.Fatalf("Failed to create valid manifest: %v", err)
-		}
+	t.Run("mixed valid and invalid files", func(t *testing.T) {
+		// Create temp directory with both valid and invalid manifests
+		tempDir := t.TempDir()
 
-		// Create invalid manifest (should be skipped with warning)
-		invalidManifest := `{
-			"name": "plugin-invalid",
-			"version": "1.0.0",
-			// Missing sdkVersion
-			"capabilities": {
-				"targets": ["url"],
-				"profiles": ["cpu"]
-			}
-		}`
-		if err := os.WriteFile(filepath.Join(manifestsDir, "plugin-invalid.json"), []byte(invalidManifest), 0644); err != nil {
-			t.Fatalf("Failed to create invalid manifest: %v", err)
-		}
+		// Valid manifest
+		validPath := filepath.Join(tempDir, "valid.json")
+		validContent := `{"name": "valid-plugin", "version": "1.0", "sdkVersion": "1.0", "capabilities": {"targets": ["url"], "profiles": ["cpu"]}}`
+		err := os.WriteFile(validPath, []byte(validContent), 0644)
+		require.NoError(t, err)
 
-		// Create non-json file (should be ignored)
-		if err := os.WriteFile(filepath.Join(manifestsDir, "readme.txt"), []byte("not a manifest"), 0644); err != nil {
-			t.Fatalf("Failed to create non-json file: %v", err)
-		}
+		// Invalid manifest
+		invalidPath := filepath.Join(tempDir, "invalid.json")
+		err = os.WriteFile(invalidPath, []byte("{invalid}"), 0644)
+		require.NoError(t, err)
 
-		manifests, err := DiscoverManifests(manifestsDir)
-		if err != nil {
-			t.Fatalf("DiscoverManifests failed: %v", err)
-		}
-
-		// Should find 2 valid manifests
-		if len(manifests) != 2 {
-			t.Errorf("Expected 2 manifests, got %d", len(manifests))
-		}
-
-		// Check sorting
-		if manifests[0].Name != "plugin-a" {
-			t.Errorf("Expected first manifest to be 'plugin-a', got %q", manifests[0].Name)
-		}
-		if manifests[1].Name != "plugin-b" {
-			t.Errorf("Expected second manifest to be 'plugin-b', got %q", manifests[1].Name)
-		}
+		// Should only return valid manifests
+		manifests, err := DiscoverManifests(tempDir)
+		require.NoError(t, err)
+		assert.Len(t, manifests, 1)
+		assert.Equal(t, "valid-plugin", manifests[0].Name)
 	})
 }
 
 func TestResolvePlugin(t *testing.T) {
-	t.Run("fails when binary missing", func(t *testing.T) {
-		tmpDir := t.TempDir()
-		manifestsDir := filepath.Join(tmpDir, "manifests")
-		binDir := filepath.Join(tmpDir, "bin")
-
-		if err := os.MkdirAll(manifestsDir, 0755); err != nil {
-			t.Fatalf("Failed to create manifests dir: %v", err)
-		}
-		if err := os.MkdirAll(binDir, 0755); err != nil {
-			t.Fatalf("Failed to create bin dir: %v", err)
-		}
-
-		// Create manifest but no binary
-		manifest := `{
-			"name": "missing-binary",
-			"version": "1.0.0",
-			"sdkVersion": "1.0",
-			"capabilities": {
-				"targets": ["url"],
-				"profiles": ["cpu"]
-			}
-		}`
-		if err := os.WriteFile(filepath.Join(manifestsDir, "missing-binary.json"), []byte(manifest), 0644); err != nil {
-			t.Fatalf("Failed to create manifest: %v", err)
-		}
-
-		_, _, err := ResolvePlugin(manifestsDir, binDir, "missing-binary")
-		if err == nil {
-			t.Fatal("Expected error for missing binary, got nil")
-		}
-		if !strings.Contains(err.Error(), "binary missing") {
-			t.Errorf("Expected error about missing binary, got: %v", err)
-		}
+	t.Run("resolve existing plugin", func(t *testing.T) {
+		manifest, binaryPath, err := ResolvePlugin("../../plugins/manifests", "../../plugins/bin", "go-pprof-http")
+		require.NoError(t, err)
+		assert.Equal(t, "go-pprof-http", manifest.Name)
+		assert.Contains(t, binaryPath, "go-pprof-http")
 	})
 
-	t.Run("succeeds when manifest and binary present", func(t *testing.T) {
-		tmpDir := t.TempDir()
-		manifestsDir := filepath.Join(tmpDir, "manifests")
-		binDir := filepath.Join(tmpDir, "bin")
+	t.Run("plugin not found", func(t *testing.T) {
+		_, _, err := ResolvePlugin("../../plugins/manifests", "../../plugins/bin", "nonexistent")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "plugin nonexistent not found")
+		assert.Contains(t, err.Error(), "Available plugins:")
+	})
 
-		if err := os.MkdirAll(manifestsDir, 0755); err != nil {
-			t.Fatalf("Failed to create manifests dir: %v", err)
-		}
-		if err := os.MkdirAll(binDir, 0755); err != nil {
-			t.Fatalf("Failed to create bin dir: %v", err)
-		}
+	t.Run("missing binary", func(t *testing.T) {
+		// Create temp manifest directory
+		tempDir := t.TempDir()
+		manifestDir := filepath.Join(tempDir, "manifests")
+		binDir := filepath.Join(tempDir, "bin")
+		err := os.MkdirAll(manifestDir, 0755)
+		require.NoError(t, err)
+		err = os.MkdirAll(binDir, 0755)
+		require.NoError(t, err)
 
 		// Create manifest
-		manifest := `{
-			"name": "valid-plugin",
-			"version": "1.0.0",
-			"sdkVersion": "1.0",
-			"capabilities": {
-				"targets": ["url"],
-				"profiles": ["cpu", "heap"]
-			},
-			"description": "Valid plugin for testing"
-		}`
-		if err := os.WriteFile(filepath.Join(manifestsDir, "valid-plugin.json"), []byte(manifest), 0644); err != nil {
-			t.Fatalf("Failed to create manifest: %v", err)
-		}
+		manifestPath := filepath.Join(manifestDir, "test.json")
+		content := `{"name": "test-plugin", "version": "1.0", "sdkVersion": "1.0", "capabilities": {"targets": ["url"], "profiles": ["cpu"]}}`
+		err = os.WriteFile(manifestPath, []byte(content), 0644)
+		require.NoError(t, err)
 
-		// Create dummy executable
-		dummyBinary := filepath.Join(binDir, "valid-plugin")
-		if err := os.WriteFile(dummyBinary, []byte("#!/bin/sh\necho 'dummy plugin'"), 0755); err != nil {
-			t.Fatalf("Failed to create dummy binary: %v", err)
-		}
-
-		m, binaryPath, err := ResolvePlugin(manifestsDir, binDir, "valid-plugin")
-		if err != nil {
-			t.Fatalf("ResolvePlugin failed: %v", err)
-		}
-
-		if m.Name != "valid-plugin" {
-			t.Errorf("Expected manifest name 'valid-plugin', got %q", m.Name)
-		}
-		if binaryPath != dummyBinary {
-			t.Errorf("Expected binary path %q, got %q", dummyBinary, binaryPath)
-		}
+		// Try to resolve (should fail due to missing binary)
+		_, _, err = ResolvePlugin(manifestDir, binDir, "test-plugin")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "binary missing")
 	})
 
-	t.Run("fails for non-existent plugin", func(t *testing.T) {
-		tmpDir := t.TempDir()
-		manifestsDir := filepath.Join(tmpDir, "manifests")
-		binDir := filepath.Join(tmpDir, "bin")
+	t.Run("SDK version mismatch", func(t *testing.T) {
+		// Create temp manifest directory
+		tempDir := t.TempDir()
+		manifestDir := filepath.Join(tempDir, "manifests")
+		binDir := filepath.Join(tempDir, "bin")
+		err := os.MkdirAll(manifestDir, 0755)
+		require.NoError(t, err)
+		err = os.MkdirAll(binDir, 0755)
+		require.NoError(t, err)
 
-		if err := os.MkdirAll(manifestsDir, 0755); err != nil {
-			t.Fatalf("Failed to create manifests dir: %v", err)
-		}
+		// Create manifest with incompatible SDK version
+		manifestPath := filepath.Join(manifestDir, "test.json")
+		content := `{"name": "test-plugin", "version": "1.0", "sdkVersion": "2.0", "capabilities": {"targets": ["url"], "profiles": ["cpu"]}}`
+		err = os.WriteFile(manifestPath, []byte(content), 0644)
+		require.NoError(t, err)
 
-		_, _, err := ResolvePlugin(manifestsDir, binDir, "non-existent")
-		if err == nil {
-			t.Fatal("Expected error for non-existent plugin, got nil")
-		}
-		if !strings.Contains(err.Error(), "not found") {
-			t.Errorf("Expected error about plugin not found, got: %v", err)
-		}
+		// Create dummy binary
+		binaryPath := filepath.Join(binDir, "test-plugin")
+		err = os.WriteFile(binaryPath, []byte("#!/bin/sh"), 0755)
+		require.NoError(t, err)
+
+		// Try to resolve (should fail due to SDK version mismatch)
+		_, _, err = ResolvePlugin(manifestDir, binDir, "test-plugin")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "requires sdkVersion 2.0, but core supports 1.0")
 	})
 }
 
-func TestManifestValidation(t *testing.T) {
-	t.Run("target validation", func(t *testing.T) {
-		manifest := &Manifest{
-			Name:       "test-plugin",
-			Version:    "1.0.0",
-			SDKVersion: "1.0",
-			Capabilities: Capabilities{
-				Targets:  []string{"url", "file"},
-				Profiles: []string{"cpu"},
-			},
-		}
+func TestValidateTarget(t *testing.T) {
+	manifest := &Manifest{
+		Name:       "test-plugin",
+		Version:    "1.0",
+		SDKVersion: "1.0",
+		Capabilities: Capabilities{
+			Targets:  []string{"url", "python"},
+			Profiles: []string{"cpu", "heap"},
+		},
+	}
 
-		// Valid target
-		if err := manifest.ValidateTarget("url"); err != nil {
-			t.Errorf("Expected no error for valid target, got: %v", err)
-		}
-
-		// Invalid target
-		err := manifest.ValidateTarget("database")
-		if err == nil {
-			t.Fatal("Expected error for invalid target, got nil")
-		}
-		if !strings.Contains(err.Error(), "not supported") {
-			t.Errorf("Expected error about unsupported target, got: %v", err)
-		}
+	t.Run("supported target", func(t *testing.T) {
+		err := manifest.ValidateTarget("url")
+		require.NoError(t, err)
 	})
 
-	t.Run("profile validation", func(t *testing.T) {
-		manifest := &Manifest{
-			Name:       "test-plugin",
-			Version:    "1.0.0",
-			SDKVersion: "1.0",
-			Capabilities: Capabilities{
-				Targets:  []string{"url"},
-				Profiles: []string{"cpu", "heap"},
-			},
-		}
+	t.Run("unsupported target", func(t *testing.T) {
+		err := manifest.ValidateTarget("database")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "target type 'database' not supported")
+		assert.Contains(t, err.Error(), "Supported targets: url, python")
+	})
+}
 
-		// Valid profiles
-		if err := manifest.ValidateProfiles([]string{"cpu"}); err != nil {
-			t.Errorf("Expected no error for valid profiles, got: %v", err)
-		}
+func TestValidateProfiles(t *testing.T) {
+	manifest := &Manifest{
+		Name:       "test-plugin",
+		Version:    "1.0",
+		SDKVersion: "1.0",
+		Capabilities: Capabilities{
+			Targets:  []string{"url"},
+			Profiles: []string{"cpu", "heap"},
+		},
+	}
 
-		// Invalid profile
+	t.Run("supported profiles", func(t *testing.T) {
+		err := manifest.ValidateProfiles([]string{"cpu", "heap"})
+		require.NoError(t, err)
+	})
+
+	t.Run("mixed supported and unsupported", func(t *testing.T) {
 		err := manifest.ValidateProfiles([]string{"cpu", "mutex"})
-		if err == nil {
-			t.Fatal("Expected error for invalid profile, got nil")
-		}
-		if !strings.Contains(err.Error(), "not supported") {
-			t.Errorf("Expected error about unsupported profile, got: %v", err)
-		}
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "profiles 'mutex' not supported")
+		assert.Contains(t, err.Error(), "Supported profiles: cpu, heap")
+	})
+
+	t.Run("all unsupported", func(t *testing.T) {
+		err := manifest.ValidateProfiles([]string{"mutex", "block"})
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "profiles 'mutex, block' not supported")
+	})
+
+	t.Run("empty list", func(t *testing.T) {
+		err := manifest.ValidateProfiles([]string{})
+		require.NoError(t, err)
 	})
 }

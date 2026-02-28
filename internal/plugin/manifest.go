@@ -12,12 +12,12 @@ import (
 
 // Manifest represents a plugin manifest file
 type Manifest struct {
-	Name         string       `json:"name"`
-	Version      string       `json:"version"`
-	SDKVersion   string       `json:"sdkVersion"`
+	Name        string      `json:"name"`
+	Version     string      `json:"version"`
+	SDKVersion  string      `json:"sdkVersion"`
 	Capabilities Capabilities `json:"capabilities"`
-	Description  string       `json:"description,omitempty"`
-	Author       string       `json:"author,omitempty"`
+	Description string      `json:"description,omitempty"`
+	Author      string      `json:"author,omitempty"`
 }
 
 // Capabilities defines what a plugin can handle
@@ -33,26 +33,26 @@ const SDKVersionCompatibility = "1.0"
 func LoadManifest(path string) (*Manifest, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read manifest %s: %w", path, err)
+		return nil, fmt.Errorf("failed to read manifest file %s: %w", path, err)
 	}
 
+	var manifest Manifest
 	decoder := json.NewDecoder(strings.NewReader(string(data)))
 	decoder.DisallowUnknownFields()
 
-	var manifest Manifest
 	if err := decoder.Decode(&manifest); err != nil {
-		return nil, fmt.Errorf("failed to parse manifest %s: %w", path, err)
+		return nil, fmt.Errorf("failed to parse manifest file %s: %w", path, err)
 	}
 
-	// Basic validation
+	// Validate required fields
 	if manifest.Name == "" {
-		return nil, fmt.Errorf("manifest %s: name is required", path)
+		return nil, fmt.Errorf("manifest %s is missing required field 'name'", path)
 	}
 	if manifest.Version == "" {
-		return nil, fmt.Errorf("manifest %s: version is required", path)
+		return nil, fmt.Errorf("manifest %s is missing required field 'version'", path)
 	}
 	if manifest.SDKVersion == "" {
-		return nil, fmt.Errorf("manifest %s: sdkVersion is required", path)
+		return nil, fmt.Errorf("manifest %s is missing required field 'sdkVersion'", path)
 	}
 
 	return &manifest, nil
@@ -66,18 +66,13 @@ func DiscoverManifests(manifestsDir string) ([]*Manifest, error) {
 		if err != nil {
 			return err
 		}
-		if d.IsDir() {
-			return nil
-		}
 
-		// Only process .json files
-		if filepath.Ext(path) != ".json" {
+		if d.IsDir() || filepath.Ext(path) != ".json" {
 			return nil
 		}
 
 		manifest, err := LoadManifest(path)
 		if err != nil {
-			// Log warning but continue with other manifests
 			fmt.Fprintf(os.Stderr, "Warning: skipping invalid manifest %s: %v\n", path, err)
 			return nil
 		}
@@ -87,10 +82,10 @@ func DiscoverManifests(manifestsDir string) ([]*Manifest, error) {
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to discover manifests: %w", err)
+		return nil, fmt.Errorf("failed to walk manifests directory %s: %w", manifestsDir, err)
 	}
 
-	// Sort by name for consistent ordering
+	// Sort by plugin name for consistent ordering
 	sort.Slice(manifests, func(i, j int) bool {
 		return manifests[i].Name < manifests[j].Name
 	})
@@ -102,73 +97,73 @@ func DiscoverManifests(manifestsDir string) ([]*Manifest, error) {
 func ResolvePlugin(manifestsDir, binDir, name string) (*Manifest, string, error) {
 	manifests, err := DiscoverManifests(manifestsDir)
 	if err != nil {
-		return nil, "", fmt.Errorf("failed to discover plugins: %w", err)
+		return nil, "", fmt.Errorf("failed to discover manifests: %w", err)
 	}
 
-	// Find the requested plugin
-	var manifest *Manifest
+	var foundManifest *Manifest
 	for _, m := range manifests {
 		if m.Name == name {
-			manifest = m
+			foundManifest = m
 			break
 		}
 	}
 
-	if manifest == nil {
-		available := make([]string, 0, len(manifests))
-		for _, m := range manifests {
-			available = append(available, m.Name)
+	if foundManifest == nil {
+		available := make([]string, len(manifests))
+		for i, m := range manifests {
+			available[i] = m.Name
 		}
-		return nil, "", fmt.Errorf("plugin %q not found. Available plugins: %s", name, strings.Join(available, ", "))
+		return nil, "", fmt.Errorf("plugin %s not found. Available plugins: %s", name, strings.Join(available, ", "))
 	}
 
-	// Check SDK compatibility
-	if manifest.SDKVersion != SDKVersionCompatibility {
-		return nil, "", fmt.Errorf("plugin %s requires sdkVersion %s, but core supports %s",
-			manifest.Name, manifest.SDKVersion, SDKVersionCompatibility)
+	// Check SDK version compatibility
+	if foundManifest.SDKVersion != SDKVersionCompatibility {
+		return nil, "", fmt.Errorf("plugin %s requires sdkVersion %s, but core supports %s", 
+			foundManifest.Name, foundManifest.SDKVersion, SDKVersionCompatibility)
 	}
 
-	// Check binary exists
-	binaryPath := filepath.Join(binDir, manifest.Name)
+	// Validate binary exists
+	binaryPath := filepath.Join(binDir, foundManifest.Name)
 	if _, err := os.Stat(binaryPath); err != nil {
 		if os.IsNotExist(err) {
-			return nil, "", fmt.Errorf("plugin %s manifest found but binary missing at %s", manifest.Name, binaryPath)
+			return nil, "", fmt.Errorf("plugin %s manifest found but binary missing at path %s", foundManifest.Name, binaryPath)
 		}
-		return nil, "", fmt.Errorf("failed to access plugin binary %s: %w", binaryPath, err)
+		return nil, "", fmt.Errorf("failed to check plugin %s binary: %w", foundManifest.Name, err)
 	}
 
-	return manifest, binaryPath, nil
+	return foundManifest, binaryPath, nil
 }
 
 // ValidateTarget checks if a target type is supported by the plugin
 func (m *Manifest) ValidateTarget(targetType string) error {
-	for _, t := range m.Capabilities.Targets {
-		if t == targetType {
+	for _, supported := range m.Capabilities.Targets {
+		if supported == targetType {
 			return nil
 		}
 	}
-	return fmt.Errorf("target type %q not supported by plugin %s. Supported targets: %s",
+	return fmt.Errorf("target type '%s' not supported by plugin %s. Supported targets: %s", 
 		targetType, m.Name, strings.Join(m.Capabilities.Targets, ", "))
 }
 
 // ValidateProfiles checks if requested profiles are supported by the plugin
 func (m *Manifest) ValidateProfiles(requested []string) error {
-	supported := make(map[string]bool, len(m.Capabilities.Profiles))
-	for _, p := range m.Capabilities.Profiles {
-		supported[p] = true
-	}
-
 	var unsupported []string
-	for _, profile := range requested {
-		if !supported[profile] {
-			unsupported = append(unsupported, profile)
+	for _, req := range requested {
+		supported := false
+		for _, supp := range m.Capabilities.Profiles {
+			if supp == req {
+				supported = true
+				break
+			}
+		}
+		if !supported {
+			unsupported = append(unsupported, req)
 		}
 	}
 
 	if len(unsupported) > 0 {
-		return fmt.Errorf("profiles %s not supported by plugin %s. Supported profiles: %s",
+		return fmt.Errorf("profiles '%s' not supported by plugin %s. Supported profiles: %s", 
 			strings.Join(unsupported, ", "), m.Name, strings.Join(m.Capabilities.Profiles, ", "))
 	}
-
 	return nil
 }
