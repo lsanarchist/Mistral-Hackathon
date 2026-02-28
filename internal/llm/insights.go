@@ -26,6 +26,16 @@ func NewInsightsGenerator(apiKey, model string, timeout, maxResponse, maxPromptC
 	}
 }
 
+// NewInsightsGeneratorWithRetries creates a new insights generator with retry configuration
+func NewInsightsGeneratorWithRetries(apiKey, model string, timeout, maxResponse, maxPromptChars, maxRetries, retryDelaySec int, dryRun bool) *InsightsGenerator {
+	client := NewMistralClientWithRetries(apiKey, model, timeout, maxResponse, maxRetries, retryDelaySec)
+	return &InsightsGenerator{
+		Client:         client,
+		DryRun:         dryRun,
+		MaxPromptChars: maxPromptChars,
+	}
+}
+
 // GenerateInsights creates LLM insights from bundle and findings
 func (g *InsightsGenerator) GenerateInsights(ctx context.Context, 
 	bundle *model.ProfileBundle, findings *model.FindingsBundle) (*model.InsightsBundle, error) {

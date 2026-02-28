@@ -1,6 +1,22 @@
 ## Change Log
 
 ### 2026-03-01
+- **Objective**: Enhance LLM client with robust error handling, retry logic, and better error messages
+- **Rationale**: Improve reliability and user experience of LLM insights generation by adding automatic retry with exponential backoff for transient failures, better error messages for debugging, and configurable retry parameters
+- **Impact**: LLM client reliability, error handling, user experience, debugging capabilities
+- **Changes**:
+  - Added retry logic with exponential backoff and jitter to MistralClient.GenerateInsights()
+  - Implemented processAPIResponse() helper method for cleaner response handling
+  - Added MaxRetries and RetryDelay configuration fields to MistralClient struct
+  - Created NewMistralClientWithRetries() constructor for custom retry configuration
+  - Added NewInsightsGeneratorWithRetries() constructor for insights generator with retry support
+  - Enhanced error messages to include attempt numbers and context information
+  - Added context cancellation support during retry delays
+  - Maintained backward compatibility with existing constructors and default retry settings (3 attempts, 1 second initial delay)
+- **Testing**: Added comprehensive unit tests for retry configuration; verified existing tests still pass; confirmed backward compatibility; validated error message formatting
+- **Result**: LLM insights generation is now more resilient to transient API failures with automatic retries, better error reporting, and configurable retry behavior while maintaining full backward compatibility
+
+### 2026-03-01
 - **Objective**: Enhance web-based results viewer with interactive charts and filtering
 - **Rationale**: Improve the existing web viewer with data visualization, severity filtering, and better user experience to create a more compelling demo and provide deeper insights into performance analysis results
 - **Impact**: Web viewer UI/UX, data visualization, user interaction, demo experience

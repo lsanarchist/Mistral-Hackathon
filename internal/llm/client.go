@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"math/rand"
 
 	"github.com/mistral-hackathon/triageprof/internal/model"
 )
@@ -267,15 +268,24 @@ type MistralClient struct {
 	Timeout     time.Duration
 	MaxResponse int
 	HTTPClient  *http.Client
+	MaxRetries  int
+	RetryDelay  time.Duration
 }
 
 // NewMistralClient creates a new Mistral API client
 func NewMistralClient(apiKey, model string, timeout, maxResponse int) *MistralClient {
+	return NewMistralClientWithRetries(apiKey, model, timeout, maxResponse, 3, 1)
+}
+
+// NewMistralClientWithRetries creates a new Mistral API client with retry configuration
+func NewMistralClientWithRetries(apiKey, model string, timeout, maxResponse, maxRetries, retryDelaySec int) *MistralClient {
 	return &MistralClient{
 		APIKey:      apiKey,
 		Model:       model,
 		Timeout:     time.Duration(timeout) * time.Second,
 		MaxResponse: maxResponse,
+		MaxRetries:  maxRetries,
+		RetryDelay:  time.Duration(retryDelaySec) * time.Second,
 		HTTPClient: &http.Client{
 			Timeout: time.Duration(timeout) * time.Second,
 		},
@@ -316,11 +326,30 @@ func (c *MistralClient) GenerateInsights(ctx context.Context, prompt string) (*m
 		}, nil
 	}
 
+	// Retry loop with exponential backoff
+	var lastError error
+	var insights *model.InsightsBundle
+	
+	for attempt := 0; attempt <= c.MaxRetries; attempt++ {
+		if attempt > 0 {
+			// Apply exponential backoff with jitter
+			delay := c.RetryDelay * time.Duration(1<<(attempt-1))
+			jitter := time.Duration(rand.Intn(1000)) * time.Millisecond
+			totalDelay := delay + jitter
+			
+			select {
+			case <-time.After(totalDelay):
+			case <-ctx.Done():
+				return &model.InsightsBundle{
+					DisabledReason: fmt.Sprintf("context canceled during retry delay: %v", ctx.Err()),
+				}, nil
+			}
+		}
+
 	req, err := http.NewRequestWithContext(ctx, "POST", apiURL, bytes.NewReader(bodyBytes))
 	if err != nil {
-		return &model.InsightsBundle{
-			DisabledReason: fmt.Sprintf("failed to create request: %v", err),
-		}, nil
+		lastError = fmt.Errorf("failed to create request (attempt %d): %v", attempt+1, err)
+		continue
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -330,17 +359,42 @@ func (c *MistralClient) GenerateInsights(ctx context.Context, prompt string) (*m
 	// Execute request
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return &model.InsightsBundle{
-			DisabledReason: fmt.Sprintf("API request failed: %v", err),
-		}, nil
+		lastError = fmt.Errorf("API request failed (attempt %d): %v", attempt+1, err)
+		continue
 	}
+	
+	// Handle response
+	insights, err = c.processAPIResponse(resp)
+	if err == nil {
+		break // Success
+	}
+	lastError = err
+	
+	// Close response body
+	resp.Body.Close()
+	}
+
+	if insights != nil {
+		// Set metadata
+		insights.GeneratedAt = time.Now()
+		insights.Model = c.Model
+		insights.SchemaVersion = "1.0"
+		return insights, nil
+	}
+
+	// All attempts failed
+	return &model.InsightsBundle{
+		DisabledReason: fmt.Sprintf("all retry attempts failed: %v", lastError),
+	}, nil
+}
+
+// processAPIResponse handles the API response parsing and error checking
+func (c *MistralClient) processAPIResponse(resp *http.Response) (*model.InsightsBundle, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		return &model.InsightsBundle{
-			DisabledReason: fmt.Sprintf("API returned status %d: %s", resp.StatusCode, string(body)),
-		}, nil
+		return nil, fmt.Errorf("API returned status %d: %s", resp.StatusCode, string(body))
 	}
 
 	// Parse response
@@ -356,29 +410,18 @@ func (c *MistralClient) GenerateInsights(ctx context.Context, prompt string) (*m
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&apiResponse); err != nil {
-		return &model.InsightsBundle{
-			DisabledReason: fmt.Sprintf("failed to parse response: %v", err),
-		}, nil
+		return nil, fmt.Errorf("failed to parse response: %v", err)
 	}
 
 	if len(apiResponse.Choices) == 0 {
-		return &model.InsightsBundle{
-			DisabledReason: "no choices returned from API",
-		}, nil
+		return nil, fmt.Errorf("no choices returned from API")
 	}
 
 	// Parse the insights from the response
 	var insights model.InsightsBundle
 	if err := json.Unmarshal([]byte(apiResponse.Choices[0].Message.Content), &insights); err != nil {
-		return &model.InsightsBundle{
-			DisabledReason: fmt.Sprintf("failed to parse insights: %v", err),
-		}, nil
+		return nil, fmt.Errorf("failed to parse insights: %v", err)
 	}
-
-	// Set metadata
-	insights.GeneratedAt = time.Now()
-	insights.Model = c.Model
-	insights.SchemaVersion = "1.0"
 
 	return &insights, nil
 }

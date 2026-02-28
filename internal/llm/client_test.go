@@ -392,3 +392,36 @@ func TestInsightsGenerator_WithLLM_NoAPIKey(t *testing.T) {
 	assert.NotNil(t, generator)
 	assert.Equal(t, "", generator.Client.APIKey)
 }
+
+func TestMistralClient_WithRetries(t *testing.T) {
+	// Test client creation with retry configuration
+	client := NewMistralClientWithRetries("test-key", "test-model", 10, 1000, 5, 2)
+	
+	assert.NotNil(t, client)
+	assert.Equal(t, "test-key", client.APIKey)
+	assert.Equal(t, "test-model", client.Model)
+	assert.Equal(t, 10, int(client.Timeout.Seconds()))
+	assert.Equal(t, 1000, client.MaxResponse)
+	assert.Equal(t, 5, client.MaxRetries)
+	assert.Equal(t, 2, int(client.RetryDelay.Seconds()))
+}
+
+func TestInsightsGenerator_WithRetries(t *testing.T) {
+	// Test insights generator with retry configuration
+	generator := NewInsightsGeneratorWithRetries("test-key", "test-model", 10, 1000, 12000, 3, 1, false)
+	
+	assert.NotNil(t, generator)
+	assert.Equal(t, "test-key", generator.Client.APIKey)
+	assert.Equal(t, 3, generator.Client.MaxRetries)
+	assert.Equal(t, 1, int(generator.Client.RetryDelay.Seconds()))
+	assert.False(t, generator.DryRun)
+}
+
+func TestInsightsGenerator_WithRetries_DryRun(t *testing.T) {
+	// Test insights generator with retries in dry-run mode
+	generator := NewInsightsGeneratorWithRetries("test-key", "test-model", 10, 1000, 12000, 3, 1, true)
+	
+	assert.NotNil(t, generator)
+	assert.True(t, generator.DryRun)
+	assert.Equal(t, 3, generator.Client.MaxRetries)
+}
