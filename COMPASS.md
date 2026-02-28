@@ -264,6 +264,51 @@ Plugins are separate executables, discovered via manifests, and communicate with
 - Commit: `<to be filled after commit>`
 - Rollback: `git revert <commit-hash>`
 
+### Iter 20240303-2000 — UTC
+**Type:** Feature
+**Objective:** Add CLI flags for analysis options (callgraph and regression analysis)
+
+**Acceptance criteria (feature)**
+- [x] `--callgraph` flag added to analyze command
+- [x] `--regression` flag added to analyze command with `--baseline` parameter
+- [x] Core pipeline supports CoreAnalyzeOptions with callgraph and regression settings
+- [x] Analyzer handles new options and generates callgraph and regression data
+- [x] Reporter includes callgraph visualization and regression sections in markdown reports
+- [x] JSON reports include callgraph and regression data in structured format
+- [x] All existing tests pass
+- [x] Backward compatibility maintained - existing workflows unchanged
+
+**Changes**
+- `cmd/triageprof/main.go`: Added `--callgraph` and `--regression` flags to analyze command
+- `internal/core/pipeline.go`: Added CoreAnalyzeOptions struct and AnalyzeWithOptions method
+- `internal/analyzer/analyzer.go`: Enhanced AnalyzeWithOptions to handle callgraph and regression analysis
+- `internal/report/report.go`: Added callgraph visualization and regression sections to reports
+- `internal/model/types.go`: Already had CallgraphNode and RegressionAnalysis types
+
+**Verification**
+- Tests: `go test ./...` - all passing
+- Build: `make build` - successful
+- CLI Integration: `bin/triageprof analyze --callgraph --regression --baseline` works correctly
+- Callgraph Analysis: Generates hierarchical callgraph trees with depth 3
+- Regression Detection: Compares baseline vs current profiles with severity scoring
+- Report Integration: New sections appear in markdown and JSON reports
+- Backward Compatibility: Existing workflows unchanged, new features optional
+- End-to-End: Full pipeline works with enhanced analysis enabled
+
+**Risk/Notes**
+- No breaking changes - all existing functionality preserved
+- New analysis features are optional and disabled by default
+- Callgraph depth limited to 3 levels for performance
+- Regression analysis requires valid baseline bundle
+- Analysis quality depends on profile data quality
+- Feature significantly enhances Layer 1 "Analysis engine improvements"
+
+**Git / Rollback**
+- Branch: `main`
+- Checkpoint tag: N/A (direct commit to main)
+- Commit: `<to be filled after commit>`
+- Rollback: `git revert <commit-hash>`
+
 ### Iter 20240303-1000 — UTC
 **Type:** Feature
 **Objective:** Add allocs profile support to Go pprof plugin
