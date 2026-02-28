@@ -15,6 +15,16 @@ import (
 	"github.com/mistral-hackathon/triageprof/internal/report"
 )
 
+// containsString checks if a string exists in a slice
+func containsString(slice []string, item string) bool {
+	for _, s := range slice {
+		if s == item {
+			return true
+		}
+	}
+	return false
+}
+
 type Pipeline struct {
 	pluginManager *plugin.PluginManager
 	analyzer      *analyzer.Analyzer
@@ -58,7 +68,14 @@ func (p *Pipeline) CollectWithTarget(ctx context.Context, pluginName, targetURL,
 	// Determine target type and validate compatibility
 	targetType := "url"
 	if targetCommand != "" {
-		targetType = "python"
+		// For command-based targets, we need to determine the type from the plugin's capabilities
+		// Since the plugin manifest tells us what targets it supports, we'll use that
+		// to determine the appropriate target type
+		if containsString(manifest.Capabilities.Targets, "python") {
+			targetType = "python"
+		} else if containsString(manifest.Capabilities.Targets, "node") {
+			targetType = "node"
+		}
 	}
 	
 	if err := manifest.ValidateTarget(targetType); err != nil {

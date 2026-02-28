@@ -73,6 +73,26 @@ Follow the format specified in COMPASS.md for new entries.
   - `examples/node-demo-server/server.js` (new)
 - **Status**: IMPLEMENTED ✅
 
+### 2026-02-28 23:30:00
+- **Objective**: Enhance CLI with Node.js target support
+- **Rationale**: Complete Node.js profiling integration with full CLI support
+- **Impact**: CLI interface, user experience, Node.js workflow
+- **Changes**:
+  - Updated `cmd/triageprof/main.go` to support `--target-type node` flag
+  - Enhanced target validation logic for Node.js targets
+  - Added Node.js examples to help text and usage messages
+  - Fixed target type determination in core pipeline
+  - Added `containsString` helper function for target type detection
+- **Testing**:
+  - Manual testing of Node.js collection, analysis, and reporting
+  - Verification of full pipeline workflow with Node.js targets
+  - Backward compatibility testing with existing Go and Python targets
+- **Result**: Complete Node.js profiling support with full CLI integration
+- **Files Modified**:
+  - `cmd/triageprof/main.go` (enhanced)
+  - `internal/core/pipeline.go` (enhanced)
+- **Status**: IMPLEMENTED ✅
+
 ### 2026-02-28 15:30:00
 - **Objective**: Add optional LLM augmentation for insights generation
 - **Rationale**: Enhance deterministic findings with AI-powered analysis

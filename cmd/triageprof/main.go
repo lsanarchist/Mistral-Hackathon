@@ -23,6 +23,7 @@ func main() {
 		fmt.Println("  llm --bundle <bundle.json> --findings <findings.json> --out <insights.json> [--model <model>] [--timeout <sec>] [--dry-run]")
 		fmt.Println("  run --plugin <name> --target-url <url> --duration <sec> --outdir <dir>")
 		fmt.Println("  run --plugin <name> --target-type python --target-command <cmd> --duration <sec> --outdir <dir>")
+		fmt.Println("  run --plugin <name> --target-type node --target-command <cmd> --duration <sec> --outdir <dir>")
 		fmt.Println("\nLLM Options for 'run' command:")
 		fmt.Println("  --llm (enable LLM insights)")
 		fmt.Println("  --llm-model <model> (default: devstral-small-latest)")
@@ -109,13 +110,14 @@ func runCollectCommand(pipeline *core.Pipeline) {
 		fmt.Println("Required flags: --plugin, --out")
 		fmt.Println("For URL targets: --target-url")
 		fmt.Println("For Python targets: --target-type python --target-command")
+		fmt.Println("For Node.js targets: --target-type node --target-command")
 		os.Exit(1)
 	}
 
 	// Validate target parameters
-	if *targetType == "python" {
+	if *targetType == "python" || *targetType == "node" {
 		if *targetCommand == "" {
-			fmt.Println("Python target requires --target-command")
+			fmt.Printf("%s target requires --target-command\n", strings.Title(*targetType))
 			os.Exit(1)
 		}
 	} else if *targetURL == "" {
@@ -129,7 +131,7 @@ func runCollectCommand(pipeline *core.Pipeline) {
 
 	ctx := context.Background()
 	var err error
-	if *targetType == "python" {
+	if *targetType == "python" || *targetType == "node" {
 		_, err = pipeline.CollectWithTarget(ctx, *pluginName, "", *targetCommand, *duration, 20, filepath.Dir(*outPath))
 	} else {
 		_, err = pipeline.Collect(ctx, *pluginName, *targetURL, *duration, 20, filepath.Dir(*outPath))
@@ -271,9 +273,9 @@ func runRunCommand(pipeline *core.Pipeline) {
 	}
 
 	// Validate target parameters
-	if *targetType == "python" {
+	if *targetType == "python" || *targetType == "node" {
 		if *targetCommand == "" {
-			fmt.Println("Python target requires --target-command")
+			fmt.Printf("%s target requires --target-command\n", strings.Title(*targetType))
 			os.Exit(1)
 		}
 	} else if *targetURL == "" {
@@ -294,7 +296,7 @@ func runRunCommand(pipeline *core.Pipeline) {
 	}
 
 	var err error
-	if *targetType == "python" {
+	if *targetType == "python" || *targetType == "node" {
 		err = pipeline.RunWithTarget(ctx, *pluginName, "", *targetCommand, *duration, 20, *outDir)
 	} else {
 		err = pipeline.Run(ctx, *pluginName, *targetURL, *duration, 20, *outDir)
