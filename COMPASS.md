@@ -523,3 +523,47 @@ Plugins are separate executables, discovered via manifests, and communicate with
 - Checkpoint tag: N/A (direct commit to main)
 - Commit: `1946a29`
 - Rollback: `git revert 1946a29`
+
+### Iter 20240304-2030 — UTC
+**Type:** Feature
+**Objective:** Add allocs profile support to Go pprof plugin
+
+**Acceptance criteria (feature)**
+- [x] Go pprof plugin updated to support allocs profile collection
+- [x] Plugin manifest includes allocs in capabilities
+- [x] Plugin collects allocs profiles from /debug/pprof/allocs endpoint
+- [x] All existing tests still pass
+- [x] Backward compatibility maintained
+- [x] Plugin discovery shows updated capabilities
+- [x] Allocs profile appears in bundle, findings, and reports
+
+**Changes**
+- `plugins/manifests/go-pprof-http.json`: Added "allocs" to profiles capabilities
+- `plugins/src/go-pprof-http/main.go`: Added allocs profile collection logic in collect() method
+- `internal/core/pipeline.go`: Updated Collect() method to request allocs profile from plugins
+- `internal/core/pipeline.go`: Updated profile validation to include allocs
+
+**Verification**
+- Tests: `go test ./...` - all passing
+- Build: `make build` - successful
+- Plugin discovery: `bin/triageprof plugins` - shows allocs in capabilities
+- JSON-RPC: Tested rpc.info call returns allocs in profiles list
+- Integration: Plugin responds correctly to collect requests with allocs profile
+- End-to-end: `bin/triageprof collect` successfully collects allocs.pb.gz file
+- Bundle validation: bundle.json includes allocs artifact entry
+- Analysis: findings.json includes allocs hotspot analysis
+- Reporting: report.md includes allocs section with top hotspots
+- Backward compatibility: Default analysis (no flags) works identically to before
+
+**Risk/Notes**
+- No breaking changes to existing functionality
+- Allocs profile follows same pattern as other pprof profiles
+- Plugin maintains backward compatibility
+- All existing profile types continue to work unchanged
+- Feature completes Layer 1 goal: "full coverage of all profile types"
+
+**Git / Rollback**
+- Branch: `main`
+- Checkpoint tag: N/A (direct commit to main)
+- Commit: `<to be filled after commit>`
+- Rollback: `git revert <commit-hash>`
