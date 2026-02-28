@@ -16,11 +16,11 @@ class PythonCProfilePlugin:
     def __init__(self):
         self.info = {
             "name": "python-cprofile",
-            "version": "0.4.0",
+            "version": "0.5.0",
             "sdkVersion": "1.0",
             "capabilities": {
                 "targets": ["python"],
-                "profiles": ["cpu", "heap", "allocs"]
+                "profiles": ["cpu", "heap", "allocs", "memory-leak"]
             }
         }
 
@@ -106,6 +106,10 @@ class PythonCProfilePlugin:
                 artifact = self._collect_allocs_profile(target, duration_sec, out_dir, command)
                 if artifact:
                     artifacts.append(artifact)
+            elif profile_type == "memory-leak":
+                artifact = self._collect_memory_leak_profile(target, duration_sec, out_dir, command)
+                if artifact:
+                    artifacts.append(artifact)
         
         if not artifacts:
             raise RuntimeError("Failed to collect any profiles")
@@ -165,17 +169,19 @@ class PythonCProfilePlugin:
     
     def _collect_heap_profile(self, target: Dict[str, Any], duration_sec: int, out_dir: str, 
                             command: List[str]) -> Dict[str, Any]:
-        """Collect heap profile using tracemalloc with heap snapshot"""
+        """Collect comprehensive heap profile using tracemalloc with detailed memory analysis"""
         heap_profile_path = os.path.join(out_dir, "heap.pb.gz")
         
         try:
-            # Create a Python script that runs the target with tracemalloc heap tracking
+            # Create a Python script that runs the target with comprehensive tracemalloc heap tracking
             script_content = f"""
 import tracemalloc
 import json
 import sys
 import time
 import gzip
+import inspect
+import linecache
 
 # Start tracemalloc with heap tracking
 tracemalloc.start()
@@ -193,27 +199,52 @@ except Exception as e:
 # Get current memory snapshot
 snapshot = tracemalloc.take_snapshot()
 
-# Get top memory allocations by size
-top_stats = snapshot.statistics('lineno')
+# Get comprehensive memory statistics
+top_stats = snapshot.statistics('traceback')  # Get full traceback for detailed analysis
 
-# Prepare heap allocation data in pprof-compatible format
+# Prepare comprehensive heap allocation data
 heap_data = []
-for stat in top_stats[:200]:  # Top 200 allocations for comprehensive analysis
+for stat in top_stats[:500]:  # Top 500 allocations for comprehensive analysis
     if stat.traceback:
-        frame = stat.traceback[0]
-        heap_data.append({{
-            'function': 'unknown',  # Simplified - we can't easily get function name from traceback
-            'file': frame.filename,
-            'line': frame.lineno,
-            'size': stat.size,
-            'count': stat.count
-        }})
+        # Get the most relevant frame (usually the first user frame)
+        relevant_frame = None
+        for frame in stat.traceback:
+            filename = frame.filename
+            # Skip standard library and internal frames
+            if filename and ('site-packages' not in filename and 'lib/python' not in filename):
+                relevant_frame = frame
+                break
+        
+        if relevant_frame:
+            filename = relevant_frame.filename
+            lineno = relevant_frame.lineno
+            
+            # Try to get function name from source
+            function_name = 'unknown'
+            try:
+                source_line = linecache.getline(filename, lineno)
+                if source_line and 'def ' in source_line:
+                    # Extract function name from def statement
+                    parts = source_line.strip().split()
+                    if len(parts) > 1:
+                        function_name = parts[1].split('(')[0]
+            except:
+                pass
+            
+            heap_data.append({{
+                'function': function_name,
+                'file': filename,
+                'line': lineno,
+                'size': stat.size,
+                'count': stat.count,
+                'total_size': stat.size * stat.count
+            }})
 
-# Write heap data to gzipped file (matching Go plugin format)
+# Write comprehensive heap data to gzipped file
 with gzip.open('{heap_profile_path}', 'wt') as f:
     json.dump(heap_data, f)
 
-print("Heap profile saved to", '{heap_profile_path}')
+print("Comprehensive heap profile saved to", '{heap_profile_path}')
 """
             
             # Write the script to a temporary file
@@ -253,17 +284,18 @@ print("Heap profile saved to", '{heap_profile_path}')
 
     def _collect_allocs_profile(self, target: Dict[str, Any], duration_sec: int, out_dir: str, 
                               command: List[str]) -> Dict[str, Any]:
-        """Collect allocation profile using tracemalloc"""
+        """Collect comprehensive allocation profile using tracemalloc with function-level detail"""
         allocs_profile_path = os.path.join(out_dir, "allocs.pb.gz")
         
         try:
-            # Create a Python script that runs the target with tracemalloc
+            # Create a Python script that runs the target with comprehensive tracemalloc
             script_content = f"""
 import tracemalloc
 import json
 import sys
 import time
 import gzip
+import linecache
 
 # Start tracemalloc
 tracemalloc.start()
@@ -281,24 +313,52 @@ except Exception as e:
 # Get memory allocation statistics
 snapshot = tracemalloc.take_snapshot()
 
-# Get top memory allocations
-top_stats = snapshot.statistics('lineno')
+# Get comprehensive allocation statistics with full traceback
+top_stats = snapshot.statistics('traceback')
 
-# Prepare allocation data
+# Prepare comprehensive allocation data with function names
 allocation_data = []
-for stat in top_stats[:100]:  # Top 100 allocations
-    allocation_data.append({{
-        'filename': stat.traceback[0].filename,
-        'lineno': stat.traceback[0].lineno,
-        'size': stat.size,
-        'count': stat.count
-    }})
+for stat in top_stats[:300]:  # Top 300 allocations for comprehensive analysis
+    if stat.traceback:
+        # Get the most relevant frame (usually the first user frame)
+        relevant_frame = None
+        for frame in stat.traceback:
+            filename = frame.filename
+            # Skip standard library and internal frames
+            if filename and ('site-packages' not in filename and 'lib/python' not in filename):
+                relevant_frame = frame
+                break
+        
+        if relevant_frame:
+            filename = relevant_frame.filename
+            lineno = relevant_frame.lineno
+            
+            # Try to get function name from source
+            function_name = 'unknown'
+            try:
+                source_line = linecache.getline(filename, lineno)
+                if source_line and 'def ' in source_line:
+                    # Extract function name from def statement
+                    parts = source_line.strip().split()
+                    if len(parts) > 1:
+                        function_name = parts[1].split('(')[0]
+            except:
+                pass
+            
+            allocation_data.append({{
+                'function': function_name,
+                'file': filename,
+                'line': lineno,
+                'size': stat.size,
+                'count': stat.count,
+                'total_size': stat.size * stat.count
+            }})
 
-# Write allocation data to gzipped file (matching Go plugin format)
+# Write comprehensive allocation data to gzipped file
 with gzip.open('{allocs_profile_path}', 'wt') as f:
     json.dump(allocation_data, f)
 
-print("Allocation profile saved to", '{allocs_profile_path}')
+print("Comprehensive allocation profile saved to", '{allocs_profile_path}')
 """
             
             # Write the script to a temporary file
@@ -334,6 +394,135 @@ print("Allocation profile saved to", '{allocs_profile_path}')
             return None
         except Exception as e:
             eprint(f"Failed to collect allocation profile: {str(e)}")
+            return None
+    
+    def _collect_memory_leak_profile(self, target: Dict[str, Any], duration_sec: int, out_dir: str, 
+                                    command: List[str]) -> Dict[str, Any]:
+        """Collect memory leak profile using tracemalloc with multiple snapshots"""
+        memory_leak_profile_path = os.path.join(out_dir, "memory-leak.pb.gz")
+        
+        try:
+            # Create a Python script that runs the target with memory leak detection
+            script_content = f"""
+import tracemalloc
+import json
+import sys
+import time
+import gzip
+import linecache
+
+# Start tracemalloc
+tracemalloc.start()
+
+# Take initial snapshot
+initial_snapshot = tracemalloc.take_snapshot()
+
+# Run the target command
+start_time = time.time()
+
+try:
+    # Execute the target command as a Python script
+    exec(open('{command[0]}').read())
+except Exception as e:
+    print("Error executing script:", e, file=sys.stderr)
+    sys.exit(1)
+
+# Take final snapshot
+final_snapshot = tracemalloc.take_snapshot()
+
+# Compare snapshots to detect memory leaks
+def compare_snapshots(old_snapshot, new_snapshot):
+    old_stats = old_snapshot.statistics('traceback')
+    new_stats = new_snapshot.statistics('traceback')
+    
+    leak_data = []
+    
+    # Create mapping of old allocations
+    old_allocations = {{}}
+    for stat in old_stats:
+        if stat.traceback:
+            frame = stat.traceback[0]
+            key = (frame.filename, frame.lineno)
+            old_allocations[key] = stat.size * stat.count
+    
+    # Find allocations that grew significantly
+    for stat in new_stats:
+        if stat.traceback:
+            frame = stat.traceback[0]
+            key = (frame.filename, frame.lineno)
+            
+            old_size = old_allocations.get(key, 0)
+            new_size = stat.size * stat.count
+            growth = new_size - old_size
+            
+            # Consider significant growth as potential leak
+            if growth > 100000:  # More than 100KB growth
+                # Try to get function name
+                function_name = 'unknown'
+                try:
+                    source_line = linecache.getline(frame.filename, frame.lineno)
+                    if source_line and 'def ' in source_line:
+                        parts = source_line.strip().split()
+                        if len(parts) > 1:
+                            function_name = parts[1].split('(')[0]
+                except:
+                    pass
+                
+                leak_data.append({{
+                    'function': function_name,
+                    'file': frame.filename,
+                    'line': frame.lineno,
+                    'initial_size': old_size,
+                    'final_size': new_size,
+                    'growth': growth,
+                    'count': stat.count
+                }})
+    
+    return leak_data
+
+# Detect memory leaks
+leak_data = compare_snapshots(initial_snapshot, final_snapshot)
+
+# Write memory leak data to gzipped file
+with gzip.open('{memory_leak_profile_path}', 'wt') as f:
+    json.dump(leak_data, f)
+
+print("Memory leak profile saved to", '{memory_leak_profile_path}')
+"""
+            
+            # Write the script to a temporary file
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as script_file:
+                script_file.write(script_content)
+                script_path = script_file.name
+            
+            # Run the script with timeout
+            result = subprocess.run(
+                ["python3", script_path],
+                timeout=duration_sec,
+                capture_output=True,
+                text=True
+            )
+            
+            # Clean up the temporary script
+            os.unlink(script_path)
+            
+            # Check if the profile file was created
+            if not os.path.exists(memory_leak_profile_path):
+                raise RuntimeError("memory leak detection failed to create output file")
+            
+            # Return artifact in standard format
+            return {
+                "kind": "tracemalloc",
+                "profileType": "memory-leak",
+                "path": memory_leak_profile_path,
+                "contentType": "application/octet-stream"
+            }
+            
+        except subprocess.TimeoutExpired:
+            eprint(f"Memory leak profiling timed out after {duration_sec} seconds")
+            return None
+        except Exception as e:
+            eprint(f"Failed to collect memory leak profile: {str(e)}")
             return None
 
 def main():

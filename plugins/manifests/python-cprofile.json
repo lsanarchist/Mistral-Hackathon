@@ -1,11 +1,11 @@
 {
   "name": "python-cprofile",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "sdkVersion": "1.0",
   "capabilities": {
     "targets": ["python"],
-    "profiles": ["cpu", "heap", "allocs"]
+    "profiles": ["cpu", "heap", "allocs", "memory-leak"]
   },
-  "description": "Python cProfile plugin for collecting CPU, heap, and allocation profiles from Python applications",
+  "description": "Python cProfile plugin for collecting CPU, heap, allocation, and memory leak profiles from Python applications",
   "author": "Mistral Hackathon"
 }

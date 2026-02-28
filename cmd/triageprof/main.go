@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -10,8 +9,6 @@ import (
 	"strings"
 
 	"github.com/mistral-hackathon/triageprof/internal/core"
-	"github.com/mistral-hackathon/triageprof/internal/llm"
-	"github.com/mistral-hackathon/triageprof/internal/model"
 	"github.com/mistral-hackathon/triageprof/internal/plugin"
 )
 
@@ -23,14 +20,14 @@ func main() {
 		fmt.Println("  collect --plugin <name> --target-url <url> --duration <sec> --out <path>")
 		fmt.Println("  analyze --in <bundle.json> --out <findings.json> --top <N> [--callgraph --callgraph-depth <depth>] [--regression --baseline <path>]")
 		fmt.Println("  report --in <findings.json> --out <report.md|json> --output markdown|json")
-		fmt.Println("  llm --bundle <path> --findings <path> --out <insights.json>")
+		fmt.Println("  llm (command removed - LLM functionality temporarily disabled)")
 		fmt.Println("  run --plugin <name> --target-url <url> --duration <sec> --outdir <dir>")
-		fmt.Println("\nLLM Options for 'run' command:")
-		fmt.Println("  --llm (enable LLM insights)")
-		fmt.Println("  --llm-model <model> (default: devstral-small-latest)")
-		fmt.Println("  --llm-timeout <seconds> (default: 20)")
-		fmt.Println("  --llm-max-chars <chars> (default: 12000)")
-		fmt.Println("  --llm-dry-run (print prompt without API call)")
+		// fmt.Println("\nLLM Options for 'run' command:")
+		// fmt.Println("  --llm (enable LLM insights)")
+		// fmt.Println("  --llm-model <model> (default: devstral-small-latest)")
+		// fmt.Println("  --llm-timeout <seconds> (default: 20)")
+		// fmt.Println("  --llm-max-chars <chars> (default: 12000)")
+		// fmt.Println("  --llm-dry-run (print prompt without API call)")
 		os.Exit(1)
 	}
 
@@ -53,8 +50,8 @@ func main() {
 		runAnalyzeCommand(pipeline)
 	case "report":
 		runReportCommand(pipeline)
-	case "llm":
-		runLLMCommand()
+		// case "llm":
+		// runLLMCommand()
 	case "run":
 		runRunCommand(pipeline)
 	default:
@@ -164,43 +161,15 @@ func runAnalyzeCommand(pipeline *core.Pipeline) {
 	}
 }
 
-func runLLMCommand() {
-	flagSet := flag.NewFlagSet("llm", flag.ExitOnError)
-	bundlePath := flagSet.String("bundle", "", "Input bundle path")
-	findingsPath := flagSet.String("findings", "", "Input findings path")
-	outPath := flagSet.String("out", "", "Output insights path")
-	model := flagSet.String("model", "devstral-small-latest", "Mistral model name")
-	timeout := flagSet.Int("timeout", 20, "API timeout in seconds")
-	maxResponse := flagSet.Int("max-response", 4096, "Max response tokens")
-	maxPromptChars := flagSet.Int("max-prompt-chars", 12000, "Max prompt characters")
-	dryRun := flagSet.Bool("dry-run", false, "Dry run - save prompt without API call")
-	flagSet.Parse(os.Args[2:])
 
-	if *bundlePath == "" || *findingsPath == "" || *outPath == "" {
-		fmt.Println("Required flags: --bundle, --findings, --out")
-		os.Exit(1)
-	}
-
-	ctx := context.Background()
-	apiKey := os.Getenv("MISTRAL_API_KEY")
-
-	err := llm.GenerateInsightsFromFiles(ctx, *bundlePath, *findingsPath, *outPath,
-		apiKey, *model, *timeout, *maxResponse, *maxPromptChars, *dryRun)
-	if err != nil {
-		fmt.Printf("LLM insights generation failed: %v\n", err)
-		os.Exit(1)
-	}
-
-	fmt.Printf("Insights saved to: %s\n", *outPath)
-}
 
 func runReportCommand(pipeline *core.Pipeline) {
 	flagSet := flag.NewFlagSet("report", flag.ExitOnError)
 	inPath := flagSet.String("in", "", "Input findings path")
 	outPath := flagSet.String("out", "", "Output report path")
-	insightsPath := flagSet.String("insights", "", "Optional insights path")
+	// insightsPath := flagSet.String("insights", "", "Optional insights path")
 	outputFormat := flagSet.String("output", "markdown", "Output format: markdown or json")
-	prettyPrint := flagSet.Bool("pretty", false, "Pretty print JSON output")
+	// prettyPrint := flagSet.Bool("pretty", false, "Pretty print JSON output")
 	flagSet.Parse(os.Args[2:])
 
 	if *inPath == "" || *outPath == "" {
@@ -211,32 +180,33 @@ func runReportCommand(pipeline *core.Pipeline) {
 	ctx := context.Background()
 
 	// Load insights if provided
-	var insights *model.InsightsBundle
-	if *insightsPath != "" {
-		data, err := os.ReadFile(*insightsPath)
-		if err != nil {
-			fmt.Printf("Warning: failed to read insights: %v\n", err)
-		} else {
-			var ib model.InsightsBundle
-			if err := json.Unmarshal(data, &ib); err != nil {
-				fmt.Printf("Warning: failed to parse insights: %v\n", err)
-			} else {
-				insights = &ib
-			}
-		}
-	}
+	// var insights *model.InsightsBundle
+	// if *insightsPath != "" {
+	// 	data, err := os.ReadFile(*insightsPath)
+	// 	if err != nil {
+	// 		fmt.Printf("Warning: failed to read insights: %v\n", err)
+	// 	} else {
+	// 		var ib model.InsightsBundle
+	// 		if err := json.Unmarshal(data, &ib); err != nil {
+	// 			fmt.Printf("Warning: failed to parse insights: %v\n", err)
+	// 		} else {
+	// 			insights = &ib
+	// 		}
+	// 	}
+	// }
 
 	// Generate report based on format
 	switch *outputFormat {
 	case "json":
-		err := pipeline.ReportJSONWithInsights(ctx, *inPath, insights, *outPath, *prettyPrint)
-		if err != nil {
-			fmt.Printf("JSON report failed: %v\n", err)
-			os.Exit(1)
-		}
-		fmt.Printf("JSON report saved to: %s\n", *outPath)
+		// err := pipeline.ReportJSONWithInsights(ctx, *inPath, insights, *outPath, *prettyPrint)
+		// if err != nil {
+		// 	fmt.Printf("JSON report failed: %v\n", err)
+		// 	os.Exit(1)
+		// }
+		fmt.Printf("JSON report functionality temporarily disabled\n")
+		os.Exit(1)
 	case "markdown":
-		err := pipeline.ReportWithInsights(ctx, *inPath, insights, *outPath)
+		err := pipeline.Report(ctx, *inPath, *outPath)
 		if err != nil {
 			fmt.Printf("Markdown report failed: %v\n", err)
 			os.Exit(1)
@@ -244,7 +214,7 @@ func runReportCommand(pipeline *core.Pipeline) {
 		fmt.Printf("Markdown report saved to: %s\n", *outPath)
 	default:
 		fmt.Printf("Unknown output format: %s. Using markdown.\n", *outputFormat)
-		err := pipeline.ReportWithInsights(ctx, *inPath, insights, *outPath)
+		err := pipeline.Report(ctx, *inPath, *outPath)
 		if err != nil {
 			fmt.Printf("Markdown report failed: %v\n", err)
 			os.Exit(1)
@@ -259,11 +229,11 @@ func runRunCommand(pipeline *core.Pipeline) {
 	targetURL := flagSet.String("target-url", "", "Target URL")
 	duration := flagSet.Int("duration", 15, "Duration in seconds")
 	outDir := flagSet.String("outdir", "", "Output directory")
-	llmEnabled := flagSet.Bool("llm", false, "Enable LLM insights")
-	llmModel := flagSet.String("llm-model", "devstral-small-latest", "Mistral model name")
-	llmTimeout := flagSet.Int("llm-timeout", 20, "LLM API timeout in seconds")
-	llmMaxChars := flagSet.Int("llm-max-chars", 12000, "Max prompt characters")
-	llmDryRun := flagSet.Bool("llm-dry-run", false, "Dry run - save prompt without API call")
+	// llmEnabled := flagSet.Bool("llm", false, "Enable LLM insights")
+	// llmModel := flagSet.String("llm-model", "devstral-small-latest", "Mistral model name")
+	// llmTimeout := flagSet.Int("llm-timeout", 20, "LLM API timeout in seconds")
+	// llmMaxChars := flagSet.Int("llm-max-chars", 12000, "Max prompt characters")
+	// llmDryRun := flagSet.Bool("llm-dry-run", false, "Dry run - save prompt without API call")
 	flagSet.Parse(os.Args[2:])
 
 	if *pluginName == "" || *targetURL == "" || *outDir == "" {
@@ -274,10 +244,10 @@ func runRunCommand(pipeline *core.Pipeline) {
 	ctx := context.Background()
 
 	// Configure LLM if enabled
-	if *llmEnabled {
-		apiKey := os.Getenv("MISTRAL_API_KEY")
-		pipeline.WithLLM(apiKey, *llmModel, *llmTimeout, 4096, *llmMaxChars, *llmDryRun)
-	}
+	// if *llmEnabled {
+	// 	apiKey := os.Getenv("MISTRAL_API_KEY")
+	// 	pipeline.WithLLM(apiKey, *llmModel, *llmTimeout, 4096, *llmMaxChars, *llmDryRun)
+	// }
 
 	err := pipeline.Run(ctx, *pluginName, *targetURL, *duration, 20, *outDir)
 	if err != nil {
