@@ -6,6 +6,7 @@
     <title>TriageProf Performance Analysis</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
@@ -47,6 +48,29 @@
                     </div>
                 </div>
                 <div class="overview-text" id="overview"></div>
+            </div>
+            
+            <div class="charts-section">
+                <div class="chart-container">
+                    <h3><i class="fas fa-chart-pie"></i> Severity Distribution</h3>
+                    <canvas id="severityChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3><i class="fas fa-chart-bar"></i> Findings by Category</h3>
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="filters">
+                <label for="severityFilter">Filter by Severity:</label>
+                <select id="severityFilter">
+                    <option value="all">All Severities</option>
+                    <option value="critical">Critical</option>
+                    <option value="high">High</option>
+                    <option value="medium">Medium</option>
+                    <option value="low">Low</option>
+                    <option value="info">Info</option>
+                </select>
             </div>
             
             <div class="top-risks" id="topRisksSection" style="display: none;">

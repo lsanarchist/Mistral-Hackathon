@@ -1,20 +1,24 @@
 ## Change Log
 
 ### 2026-03-01
-- **Objective**: Implement interactive web-based results viewer
-- **Rationale**: Create a cool web page to display performance analysis results with interactive visualizations and AI-powered insights, enhancing the demo experience and providing a modern alternative to markdown reports
-- **Impact**: Core pipeline, CLI interface, report generation, user experience
+- **Objective**: Enhance web-based results viewer with interactive charts and filtering
+- **Rationale**: Improve the existing web viewer with data visualization, severity filtering, and better user experience to create a more compelling demo and provide deeper insights into performance analysis results
+- **Impact**: Web viewer UI/UX, data visualization, user interaction, demo experience
 - **Changes**:
-  - Created web viewer with HTML/CSS/JavaScript (index.html, style.css, app.js)
-  - Added interactive data loading and visualization capabilities
-  - Implemented responsive design with severity indicators and confidence levels
-  - Added `web` command to CLI for standalone web report generation
-  - Enhanced `run` command to automatically generate web reports when LLM is enabled
-  - Added `GenerateWebReport()` method to core pipeline
-  - Created professional UI with executive summary, top risks, recommended actions, and detailed findings
-  - Integrated LLM insights display with root causes, suggestions, and confidence indicators
-- **Testing**: Manual testing of web command with sample data; verified web report generation; confirmed integration with existing pipeline; tested both standalone and automatic web report generation
-- **Result**: Users can now generate interactive web-based performance reports that showcase TriageProf's AI-powered analysis capabilities in a modern, visually appealing format that enhances the "wow" factor of the demo
+  - Added Chart.js integration for interactive data visualization
+  - Implemented severity distribution pie chart showing breakdown of findings by severity level
+  - Added findings by category bar chart for quick overview of performance issue types
+  - Created severity filter dropdown to allow users to focus on specific severity levels
+  - Enhanced finding cards with hover effects and better visual hierarchy
+  - Improved responsive design for better mobile and tablet viewing
+  - Added filter summary showing current vs total findings count
+  - Updated CSS with modern color scheme and animations
+  - Maintained backward compatibility with existing web report generation
+- **Testing**: Manual testing with demo data; verified chart rendering; tested severity filtering; confirmed responsive design; validated integration with existing web command
+- **Result**: Web viewer now provides interactive data visualization and filtering capabilities, making it easier to analyze performance findings and creating a more engaging and professional demo experience
+
+### 2026-03-01
+- **Objective**: Implement interactive web-based results viewer
 
 ### 2026-03-01
 - **Objective**: Add Ruby stackprof plugin support
