@@ -32,6 +32,7 @@ Plugins are separate executables, discovered via manifests, and communicate with
 
 ## Plugins (status)
 - go-pprof-http: ✅ (cpu/heap/mutex/block/goroutine via HTTP pprof)
+- python-cprofile: ✅ (cpu profiling for Python applications)
 - Plugin discovery system: ✅ (manifest-based validation and capability checking)
 - <future plugin>: ⏳
 
@@ -76,8 +77,8 @@ Plugins are separate executables, discovered via manifests, and communicate with
 **Git / Rollback**
 - Branch: `main`
 - Checkpoint tag: N/A (direct commit to main)
-- Commit: `<to be filled after commit>`
-- Rollback: `git revert <commit-hash>`
+- Commit: `be48271`
+- Rollback: `git revert be48271`
 
 ### Iter 20240301-1730 — UTC
 **Type:** Maintenance
@@ -113,6 +114,44 @@ Plugins are separate executables, discovered via manifests, and communicate with
 - Checkpoint tag: N/A (direct commit to main)
 - Commit: `1a61b9d`
 - Rollback: `git revert 1a61b9d`
+
+### Iter 20240302-1200 — UTC
+**Type:** Feature
+**Objective:** Add Python cProfile plugin for CPU profiling
+
+**Acceptance criteria (feature)**
+- [x] Python cProfile plugin implemented with JSON-RPC interface
+- [x] Plugin manifest created with proper capabilities
+- [x] Plugin discovery lists python-cprofile with capabilities
+- [x] Plugin validates Python targets correctly
+- [x] Plugin collects CPU profiles using cProfile
+- [x] All existing tests still pass
+- [x] Backward compatibility maintained
+
+**Changes**
+- `plugins/src/python-cprofile/main.py`: Python cProfile plugin implementation
+- `plugins/manifests/python-cprofile.json`: Plugin manifest with capabilities
+- `plugins/bin/python-cprofile`: Executable symlink for plugin discovery
+
+**Verification**
+- Tests: `go test ./...` - all passing
+- Plugin discovery: `bin/triageprof plugins` - lists python-cprofile
+- Plugin validation: Tested target validation via JSON-RPC
+- Build: `make build` - successful
+- Manual testing: Plugin responds correctly to RPC calls
+
+**Risk/Notes**
+- No breaking changes to existing functionality
+- Plugin follows same JSON-RPC interface as Go plugin
+- Python plugin requires python3 and cProfile module (standard library)
+- Plugin supports CPU profiling only (cProfile limitation)
+- Target type "python" requires "command" field for execution
+
+**Git / Rollback**
+- Branch: `main`
+- Checkpoint tag: N/A (direct commit to main)
+- Commit: `be48271`
+- Rollback: `git revert be48271`
 
 ### Iter 20240301-1200 — UTC
 **Type:** Maintenance
