@@ -27,6 +27,7 @@ func main() {
 		fmt.Println("  run --plugin <name> --target-url <url> --duration <sec> --outdir <dir>")
 		fmt.Println("  run --plugin <name> --target-type python --target-command <cmd> --duration <sec> --outdir <dir>")
 		fmt.Println("  run --plugin <name> --target-type node --target-command <cmd> --duration <sec> --outdir <dir>")
+		fmt.Println("  web --in <findings.json> --outdir <dir> [--insights <insights.json>]")
 		fmt.Println("\nLLM Options for 'run' command:")
 		fmt.Println("  --llm (enable LLM insights)")
 		fmt.Println("  --llm-model <model> (default: devstral-small-latest)")
@@ -59,6 +60,8 @@ func main() {
 			runLLMCommand()
 	case "run":
 		runRunCommand(pipeline)
+	case "web":
+		runWebCommand(pipeline)
 	default:
 		fmt.Printf("Unknown command: %s\n", cmd)
 		os.Exit(1)
@@ -389,6 +392,46 @@ func runLLMCommand() {
 	if *dryRun {
 		fmt.Println("✓ Dry-run mode: prompt saved to llm_prompt.json")
 	}
+}
+
+func runWebCommand(pipeline *core.Pipeline) {
+	flagSet := flag.NewFlagSet("web", flag.ExitOnError)
+	inPath := flagSet.String("in", "", "Input findings path")
+	outDir := flagSet.String("outdir", "", "Output directory")
+	insightsPath := flagSet.String("insights", "", "Optional insights path")
+	flagSet.Parse(os.Args[2:])
+
+	if *inPath == "" || *outDir == "" {
+		fmt.Println("Required flags: --in, --outdir")
+		fmt.Println("Optional flags: --insights")
+		os.Exit(1)
+	}
+
+	// Load insights if provided
+	var insights *model.InsightsBundle
+	if *insightsPath != "" {
+		data, err := os.ReadFile(*insightsPath)
+		if err != nil {
+			fmt.Printf("Warning: failed to read insights: %v\n", err)
+		} else {
+			var ib model.InsightsBundle
+			if err := json.Unmarshal(data, &ib); err != nil {
+				fmt.Printf("Warning: failed to parse insights: %v\n", err)
+			} else {
+				insights = &ib
+			}
+		}
+	}
+
+	ctx := context.Background()
+	err := pipeline.GenerateWebReport(ctx, *inPath, *outDir, insights)
+	if err != nil {
+		fmt.Printf("Web report generation failed: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("Web report generated in: %s/\n", *outDir)
+	fmt.Println("Open index.html in your browser to view the interactive report")
 }
 
 

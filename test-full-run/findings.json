@@ -1,0 +1,2954 @@
+{
+  "summary": {
+    "topIssueTags": [
+      "performance"
+    ],
+    "overallScore": 75,
+    "notes": [
+      "Analysis completed successfully"
+    ]
+  },
+  "findings": [
+    {
+      "category": "cpu",
+      "title": "Top cpu hotspots",
+      "severity": "low",
+      "score": 50,
+      "top": [
+        {
+          "function": "runtime.futex",
+          "file": "/usr/lib/go-1.24/src/runtime/sys_linux_amd64.s",
+          "line": 558,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.futexwakeup",
+          "file": "/usr/lib/go-1.24/src/runtime/os_linux.go",
+          "line": 88,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.notewakeup",
+          "file": "/usr/lib/go-1.24/src/runtime/lock_futex.go",
+          "line": 32,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.startm",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 3063,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.wakep",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 3185,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.resetspinning",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 3937,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.schedule",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 4095,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.park_m",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 4201,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.mcall",
+          "file": "/usr/lib/go-1.24/src/runtime/asm_amd64.s",
+          "line": 459,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.notesleep",
+          "file": "/usr/lib/go-1.24/src/runtime/lock_futex.go",
+          "line": 48,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.mPark",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 1919,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.stopm",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 2950,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.findRunnable",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 3699,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.schedule",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 4072,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.park_m",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 4201,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.mcall",
+          "file": "/usr/lib/go-1.24/src/runtime/asm_amd64.s",
+          "line": 459,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.nanotime",
+          "file": "/usr/lib/go-1.24/src/runtime/time_nofake.go",
+          "line": 33,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "time.Sleep",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 324,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "main.goroutineLeakHandler.func1",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 497,
+          "cum": 1,
+          "flat": 1
+        }
+      ],
+      "evidence": {
+        "artifactPath": "test-full-run/cpu.pb.gz",
+        "profileType": "cpu",
+        "extractedAt": "2026-03-01T00:38:28.866241801+01:00"
+      }
+    },
+    {
+      "category": "heap",
+      "title": "Top heap hotspots",
+      "severity": "critical",
+      "score": 90,
+      "top": [
+        {
+          "function": "reflect.copyVal",
+          "file": "/usr/lib/go-1.24/src/reflect/value.go",
+          "line": 1791,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "reflect.(*MapIter).Key",
+          "file": "/usr/lib/go-1.24/src/reflect/map_swiss.go",
+          "line": 267,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 769,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.interfaceEncoder",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 680,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 784,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.arrayEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 870,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.sliceEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 843,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.interfaceEncoder",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 680,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 784,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.(*encodeState).marshal",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 309,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.(*Encoder).Encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/stream.go",
+          "line": 210,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "main.exportHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 292,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "reflect.copyVal",
+          "file": "/usr/lib/go-1.24/src/reflect/value.go",
+          "line": 1791,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "reflect.(*MapIter).Value",
+          "file": "/usr/lib/go-1.24/src/reflect/map_swiss.go",
+          "line": 311,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 772,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.arrayEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 870,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.sliceEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 843,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.interfaceEncoder",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 680,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 784,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.(*encodeState).marshal",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 309,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.(*Encoder).Encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/stream.go",
+          "line": 210,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "main.exportHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 292,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "fmt.Sprintf",
+          "file": "/usr/lib/go-1.24/src/fmt/print.go",
+          "line": 240,
+          "cum": 43691,
+          "flat": 43691
+        },
+        {
+          "function": "main.generateFriends",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 115,
+          "cum": 43691,
+          "flat": 43691
+        },
+        {
+          "function": "main.initializeDemoData",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 98,
+          "cum": 43691,
+          "flat": 43691
+        },
+        {
+          "function": "main.main",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 41,
+          "cum": 43691,
+          "flat": 43691
+        },
+        {
+          "function": "runtime.main",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 283,
+          "cum": 43691,
+          "flat": 43691
+        },
+        {
+          "function": "reflect.copyVal",
+          "file": "/usr/lib/go-1.24/src/reflect/value.go",
+          "line": 1791,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "reflect.(*MapIter).Key",
+          "file": "/usr/lib/go-1.24/src/reflect/map_swiss.go",
+          "line": 267,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 769,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.arrayEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 870,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.sliceEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 843,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.interfaceEncoder",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 680,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 784,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.(*encodeState).marshal",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 309,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.(*Encoder).Encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/stream.go",
+          "line": 210,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "main.exportHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 292,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/textproto.MIMEHeader.Set",
+          "file": "/usr/lib/go-1.24/src/net/textproto/header.go",
+          "line": 22,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.Header.Set",
+          "file": "/usr/lib/go-1.24/src/net/http/header.go",
+          "line": 40,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "main.usersHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 159,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "reflect.copyVal",
+          "file": "/usr/lib/go-1.24/src/reflect/value.go",
+          "line": 1791,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "reflect.(*MapIter).Value",
+          "file": "/usr/lib/go-1.24/src/reflect/map_swiss.go",
+          "line": 311,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 772,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.structEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 727,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.structEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 727,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.arrayEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 870,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.sliceEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 843,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.interfaceEncoder",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 680,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 784,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.(*encodeState).marshal",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 309,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.(*Encoder).Encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/stream.go",
+          "line": 210,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "main.usersHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 160,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "reflect.copyVal",
+          "file": "/usr/lib/go-1.24/src/reflect/value.go",
+          "line": 1791,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "reflect.(*MapIter).Key",
+          "file": "/usr/lib/go-1.24/src/reflect/map_swiss.go",
+          "line": 267,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 769,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.structEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 727,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.structEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 727,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.arrayEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 870,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.sliceEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 843,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.interfaceEncoder",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 680,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 784,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.(*encodeState).marshal",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 309,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.(*Encoder).Encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/stream.go",
+          "line": 210,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "main.usersHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 160,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "main.exportHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 268,
+          "cum": 21846,
+          "flat": 21846
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 21846,
+          "flat": 21846
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 21846,
+          "flat": 21846
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 21846,
+          "flat": 21846
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 21846,
+          "flat": 21846
+        },
+        {
+          "function": "main.generateFriends",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 115,
+          "cum": 16384,
+          "flat": 16384
+        },
+        {
+          "function": "main.initializeDemoData",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 98,
+          "cum": 16384,
+          "flat": 16384
+        },
+        {
+          "function": "main.main",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 41,
+          "cum": 16384,
+          "flat": 16384
+        },
+        {
+          "function": "runtime.main",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 283,
+          "cum": 16384,
+          "flat": 16384
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 764,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "encoding/json.interfaceEncoder",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 680,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 784,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "encoding/json.arrayEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 870,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "encoding/json.sliceEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 843,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "encoding/json.interfaceEncoder",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 680,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 784,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "encoding/json.(*encodeState).marshal",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 309,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "encoding/json.(*Encoder).Encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/stream.go",
+          "line": 210,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "main.exportHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 292,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "time.Sleep",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 313,
+          "cum": 10923,
+          "flat": 10923
+        },
+        {
+          "function": "main.processHandler.func1",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 407,
+          "cum": 10923,
+          "flat": 10923
+        },
+        {
+          "function": "main.exportHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 278,
+          "cum": 10923,
+          "flat": 10923
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 10923,
+          "flat": 10923
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 10923,
+          "flat": 10923
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 10923,
+          "flat": 10923
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 10923,
+          "flat": 10923
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 764,
+          "cum": 10084,
+          "flat": 10084
+        },
+        {
+          "function": "encoding/json.arrayEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 870,
+          "cum": 10084,
+          "flat": 10084
+        },
+        {
+          "function": "encoding/json.sliceEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 843,
+          "cum": 10084,
+          "flat": 10084
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 10084,
+          "flat": 10084
+        },
+        {
+          "function": "encoding/json.interfaceEncoder",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 680,
+          "cum": 10084,
+          "flat": 10084
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 784,
+          "cum": 10084,
+          "flat": 10084
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 10084,
+          "flat": 10084
+        },
+        {
+          "function": "encoding/json.(*encodeState).marshal",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 309,
+          "cum": 10084,
+          "flat": 10084
+        },
+        {
+          "function": "encoding/json.(*Encoder).Encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/stream.go",
+          "line": 210,
+          "cum": 10084,
+          "flat": 10084
+        },
+        {
+          "function": "main.exportHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 292,
+          "cum": 10084,
+          "flat": 10084
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 10084,
+          "flat": 10084
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 10084,
+          "flat": 10084
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 10084,
+          "flat": 10084
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 10084,
+          "flat": 10084
+        },
+        {
+          "function": "main.exportHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 280,
+          "cum": 9104,
+          "flat": 9104
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 9104,
+          "flat": 9104
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 9104,
+          "flat": 9104
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 9104,
+          "flat": 9104
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 9104,
+          "flat": 9104
+        },
+        {
+          "function": "main.exportHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 287,
+          "cum": 6993,
+          "flat": 6993
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 6993,
+          "flat": 6993
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 6993,
+          "flat": 6993
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 6993,
+          "flat": 6993
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 6993,
+          "flat": 6993
+        },
+        {
+          "function": "main.exportHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 269,
+          "cum": 5462,
+          "flat": 5462
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 5462,
+          "flat": 5462
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 5462,
+          "flat": 5462
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 5462,
+          "flat": 5462
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 5462,
+          "flat": 5462
+        },
+        {
+          "function": "runtime/pprof.allFrames",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/proto.go",
+          "line": 232,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "runtime/pprof.(*profileBuilder).appendLocsForStack",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/proto.go",
+          "line": 451,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "runtime/pprof.writeHeapProto",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/protomem.go",
+          "line": 47,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "runtime/pprof.writeHeapInternal",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 634,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "runtime/pprof.writeHeap",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 593,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "runtime/pprof.(*Profile).WriteTo",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 377,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "net/http/pprof.handler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
+          "line": 272,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "net/http/pprof.Index",
+          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
+          "line": 389,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "runtime.acquireSudog",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 484,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "runtime.chanrecv",
+          "file": "/usr/lib/go-1.24/src/runtime/chan.go",
+          "line": 635,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "runtime.chanrecv1",
+          "file": "/usr/lib/go-1.24/src/runtime/chan.go",
+          "line": 506,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "runtime.unique_runtime_registerUniqueMapCleanup.func2",
+          "file": "/usr/lib/go-1.24/src/runtime/mgc.go",
+          "line": 1797,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "syscall.anyToSockaddr",
+          "file": "/usr/lib/go-1.24/src/syscall/syscall_linux.go",
+          "line": 675,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "syscall.Accept4",
+          "file": "/usr/lib/go-1.24/src/syscall/syscall_linux.go",
+          "line": 699,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "internal/poll.accept",
+          "file": "/usr/lib/go-1.24/src/internal/poll/sock_cloexec.go",
+          "line": 17,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "internal/poll.(*FD).Accept",
+          "file": "/usr/lib/go-1.24/src/internal/poll/fd_unix.go",
+          "line": 611,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "net.(*netFD).accept",
+          "file": "/usr/lib/go-1.24/src/net/fd_unix.go",
+          "line": 172,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "net.(*TCPListener).accept",
+          "file": "/usr/lib/go-1.24/src/net/tcpsock_posix.go",
+          "line": 159,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "net.(*TCPListener).Accept",
+          "file": "/usr/lib/go-1.24/src/net/tcpsock.go",
+          "line": 380,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "net/http.(*Server).Serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3424,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "net/http.(*Server).ListenAndServe",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3350,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "net/http.ListenAndServe",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3665,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "main.main",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 88,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "runtime.main",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 283,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "main.generateFriends",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 115,
+          "cum": 4096,
+          "flat": 4096
+        },
+        {
+          "function": "main.initializeDemoData",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 98,
+          "cum": 4096,
+          "flat": 4096
+        },
+        {
+          "function": "main.main",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 41,
+          "cum": 4096,
+          "flat": 4096
+        },
+        {
+          "function": "runtime.main",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 283,
+          "cum": 4096,
+          "flat": 4096
+        }
+      ],
+      "evidence": {
+        "artifactPath": "test-full-run/heap.pb.gz",
+        "profileType": "heap",
+        "extractedAt": "2026-03-01T00:38:28.866976095+01:00"
+      }
+    },
+    {
+      "category": "mutex",
+      "title": "Top mutex hotspots",
+      "severity": "low",
+      "score": 50,
+      "top": [],
+      "evidence": {
+        "artifactPath": "test-full-run/mutex.pb.gz",
+        "profileType": "mutex",
+        "extractedAt": "2026-03-01T00:38:28.867029716+01:00"
+      }
+    },
+    {
+      "category": "block",
+      "title": "Top block hotspots",
+      "severity": "low",
+      "score": 50,
+      "top": [],
+      "evidence": {
+        "artifactPath": "test-full-run/block.pb.gz",
+        "profileType": "block",
+        "extractedAt": "2026-03-01T00:38:28.867072998+01:00"
+      }
+    },
+    {
+      "category": "allocs",
+      "title": "Top allocs hotspots",
+      "severity": "high",
+      "score": 70,
+      "top": [
+        {
+          "function": "reflect.copyVal",
+          "file": "/usr/lib/go-1.24/src/reflect/value.go",
+          "line": 1791,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "reflect.(*MapIter).Key",
+          "file": "/usr/lib/go-1.24/src/reflect/map_swiss.go",
+          "line": 267,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 769,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.interfaceEncoder",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 680,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 784,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.arrayEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 870,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.sliceEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 843,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.interfaceEncoder",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 680,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 784,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.(*encodeState).marshal",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 309,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.(*Encoder).Encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/stream.go",
+          "line": 210,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "main.exportHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 292,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "reflect.copyVal",
+          "file": "/usr/lib/go-1.24/src/reflect/value.go",
+          "line": 1791,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "reflect.(*MapIter).Value",
+          "file": "/usr/lib/go-1.24/src/reflect/map_swiss.go",
+          "line": 311,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 772,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.arrayEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 870,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.sliceEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 843,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.interfaceEncoder",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 680,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 784,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.(*encodeState).marshal",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 309,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "encoding/json.(*Encoder).Encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/stream.go",
+          "line": 210,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "main.exportHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 292,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 65537,
+          "flat": 65537
+        },
+        {
+          "function": "fmt.Sprintf",
+          "file": "/usr/lib/go-1.24/src/fmt/print.go",
+          "line": 240,
+          "cum": 43691,
+          "flat": 43691
+        },
+        {
+          "function": "main.generateFriends",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 115,
+          "cum": 43691,
+          "flat": 43691
+        },
+        {
+          "function": "main.initializeDemoData",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 98,
+          "cum": 43691,
+          "flat": 43691
+        },
+        {
+          "function": "main.main",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 41,
+          "cum": 43691,
+          "flat": 43691
+        },
+        {
+          "function": "runtime.main",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 283,
+          "cum": 43691,
+          "flat": 43691
+        },
+        {
+          "function": "reflect.copyVal",
+          "file": "/usr/lib/go-1.24/src/reflect/value.go",
+          "line": 1791,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "reflect.(*MapIter).Key",
+          "file": "/usr/lib/go-1.24/src/reflect/map_swiss.go",
+          "line": 267,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 769,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.structEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 727,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.structEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 727,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.arrayEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 870,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.sliceEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 843,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.interfaceEncoder",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 680,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 784,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.(*encodeState).marshal",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 309,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.(*Encoder).Encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/stream.go",
+          "line": 210,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "main.usersHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 160,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "reflect.copyVal",
+          "file": "/usr/lib/go-1.24/src/reflect/value.go",
+          "line": 1791,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "reflect.(*MapIter).Value",
+          "file": "/usr/lib/go-1.24/src/reflect/map_swiss.go",
+          "line": 311,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 772,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.structEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 727,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.structEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 727,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.arrayEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 870,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.sliceEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 843,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.interfaceEncoder",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 680,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 784,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.(*encodeState).marshal",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 309,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.(*Encoder).Encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/stream.go",
+          "line": 210,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "main.usersHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 160,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "reflect.copyVal",
+          "file": "/usr/lib/go-1.24/src/reflect/value.go",
+          "line": 1791,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "reflect.(*MapIter).Key",
+          "file": "/usr/lib/go-1.24/src/reflect/map_swiss.go",
+          "line": 267,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 769,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.arrayEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 870,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.sliceEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 843,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.interfaceEncoder",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 680,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 784,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.(*encodeState).marshal",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 309,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.(*Encoder).Encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/stream.go",
+          "line": 210,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "main.exportHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 292,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/textproto.MIMEHeader.Set",
+          "file": "/usr/lib/go-1.24/src/net/textproto/header.go",
+          "line": 22,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.Header.Set",
+          "file": "/usr/lib/go-1.24/src/net/http/header.go",
+          "line": 40,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "main.usersHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 159,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "main.exportHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 268,
+          "cum": 21846,
+          "flat": 21846
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 21846,
+          "flat": 21846
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 21846,
+          "flat": 21846
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 21846,
+          "flat": 21846
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 21846,
+          "flat": 21846
+        },
+        {
+          "function": "main.generateFriends",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 115,
+          "cum": 16384,
+          "flat": 16384
+        },
+        {
+          "function": "main.initializeDemoData",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 98,
+          "cum": 16384,
+          "flat": 16384
+        },
+        {
+          "function": "main.main",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 41,
+          "cum": 16384,
+          "flat": 16384
+        },
+        {
+          "function": "runtime.main",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 283,
+          "cum": 16384,
+          "flat": 16384
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 764,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "encoding/json.interfaceEncoder",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 680,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 784,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "encoding/json.arrayEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 870,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "encoding/json.sliceEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 843,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "encoding/json.interfaceEncoder",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 680,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 784,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "encoding/json.(*encodeState).marshal",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 309,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "encoding/json.(*Encoder).Encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/stream.go",
+          "line": 210,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "main.exportHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 292,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 12289,
+          "flat": 12289
+        },
+        {
+          "function": "time.Sleep",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 313,
+          "cum": 10923,
+          "flat": 10923
+        },
+        {
+          "function": "main.processHandler.func1",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 407,
+          "cum": 10923,
+          "flat": 10923
+        },
+        {
+          "function": "main.exportHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 278,
+          "cum": 10923,
+          "flat": 10923
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 10923,
+          "flat": 10923
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 10923,
+          "flat": 10923
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 10923,
+          "flat": 10923
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 10923,
+          "flat": 10923
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 764,
+          "cum": 10084,
+          "flat": 10084
+        },
+        {
+          "function": "encoding/json.arrayEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 870,
+          "cum": 10084,
+          "flat": 10084
+        },
+        {
+          "function": "encoding/json.sliceEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 843,
+          "cum": 10084,
+          "flat": 10084
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 10084,
+          "flat": 10084
+        },
+        {
+          "function": "encoding/json.interfaceEncoder",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 680,
+          "cum": 10084,
+          "flat": 10084
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 784,
+          "cum": 10084,
+          "flat": 10084
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 10084,
+          "flat": 10084
+        },
+        {
+          "function": "encoding/json.(*encodeState).marshal",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 309,
+          "cum": 10084,
+          "flat": 10084
+        },
+        {
+          "function": "encoding/json.(*Encoder).Encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/stream.go",
+          "line": 210,
+          "cum": 10084,
+          "flat": 10084
+        },
+        {
+          "function": "main.exportHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 292,
+          "cum": 10084,
+          "flat": 10084
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 10084,
+          "flat": 10084
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 10084,
+          "flat": 10084
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 10084,
+          "flat": 10084
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 10084,
+          "flat": 10084
+        },
+        {
+          "function": "main.exportHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 280,
+          "cum": 9104,
+          "flat": 9104
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 9104,
+          "flat": 9104
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 9104,
+          "flat": 9104
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 9104,
+          "flat": 9104
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 9104,
+          "flat": 9104
+        },
+        {
+          "function": "main.exportHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 287,
+          "cum": 6993,
+          "flat": 6993
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 6993,
+          "flat": 6993
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 6993,
+          "flat": 6993
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 6993,
+          "flat": 6993
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 6993,
+          "flat": 6993
+        },
+        {
+          "function": "main.exportHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 269,
+          "cum": 5462,
+          "flat": 5462
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 5462,
+          "flat": 5462
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 5462,
+          "flat": 5462
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 5462,
+          "flat": 5462
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 5462,
+          "flat": 5462
+        },
+        {
+          "function": "syscall.anyToSockaddr",
+          "file": "/usr/lib/go-1.24/src/syscall/syscall_linux.go",
+          "line": 675,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "syscall.Accept4",
+          "file": "/usr/lib/go-1.24/src/syscall/syscall_linux.go",
+          "line": 699,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "internal/poll.accept",
+          "file": "/usr/lib/go-1.24/src/internal/poll/sock_cloexec.go",
+          "line": 17,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "internal/poll.(*FD).Accept",
+          "file": "/usr/lib/go-1.24/src/internal/poll/fd_unix.go",
+          "line": 611,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "net.(*netFD).accept",
+          "file": "/usr/lib/go-1.24/src/net/fd_unix.go",
+          "line": 172,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "net.(*TCPListener).accept",
+          "file": "/usr/lib/go-1.24/src/net/tcpsock_posix.go",
+          "line": 159,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "net.(*TCPListener).Accept",
+          "file": "/usr/lib/go-1.24/src/net/tcpsock.go",
+          "line": 380,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "net/http.(*Server).Serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3424,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "net/http.(*Server).ListenAndServe",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3350,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "net/http.ListenAndServe",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3665,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "main.main",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 88,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "runtime.main",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 283,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "runtime/pprof.allFrames",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/proto.go",
+          "line": 232,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "runtime/pprof.(*profileBuilder).appendLocsForStack",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/proto.go",
+          "line": 451,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "runtime/pprof.writeHeapProto",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/protomem.go",
+          "line": 47,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "runtime/pprof.writeHeapInternal",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 634,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "runtime/pprof.writeHeap",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 593,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "runtime/pprof.(*Profile).WriteTo",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 377,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "net/http/pprof.handler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
+          "line": 272,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "net/http/pprof.Index",
+          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
+          "line": 389,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "runtime.acquireSudog",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 484,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "runtime.chanrecv",
+          "file": "/usr/lib/go-1.24/src/runtime/chan.go",
+          "line": 635,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "runtime.chanrecv1",
+          "file": "/usr/lib/go-1.24/src/runtime/chan.go",
+          "line": 506,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "runtime.unique_runtime_registerUniqueMapCleanup.func2",
+          "file": "/usr/lib/go-1.24/src/runtime/mgc.go",
+          "line": 1797,
+          "cum": 5461,
+          "flat": 5461
+        },
+        {
+          "function": "main.generateFriends",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 115,
+          "cum": 4096,
+          "flat": 4096
+        },
+        {
+          "function": "main.initializeDemoData",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 98,
+          "cum": 4096,
+          "flat": 4096
+        },
+        {
+          "function": "main.main",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 41,
+          "cum": 4096,
+          "flat": 4096
+        },
+        {
+          "function": "runtime.main",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 283,
+          "cum": 4096,
+          "flat": 4096
+        }
+      ],
+      "allocationAnalysis": {
+        "totalAllocations": 740031,
+        "topConcentration": 0.5870294622792829,
+        "severity": "high",
+        "score": 70,
+        "hotspots": [
+          {
+            "function": "reflect.copyVal",
+            "file": "/usr/lib/go-1.24/src/reflect/value.go",
+            "line": 1791,
+            "count": 65537,
+            "percent": 8.855980357579615
+          },
+          {
+            "function": "reflect.copyVal",
+            "file": "/usr/lib/go-1.24/src/reflect/value.go",
+            "line": 1791,
+            "count": 65537,
+            "percent": 8.855980357579615
+          },
+          {
+            "function": "fmt.Sprintf",
+            "file": "/usr/lib/go-1.24/src/fmt/print.go",
+            "line": 240,
+            "count": 43691,
+            "percent": 5.903941861894975
+          },
+          {
+            "function": "reflect.copyVal",
+            "file": "/usr/lib/go-1.24/src/reflect/value.go",
+            "line": 1791,
+            "count": 32768,
+            "percent": 4.427922614052655
+          },
+          {
+            "function": "reflect.copyVal",
+            "file": "/usr/lib/go-1.24/src/reflect/value.go",
+            "line": 1791,
+            "count": 32768,
+            "percent": 4.427922614052655
+          }
+        ]
+      },
+      "evidence": {
+        "artifactPath": "test-full-run/allocs.pb.gz",
+        "profileType": "allocs",
+        "extractedAt": "2026-03-01T00:38:28.867737079+01:00"
+      }
+    }
+  ]
+}

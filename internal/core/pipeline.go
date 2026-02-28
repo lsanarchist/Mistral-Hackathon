@@ -331,7 +331,94 @@ func (p *Pipeline) RunWithTarget(ctx context.Context, pluginName, targetURL, tar
 	// Report (with optional insights)
 	reportPath := filepath.Join(outDir, "report.md")
 	if insights != nil {
-		return p.ReportWithInsights(ctx, findingsPath, reportPath, insights)
+		if err := p.ReportWithInsights(ctx, findingsPath, reportPath, insights); err != nil {
+			return err
+		}
+		// Generate web report when LLM insights are available
+		if err := p.GenerateWebReport(ctx, findingsPath, outDir, insights); err != nil {
+			return err
+		}
+	} else {
+		if err := p.Report(ctx, findingsPath, reportPath); err != nil {
+			return err
+		}
 	}
-	return p.Report(ctx, findingsPath, reportPath)
+	return nil
+}
+
+// GenerateWebReport creates a web-based HTML report
+func (p *Pipeline) GenerateWebReport(ctx context.Context, findingsPath, outDir string, insights *model.InsightsBundle) error {
+	// Read findings
+	data, err := os.ReadFile(findingsPath)
+	if err != nil {
+		return err
+	}
+
+	var findings model.FindingsBundle
+	if err := json.Unmarshal(data, &findings); err != nil {
+		return err
+	}
+
+	// Create web directory
+	webDir := filepath.Join(outDir, "web")
+	if err := os.MkdirAll(webDir, 0755); err != nil {
+		return err
+	}
+
+	// Copy web assets
+	webAssets := []string{"index.html", "style.css", "app.js"}
+	for _, asset := range webAssets {
+		srcPath := filepath.Join("web", asset)
+		dstPath := filepath.Join(webDir, asset)
+		
+		// Read source file
+		assetData, err := os.ReadFile(srcPath)
+		if err != nil {
+			return err
+		}
+		
+		// Write to destination
+		if err := os.WriteFile(dstPath, assetData, 0644); err != nil {
+			return err
+		}
+	}
+
+	// Create data directory for JSON files
+	dataDir := filepath.Join(webDir, "data")
+	if err := os.MkdirAll(dataDir, 0755); err != nil {
+		return err
+	}
+
+	// Copy findings.json to web/data/
+	findingsDst := filepath.Join(dataDir, "findings.json")
+	if err := os.WriteFile(findingsDst, data, 0644); err != nil {
+		return err
+	}
+
+	// Copy insights.json if available
+	if insights != nil {
+		insightsData, err := json.MarshalIndent(insights, "", "  ")
+		if err != nil {
+			return err
+		}
+		insightsDst := filepath.Join(dataDir, "insights.json")
+		if err := os.WriteFile(insightsDst, insightsData, 0644); err != nil {
+			return err
+		}
+	}
+
+	// Create index.html that loads the data automatically
+	indexHTML := `<!DOCTYPE html>
+<html>
+<head>
+    <title>TriageProf Web Report</title>
+    <meta http-equiv="refresh" content="0; url=web/index.html">
+</head>
+<body>
+    <p>Redirecting to web report...</p>
+</body>
+</html>`
+
+	indexPath := filepath.Join(outDir, "index.html")
+	return os.WriteFile(indexPath, []byte(indexHTML), 0644)
 }

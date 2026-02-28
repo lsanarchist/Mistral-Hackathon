@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TriageProf Performance Analysis</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-chart-line"></i> TriageProf Performance Analysis</h1>
+            <p class="subtitle">AI-Powered Performance Insights</p>
+        </header>
+        
+        <div class="controls">
+            <button id="loadBtn" class="btn primary"><i class="fas fa-folder-open"></i> Load Results</button>
+            <input type="file" id="fileInput" accept=".json" multiple style="display: none;">
+            <div class="file-hints">
+                <span>Select findings.json and optionally insights.json</span>
+            </div>
+        </div>
+        
+        <div id="loading" class="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Loading and analyzing results...</p>
+        </div>
+        
+        <div id="error" class="error-message" style="display: none;"></div>
+        
+        <div id="content" style="display: none;">
+            <div class="summary-card">
+                <h2><i class="fas fa-info-circle"></i> Executive Summary</h2>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <div class="summary-value" id="overallScore">-</div>
+                        <div class="summary-label">Overall Score</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-value" id="severity">-</div>
+                        <div class="summary-label">Severity</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-value" id="confidence">-</div>
+                        <div class="summary-label">Confidence</div>
+                    </div>
+                </div>
+                <div class="overview-text" id="overview"></div>
+            </div>
+            
+            <div class="top-risks" id="topRisksSection" style="display: none;">
+                <h2><i class="fas fa-exclamation-triangle"></i> Top Risks</h2>
+                <div class="risk-cards" id="riskCards"></div>
+            </div>
+            
+            <div class="top-actions" id="topActionsSection" style="display: none;">
+                <h2><i class="fas fa-tasks"></i> Recommended Actions</h2>
+                <div class="action-cards" id="actionCards"></div>
+            </div>
+            
+            <div class="findings-section">
+                <h2><i class="fas fa-search"></i> Performance Findings</h2>
+                <div class="findings-list" id="findingsList"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
