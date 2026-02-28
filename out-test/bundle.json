@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "timestamp": "2026-02-28T14:58:44.530681935+01:00",
+    "timestamp": "2026-02-28T18:21:33.459428393+01:00",
     "durationSec": 3,
     "service": "demo",
     "scenario": "default",
@@ -44,6 +44,12 @@
       "profileType": "goroutine",
       "path": "out-test/goroutine.txt",
       "contentType": "text/plain"
+    },
+    {
+      "kind": "pprof",
+      "profileType": "allocs",
+      "path": "out-test/allocs.pb.gz",
+      "contentType": "application/octet-stream"
     }
   ]
 }

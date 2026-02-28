@@ -55,7 +55,7 @@ func (p *Pipeline) Collect(ctx context.Context, pluginName, targetURL string, du
 	}
 
 	// Validate profile compatibility
-	requestedProfiles := []string{"cpu", "heap", "mutex", "block", "goroutine"}
+	requestedProfiles := []string{"cpu", "heap", "mutex", "block", "goroutine", "allocs"}
 	if err := manifest.ValidateProfiles(requestedProfiles); err != nil {
 		return nil, err
 	}
@@ -83,7 +83,7 @@ func (p *Pipeline) Collect(ctx context.Context, pluginName, targetURL string, du
 	req := model.CollectRequest{
 		Target:     target,
 		DurationSec: durationSec,
-		Profiles:   []string{"cpu", "heap", "mutex", "block", "goroutine"},
+		Profiles:   []string{"cpu", "heap", "mutex", "block", "goroutine", "allocs"},
 		OutDir:     outDir,
 		Metadata: map[string]string{
 			"service":  "demo",

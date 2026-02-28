@@ -280,6 +280,8 @@ Plugins are separate executables, discovered via manifests, and communicate with
 - `plugins/manifests/go-pprof-http.json`: Added "allocs" to profiles capabilities
 - `plugins/src/go-pprof-http/main.go`: Added allocs profile collection logic in collect() method
 - `plugins/src/go-pprof-http/main.go`: Updated PluginInfo.Profiles to include "allocs"
+- `internal/core/pipeline.go`: Updated Collect() method to request allocs profile from plugins
+- `internal/core/pipeline.go`: Updated profile validation to include allocs
 
 **Verification**
 - Tests: `go test ./...` - all passing
@@ -287,6 +289,8 @@ Plugins are separate executables, discovered via manifests, and communicate with
 - Plugin discovery: `bin/triageprof plugins` - shows allocs in capabilities
 - JSON-RPC: Tested rpc.info call returns allocs in profiles list
 - Integration: Plugin responds correctly to collect requests with allocs profile
+- End-to-end: `bin/triageprof collect` successfully collects allocs.pb.gz file
+- Bundle validation: bundle.json includes allocs artifact entry
 
 **Risk/Notes**
 - No breaking changes to existing functionality
