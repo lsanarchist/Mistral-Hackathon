@@ -962,10 +962,10 @@ bin/triageprof report --in results/findings.json --out results/report.md
 - [ ] Cloud deployment options
 - [ ] Integration with monitoring systems
 
-## Plugin Discovery System (NEW)
+## Plugin Discovery System
 
 ### Overview
-The latest enhancement adds manifest-based plugin discovery and compatibility checking without changing the core Collect → Analyze → Report pipeline.
+The plugin discovery system provides manifest-based plugin discovery and compatibility checking. It allows users to list available plugins, validates plugin capabilities before use, and provides clear error messages for compatibility issues. The system is fully backward compatible and doesn't change the core Collect → Analyze → Report pipeline.
 
 ### New Components
 
