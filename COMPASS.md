@@ -488,3 +488,38 @@ Plugins are separate executables, discovered via manifests, and communicate with
 - Checkpoint tag: N/A (direct commit to main)
 - Commit: `68b47fc`
 - Rollback: `git revert 68b47fc`
+
+### Iter 20240304-2000 — UTC
+**Type:** Bugfix
+**Objective:** Fix JSON report generation to include callgraph and regression analysis data
+
+**Acceptance criteria (bugfix)**
+- [x] JSON reports include callgraph data when --callgraph flag is used
+- [x] JSON reports include regression data when --regression flag is used
+- [x] Both callgraph and regression data appear in structured JSON format
+- [x] Markdown reports continue to work correctly (no regression)
+- [x] All existing tests still pass
+- [x] Backward compatibility maintained
+
+**Changes**
+- `internal/report/report.go`: Fixed GenerateJSON method to include Callgraph and Regression fields in ReportFinding struct
+
+**Verification**
+- Tests: `go test ./...` - all passing
+- Manual testing: Generated JSON reports with --callgraph and --regression flags
+- Verified callgraph trees and regression analysis appear in JSON output
+- Confirmed markdown reports still work correctly
+- Verified backward compatibility with existing workflows
+
+**Risk/Notes**
+- No breaking changes - purely a bug fix
+- JSON schema remains compatible (new fields are optional)
+- All existing functionality preserved
+- Bug was preventing complete analysis data from appearing in JSON reports
+- Fix completes Layer 1 goal: "Structured, machine-readable report format"
+
+**Git / Rollback**
+- Branch: `main`
+- Checkpoint tag: N/A (direct commit to main)
+- Commit: `1946a29`
+- Rollback: `git revert 1946a29`
