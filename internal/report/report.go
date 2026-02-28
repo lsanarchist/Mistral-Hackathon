@@ -180,6 +180,8 @@ func (r *Reporter) GenerateJSON(findings model.FindingsBundle, insights *model.I
 			Severity:    finding.Severity,
 			Score:       finding.Score,
 			TopHotspots: finding.Top,
+			Callgraph:   finding.Callgraph,
+			Regression:  finding.Regression,
 			Evidence:    finding.Evidence,
 		}
 	}
