@@ -94,6 +94,38 @@ func (r *Reporter) GenerateWithInsights(findings model.FindingsBundle, insights 
 			sb.WriteString(fmt.Sprintf("**Callgraph Statistics**: %d nodes, max depth %d\n\n", totalNodes, maxDepth))
 		}
 
+		// Add allocation analysis if available
+		if finding.AllocationAnalysis != nil {
+			sb.WriteString("### Allocation Analysis\n\n")
+			sb.WriteString(fmt.Sprintf("- **Total Allocations**: %.0f\n", finding.AllocationAnalysis.TotalAllocations))
+			sb.WriteString(fmt.Sprintf("- **Top 10%% Concentration**: %.1f%%\n", finding.AllocationAnalysis.TopConcentration*100))
+			sb.WriteString(fmt.Sprintf("- **Allocation Severity**: %s\n", strings.Title(finding.AllocationAnalysis.Severity)))
+			sb.WriteString(fmt.Sprintf("- **Allocation Score**: %d/100\n", finding.AllocationAnalysis.Score))
+			sb.WriteString("\n")
+
+			if finding.AllocationAnalysis.TopConcentration > 0.5 {
+				sb.WriteString("⚠️ **High Allocation Concentration Detected**\n")
+				sb.WriteString(fmt.Sprintf("Top functions account for %.1f%% of all allocations.\n", finding.AllocationAnalysis.TopConcentration*100))
+				sb.WriteString("This indicates potential memory allocation hotspots that may benefit from optimization.\n")
+			} else {
+				sb.WriteString("✅ **Balanced Allocation Pattern**\n")
+				sb.WriteString("Allocations are reasonably distributed across functions.\n")
+			}
+			sb.WriteString("\n")
+
+			// Add allocation hotspots table
+			if len(finding.AllocationAnalysis.Hotspots) > 0 {
+				sb.WriteString("#### Top Allocation Hotspots\n\n")
+				sb.WriteString("| Function | File | Line | Count | Percentage |\n")
+				sb.WriteString("|----------|------|------|-------|------------|\n")
+				for _, hotspot := range finding.AllocationAnalysis.Hotspots {
+					sb.WriteString(fmt.Sprintf("| %s | %s | %d | %.0f | %.1f%% |\n",
+						hotspot.Function, hotspot.File, hotspot.Line, hotspot.Count, hotspot.Percent))
+				}
+				sb.WriteString("\n")
+			}
+		}
+
 		// Add regression analysis if available
 		if finding.Regression != nil {
 			sb.WriteString("### Regression Analysis\n\n")
@@ -179,15 +211,16 @@ func (r *Reporter) GenerateJSON(findings model.FindingsBundle, insights *model.I
 	// Convert findings to report format
 	for i, finding := range findings.Findings {
 		report.Findings[i] = model.ReportFinding{
-			ID:          fmt.Sprintf("finding-%d", i),
-			Category:    finding.Category,
-			Title:       finding.Title,
-			Severity:    finding.Severity,
-			Score:       finding.Score,
-			TopHotspots: finding.Top,
-			Callgraph:   finding.Callgraph,
-			Regression:  finding.Regression,
-			Evidence:    finding.Evidence,
+			ID:               fmt.Sprintf("finding-%d", i),
+			Category:         finding.Category,
+			Title:            finding.Title,
+			Severity:         finding.Severity,
+			Score:            finding.Score,
+			TopHotspots:      finding.Top,
+			Callgraph:        finding.Callgraph,
+			Regression:       finding.Regression,
+			AllocationAnalysis: finding.AllocationAnalysis,
+			Evidence:         finding.Evidence,
 		}
 	}
 

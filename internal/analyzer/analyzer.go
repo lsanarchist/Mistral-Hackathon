@@ -97,6 +97,14 @@ func (a *Analyzer) AnalyzeWithOptions(bundle model.ProfileBundle, topN int, opti
 			},
 		}
 
+		// Add allocation-specific analysis for allocs profiles
+		if artifact.ProfileType == "allocs" {
+			allocationAnalysis := analyzeAllocationPatterns(prof)
+			finding.Severity = allocationAnalysis.Severity
+			finding.Score = allocationAnalysis.Score
+			finding.AllocationAnalysis = &allocationAnalysis
+		}
+
 		findings = append(findings, finding)
 	}
 
@@ -389,6 +397,98 @@ func calculateProfileScore(prof *profile.Profile) int {
 		return 40
 	}
 	return 20
+}
+
+// analyzeAllocationPatterns performs allocation-specific analysis
+func analyzeAllocationPatterns(prof *profile.Profile) model.AllocationAnalysis {
+	if len(prof.Sample) == 0 {
+		return model.AllocationAnalysis{}
+	}
+
+	// Sort samples by allocation count
+	samples := prof.Sample
+	sort.Slice(samples, func(i, j int) bool {
+		return samples[i].Value[0] > samples[j].Value[0]
+	})
+
+	totalAllocations := 0.0
+	for _, sample := range samples {
+		totalAllocations += float64(sample.Value[0])
+	}
+
+	if totalAllocations == 0 {
+		return model.AllocationAnalysis{}
+	}
+
+	// Calculate top 10% concentration
+	top10Percent := max(1, len(samples)/10)
+	topAllocations := 0.0
+	for i := 0; i < top10Percent && i < len(samples); i++ {
+		topAllocations += float64(samples[i].Value[0])
+	}
+
+	concentration := topAllocations / totalAllocations
+
+	// Determine allocation severity
+	severity := "low"
+	if concentration > 0.7 {
+		severity = "critical"
+	} else if concentration > 0.5 {
+		severity = "high"
+	} else if concentration > 0.3 {
+		severity = "medium"
+	}
+
+	// Calculate score based on concentration
+	score := 0
+	if concentration > 0.7 {
+		score = 90
+	} else if concentration > 0.5 {
+		score = 70
+	} else if concentration > 0.3 {
+		score = 50
+	} else {
+		score = 30
+	}
+
+	// Identify top allocation hotspots
+	hotspots := []model.AllocationHotspot{}
+	for i, sample := range samples {
+		if i >= 5 { // Top 5 hotspots
+			break
+		}
+		
+		if len(sample.Location) > 0 && len(sample.Location[0].Line) > 0 {
+			line := sample.Location[0].Line[0]
+			hotspots = append(hotspots, model.AllocationHotspot{
+				Function: line.Function.Name,
+				File:     line.Function.Filename,
+				Line:     int(line.Line),
+				Count:    float64(sample.Value[0]),
+				Percent:  float64(sample.Value[0]) / totalAllocations * 100,
+			})
+		}
+	}
+
+	return model.AllocationAnalysis{
+		TotalAllocations: totalAllocations,
+		TopConcentration: concentration,
+		Severity:         severity,
+		Score:            score,
+		Hotspots:         hotspots,
+	}
+}
+
+// calculateAllocationScore calculates a specialized score for allocation profiles
+func calculateAllocationScore(prof *profile.Profile) int {
+	analysis := analyzeAllocationPatterns(prof)
+	return analysis.Score
+}
+
+// determineAllocationSeverity determines severity specifically for allocation profiles
+func determineAllocationSeverity(prof *profile.Profile) string {
+	analysis := analyzeAllocationPatterns(prof)
+	return analysis.Severity
 }
 
 func max(a, b int) int {

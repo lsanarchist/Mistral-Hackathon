@@ -227,3 +227,102 @@ func TestMaxFunction(t *testing.T) {
 	assert.Equal(t, 5, max(5, 3))
 	assert.Equal(t, 5, max(5, 5))
 }
+
+func TestAnalyzeAllocationPatterns(t *testing.T) {
+	// Create a test profile with allocation data
+	prof := &profile.Profile{
+		Sample: []*profile.Sample{
+			{Value: []int64{1000}, Location: []*profile.Location{
+				{Line: []profile.Line{
+					{Function: &profile.Function{Name: "allocFunction1", Filename: "file1.go"}, Line: 10},
+				}},
+			}},
+			{Value: []int64{500}, Location: []*profile.Location{
+				{Line: []profile.Line{
+					{Function: &profile.Function{Name: "allocFunction2", Filename: "file2.go"}, Line: 20},
+				}},
+			}},
+			{Value: []int64{250}, Location: []*profile.Location{
+				{Line: []profile.Line{
+					{Function: &profile.Function{Name: "allocFunction3", Filename: "file3.go"}, Line: 30},
+				}},
+			}},
+			{Value: []int64{100}, Location: []*profile.Location{
+				{Line: []profile.Line{
+					{Function: &profile.Function{Name: "allocFunction4", Filename: "file4.go"}, Line: 40},
+				}},
+			}},
+			{Value: []int64{50}, Location: []*profile.Location{
+				{Line: []profile.Line{
+					{Function: &profile.Function{Name: "allocFunction5", Filename: "file5.go"}, Line: 50},
+				}},
+			}},
+		},
+	}
+
+	analysis := analyzeAllocationPatterns(prof)
+
+	// Verify basic properties
+	assert.Equal(t, 1900.0, analysis.TotalAllocations)
+	assert.Greater(t, analysis.TopConcentration, 0.5)
+	assert.NotEmpty(t, analysis.Severity)
+	assert.Greater(t, analysis.Score, 0)
+	assert.Equal(t, 5, len(analysis.Hotspots))
+
+	// Verify hotspots are sorted by count
+	for i := 0; i < len(analysis.Hotspots)-1; i++ {
+		assert.GreaterOrEqual(t, analysis.Hotspots[i].Count, analysis.Hotspots[i+1].Count)
+	}
+
+	// Verify percentages sum correctly
+	totalPercent := 0.0
+	for _, hotspot := range analysis.Hotspots {
+		totalPercent += hotspot.Percent
+	}
+	assert.Greater(t, totalPercent, 0.0)
+}
+
+func TestAllocationAnalysisIntegration(t *testing.T) {
+	analyzer := NewAnalyzer()
+
+	// Create a test bundle with allocation profile
+	bundle := model.ProfileBundle{
+		Metadata: model.Metadata{
+			Timestamp:   time.Now(),
+			DurationSec: 10,
+			Service:     "test",
+			Scenario:    "test",
+			GitSha:      "test",
+		},
+		Target: model.Target{
+			Type:    "url",
+			BaseURL: "http://localhost:6060",
+		},
+		Plugin: model.PluginRef{
+			Name:    "test",
+			Version: "0.1.0",
+		},
+		Artifacts: []model.Artifact{
+			{
+				Kind:        "pprof",
+				ProfileType: "allocs",
+				Path:        "../../out/allocs.pb.gz",
+				ContentType: "application/octet-stream",
+			},
+		},
+	}
+
+	// Test allocation analysis
+	findings, err := analyzer.AnalyzeWithOptions(bundle, 5, AnalyzeOptions{})
+	require.NoError(t, err)
+	require.NotNil(t, findings)
+	
+	if len(findings.Findings) > 0 {
+		finding := findings.Findings[0]
+		assert.Equal(t, "allocs", finding.Category)
+		assert.NotNil(t, finding.AllocationAnalysis, "Allocation analysis should be present for allocs profile")
+		assert.NotEmpty(t, finding.AllocationAnalysis.Severity)
+		assert.Greater(t, finding.AllocationAnalysis.Score, 0)
+		assert.Greater(t, finding.AllocationAnalysis.TotalAllocations, 0.0)
+	}
+}

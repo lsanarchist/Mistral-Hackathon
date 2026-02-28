@@ -96,6 +96,74 @@ func TestDetermineSeverity(t *testing.T) {
 	}
 }
 
+func TestJSONReportWithAllocationAnalysis(t *testing.T) {
+	reporter := NewReporter()
+
+	// Create test findings with allocation analysis
+	findings := model.FindingsBundle{
+		Summary: model.Summary{
+			OverallScore: 75,
+			TopIssueTags: []string{"performance", "memory"},
+		},
+		Findings: []model.Finding{
+			{
+				Category: "allocs",
+				Title:    "Top allocation hotspots",
+				Severity: "high",
+				Score:    85,
+				AllocationAnalysis: &model.AllocationAnalysis{
+					TotalAllocations: 10000.0,
+					TopConcentration: 0.75,
+					Severity:         "high",
+					Score:            85,
+					Hotspots: []model.AllocationHotspot{
+						{
+							Function: "runtime.allocm",
+							File:     "proc.go",
+							Line:     2276,
+							Count:    5000.0,
+							Percent:  50.0,
+						},
+						{
+							Function: "main.allocateMemory",
+							File:     "main.go",
+							Line:     42,
+							Count:    2500.0,
+							Percent:  25.0,
+						},
+					},
+				},
+				Evidence: model.Evidence{
+					ArtifactPath: "allocs.pb.gz",
+					ProfileType:  "allocs",
+					ExtractedAt:  time.Now(),
+				},
+			},
+		},
+	}
+
+	// Test JSON generation with allocation analysis
+	reportData, err := reporter.GenerateJSON(findings, nil, model.JSONReportOptions{
+		IncludeInsights: false,
+		PrettyPrint:     false,
+	})
+	assert.NoError(t, err)
+
+	// Verify it's valid JSON
+	var jsonReport model.JSONReport
+	err = json.Unmarshal(reportData, &jsonReport)
+	assert.NoError(t, err)
+
+	// Verify allocation analysis is included
+	assert.Equal(t, 1, len(jsonReport.Findings))
+	assert.Equal(t, "allocs", jsonReport.Findings[0].Category)
+	assert.NotNil(t, jsonReport.Findings[0].AllocationAnalysis)
+	assert.Equal(t, 10000.0, jsonReport.Findings[0].AllocationAnalysis.TotalAllocations)
+	assert.Equal(t, 0.75, jsonReport.Findings[0].AllocationAnalysis.TopConcentration)
+	assert.Equal(t, 2, len(jsonReport.Findings[0].AllocationAnalysis.Hotspots))
+	assert.Equal(t, "runtime.allocm", jsonReport.Findings[0].AllocationAnalysis.Hotspots[0].Function)
+}
+
 func TestCallgraphStatistics(t *testing.T) {
 	reporter := NewReporter()
 

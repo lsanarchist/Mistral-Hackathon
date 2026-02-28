@@ -53,14 +53,33 @@ type PluginRef struct {
 }
 
 type Finding struct {
-	Category   string              `json:"category"`
-	Title      string              `json:"title"`
-	Severity   string              `json:"severity"`
-	Score      int                 `json:"score"`
-	Top        []StackFrame        `json:"top"`
-	Callgraph  []CallgraphNode     `json:"callgraph,omitempty"`
-	Regression *RegressionAnalysis `json:"regression,omitempty"`
-	Evidence   Evidence            `json:"evidence"`
+	Category        string                  `json:"category"`
+	Title           string                  `json:"title"`
+	Severity        string                  `json:"severity"`
+	Score           int                     `json:"score"`
+	Top             []StackFrame            `json:"top"`
+	Callgraph       []CallgraphNode         `json:"callgraph,omitempty"`
+	Regression      *RegressionAnalysis    `json:"regression,omitempty"`
+	AllocationAnalysis *AllocationAnalysis `json:"allocationAnalysis,omitempty"`
+	Evidence        Evidence                `json:"evidence"`
+}
+
+// AllocationAnalysis represents allocation-specific analysis results
+type AllocationAnalysis struct {
+	TotalAllocations float64            `json:"totalAllocations"`
+	TopConcentration float64            `json:"topConcentration"`
+	Severity         string             `json:"severity"`
+	Score            int                `json:"score"`
+	Hotspots         []AllocationHotspot `json:"hotspots"`
+}
+
+// AllocationHotspot represents a memory allocation hotspot
+type AllocationHotspot struct {
+	Function string  `json:"function"`
+	File     string  `json:"file"`
+	Line     int     `json:"line"`
+	Count    float64 `json:"count"`
+	Percent  float64 `json:"percent"`
 }
 
 type CallgraphNode struct {

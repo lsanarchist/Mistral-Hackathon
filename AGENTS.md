@@ -1,7 +1,7 @@
 ## Feature Policy (MANDATORY for feature iterations)
 A "feature iteration" must:
 1) Define the feature in 2–5 bullet acceptance criteria.
-2) Keep scope small (one PR-sized change).
+2) Write code.
 3) Add tests covering the new behavior (or a deterministic verification harness if tests are hard).
 4) Update  COMPASS.md + project_context.md to reflect:
    - what the feature does

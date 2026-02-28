@@ -565,5 +565,49 @@ Plugins are separate executables, discovered via manifests, and communicate with
 **Git / Rollback**
 - Branch: `main`
 - Checkpoint tag: N/A (direct commit to main)
-- Commit: `<to be filled after commit>`
-- Rollback: `git revert <commit-hash>`
+- Commit: `cce0737`
+- Rollback: `git revert cce0737`
+
+### Iter 20240304-2100 — UTC
+**Type:** Feature
+**Objective:** Enhance callgraph visualization with depth control and statistics
+
+**Acceptance criteria (feature)**
+- [x] Add --callgraph-depth flag to control callgraph depth
+- [x] Enhance ASCII callgraph rendering with tree characters and depth information
+- [x] Add callgraph statistics (total nodes, max depth) to reports
+- [x] Support variable callgraph depth in analyzer
+- [x] Maintain backward compatibility with existing workflows
+- [x] Add comprehensive tests for new functionality
+- [x] Verify both markdown and JSON reports include enhanced callgraph data
+
+**Changes**
+- `cmd/triageprof/main.go`: Added --callgraph-depth flag to analyze command
+- `internal/core/pipeline.go`: Added CallgraphDepth field to CoreAnalyzeOptions
+- `internal/analyzer/analyzer.go`: Added CallgraphDepth field to AnalyzeOptions and support for variable depth
+- `internal/report/report.go`: Enhanced callgraph visualization with tree characters, added statistics functions
+- `internal/analyzer/analyzer_test.go`: Added comprehensive tests for callgraph depth variation
+- `internal/report/report_test.go`: Added tests for callgraph statistics and JSON generation
+
+**Verification**
+- Tests: `go test ./...` - all passing including new callgraph tests
+- Build: `make build` - successful
+- CLI Integration: `bin/triageprof analyze --callgraph --callgraph-depth 4` works correctly
+- Callgraph Analysis: Generates hierarchical trees with configurable depth
+- Report Integration: Enhanced visualization and statistics appear in both markdown and JSON reports
+- Backward Compatibility: Existing workflows unchanged, new features optional
+- End-to-End: Full pipeline works with enhanced callgraph analysis enabled
+
+**Risk/Notes**
+- No breaking changes - all existing functionality preserved
+- New analysis features are optional and disabled by default
+- Callgraph depth configurable from 1 to unlimited (practical limits apply)
+- Enhanced visualization provides better insights into call hierarchies
+- Feature significantly improves Layer 1 "Analysis engine improvements" goal
+- Statistics help users understand callgraph complexity and depth
+
+**Git / Rollback**
+- Branch: `main`
+- Checkpoint tag: N/A (direct commit to main)
+- Commit: `e4f8090`
+- Rollback: `git revert e4f8090`
