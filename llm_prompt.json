@@ -1,66 +1,66 @@
-Analyze the following performance findings and provide insights in JSON format matching the schema:
-
-METADATA:
+=== PROFILE METADATA ===
 Service: demo
 Scenario: default
-Duration: 3 seconds
-Target: http://[REDACTED_HOSTNAME]:6060
-Profiles Collected: - cpu (pprof), - heap (pprof), - mutex (pprof), - block (pprof), - goroutine (text)
-Artifacts: 5 total
-Timestamp: 2026-02-28 15:30:28
+Duration: 5 seconds
+Target: http://[REDACTED_HOSTNAME]
 
-FINDINGS SUMMARY:
-Overall Score: 75/100
-Top Issue Tags: performance
+=== FINDINGS SUMMARY ===
+Overall Score: 75/100 (medium)
+Top Issues: performance
 
-
-FINDING 1: Top cpu hotspots
+---
+Finding: Top cpu hotspots
 Category: cpu
-Severity: medium
+Severity: low
 Score: 50
-Top Stack Frames:
+Evidence: cpu profile
 
-Evidence: cpu profile from cpu.pb.gz
-
-FINDING 2: Top heap hotspots
+---
+Finding: Top heap hotspots
 Category: heap
-Severity: medium
+Severity: critical
 Score: 90
-Top Stack Frames:
-  - internal[REDACTED_PATH][REDACTED_PATH]/netip.zoneV6 string }; weak.u unsafe.Pointer }]).All (line 483) (21845.0s cum, 21845.0s flat)
-  - unique.addUniqueMap[[REDACTED_HOSTNAME] { net[REDACTED_PATH] (line 134) (21845.0s cum, 21845.0s flat)
-  - unique.registerCleanup.func1 (line 162) (21845.0s cum, 21845.0s flat)
-  - runtime.[REDACTED_TOKEN].func2 (line 1798) (21845.0s cum, 21845.0s flat)
-  - syscall.anyToSockaddr (line 675) (16385.0s cum, 16385.0s flat)
-  - syscall.Accept4 (line 699) (16385.0s cum, 16385.0s flat)
-  - internal/poll.accept (line 17) (16385.0s cum, 16385.0s flat)
-  - internal/poll.(*FD).Accept (line 611) (16385.0s cum, 16385.0s flat)
-  - net.(*netFD).accept (line 172) (16385.0s cum, 16385.0s flat)
-  - net.(*TCPListener).accept (line 159) (16385.0s cum, 16385.0s flat)
+Top Hotspots:
+  - main.allocHeavyHandler (main.go:43) - 50003.00%
+  - net/http.HandlerFunc.ServeHTTP (server.go:2294) - 50003.00%
+  - net/http.(*ServeMux).ServeHTTP (server.go:2822) - 50003.00%
+  - net/http.serverHandler.ServeHTTP (server.go:3301) - 50003.00%
+  - net/http.(*conn).serve (server.go:2102) - 50003.00%
+  - unique.addUniqueMap[go.shape.struct { net/netip.isV6 bool; net/netip.zoneV6 string }].func1 (handle.go:134) - 43691.00%
+  - unique.registerCleanup.func1 (handle.go:162) - 43691.00%
+  - runtime.unique_runtime_registerUniqueMapCleanup.func2 (mgc.go:1798) - 43691.00%
+  - net/http.init.func14 (header.go:161) - 21845.00%
+  - sync.(*Pool).Get (pool.go:155) - 21845.00%
+Evidence: heap profile
 
-Evidence: heap profile from heap.pb.gz
-
-FINDING 3: Top mutex hotspots
+---
+Finding: Top mutex hotspots
 Category: mutex
-Severity: medium
+Severity: low
 Score: 50
-Top Stack Frames:
+Evidence: mutex profile
 
-Evidence: mutex profile from mutex.pb.gz
-
-FINDING 4: Top block hotspots
+---
+Finding: Top block hotspots
 Category: block
-Severity: medium
+Severity: low
 Score: 50
-Top Stack Frames:
+Evidence: block profile
 
-Evidence: block profile from block.pb.gz
-
-
-INSTRUCTIONS:
-1. Generate an executive summary with overall severity assessment
-2. Identify top 3 risks with impact/likelihood
-3. Suggest top 3 actions with priority/effort estimates
-4. For each finding, provide narrative, likely root causes, suggestions, and next measurements
-5. Include caveats about limitations and confidence levels
-6. Output JSON ONLY, no markdown or explanations
+---
+Finding: Top allocs hotspots
+Category: allocs
+Severity: critical
+Score: 90
+Top Hotspots:
+  - main.allocHeavyHandler (main.go:43) - 50003.00%
+  - net/http.HandlerFunc.ServeHTTP (server.go:2294) - 50003.00%
+  - net/http.(*ServeMux).ServeHTTP (server.go:2822) - 50003.00%
+  - net/http.serverHandler.ServeHTTP (server.go:3301) - 50003.00%
+  - net/http.(*conn).serve (server.go:2102) - 50003.00%
+  - unique.addUniqueMap[go.shape.struct { net/netip.isV6 bool; net/netip.zoneV6 string }].func1 (handle.go:134) - 43691.00%
+  - unique.registerCleanup.func1 (handle.go:162) - 43691.00%
+  - runtime.unique_runtime_registerUniqueMapCleanup.func2 (mgc.go:1798) - 43691.00%
+  - net/http.init.func14 (header.go:161) - 21845.00%
+  - sync.(*Pool).Get (pool.go:155) - 21845.00%
+Evidence: allocs profile

@@ -1,0 +1,55 @@
+{
+  "metadata": {
+    "timestamp": "2026-02-28T23:44:53.822578917+01:00",
+    "durationSec": 5,
+    "service": "demo",
+    "scenario": "default",
+    "gitSha": ""
+  },
+  "target": {
+    "type": "url",
+    "baseUrl": "http://localhost:6060"
+  },
+  "plugin": {
+    "name": "go-pprof-http",
+    "version": "0.1.0"
+  },
+  "artifacts": [
+    {
+      "kind": "pprof",
+      "profileType": "cpu",
+      "path": "test-llm-output/cpu.pb.gz",
+      "contentType": "application/octet-stream"
+    },
+    {
+      "kind": "pprof",
+      "profileType": "heap",
+      "path": "test-llm-output/heap.pb.gz",
+      "contentType": "application/octet-stream"
+    },
+    {
+      "kind": "pprof",
+      "profileType": "mutex",
+      "path": "test-llm-output/mutex.pb.gz",
+      "contentType": "application/octet-stream"
+    },
+    {
+      "kind": "pprof",
+      "profileType": "block",
+      "path": "test-llm-output/block.pb.gz",
+      "contentType": "application/octet-stream"
+    },
+    {
+      "kind": "text",
+      "profileType": "goroutine",
+      "path": "test-llm-output/goroutine.txt",
+      "contentType": "text/plain"
+    },
+    {
+      "kind": "pprof",
+      "profileType": "allocs",
+      "path": "test-llm-output/allocs.pb.gz",
+      "contentType": "application/octet-stream"
+    }
+  ]
+}

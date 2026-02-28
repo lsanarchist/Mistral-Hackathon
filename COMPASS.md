@@ -29,7 +29,7 @@ Plugins are separate executables, discovered via manifests, and communicate with
 - Core is language-agnostic; language/profiler-specific logic must live in plugins.
 - Plugin protocol/API must remain stable; breaking changes require explicit versioning.
 - Deterministic profiling data is always collected first and is the source of truth.
-- **AI/LLM analysis is a first-class feature**, not optional glue — it must be designed as a proper pipeline stage with a clean interface, not bolted on.
+- **AI/LLM analysis is a first-class feature**, not optional glue — it must be designed as a proper pipeline stage with a clean interface, not bolted on. apikey for dev is at apikey.swaga
 - LLM calls are always backed by structured profiling data; the LLM never guesses — it reasons over real evidence.
 - LLM stage must be skippable via `--no-ai` flag so the tool works without an API key.
 - **Depth over breadth**: do not add new plugins unless the existing ones are excellent and the SDK is solid.

@@ -324,7 +324,7 @@ func (p *Pipeline) RunWithTarget(ctx context.Context, pluginName, targetURL, tar
 
 	// Report (with optional insights)
 	reportPath := filepath.Join(outDir, "report.md")
-	if insights != nil && insights.DisabledReason == "" {
+	if insights != nil {
 		return p.ReportWithInsights(ctx, findingsPath, reportPath, insights)
 	}
 	return p.Report(ctx, findingsPath, reportPath)

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -9,6 +10,8 @@ import (
 	"strings"
 
 	"github.com/mistral-hackathon/triageprof/internal/core"
+	"github.com/mistral-hackathon/triageprof/internal/llm"
+	"github.com/mistral-hackathon/triageprof/internal/model"
 	"github.com/mistral-hackathon/triageprof/internal/plugin"
 )
 
@@ -311,8 +314,81 @@ func runRunCommand(pipeline *core.Pipeline) {
 }
 
 func runLLMCommand() {
-	fmt.Println("LLM functionality temporarily disabled due to circular dependency issues")
-	os.Exit(1)
+	flagSet := flag.NewFlagSet("llm", flag.ExitOnError)
+	bundlePath := flagSet.String("bundle", "", "Input bundle path")
+	findingsPath := flagSet.String("findings", "", "Input findings path")
+	outPath := flagSet.String("out", "", "Output insights path")
+	llmModel := flagSet.String("model", "devstral-small-latest", "Mistral model name")
+	timeout := flagSet.Int("timeout", 20, "API timeout in seconds")
+	maxResponse := flagSet.Int("max-response", 4096, "Max response tokens")
+	maxPromptChars := flagSet.Int("max-prompt-chars", 12000, "Max prompt characters")
+	dryRun := flagSet.Bool("dry-run", false, "Dry run - save prompt without API call")
+	flagSet.Parse(os.Args[2:])
+
+	if *bundlePath == "" || *findingsPath == "" || *outPath == "" {
+		fmt.Println("Required flags: --bundle, --findings, --out")
+		os.Exit(1)
+	}
+
+	// Read bundle
+	bundleData, err := os.ReadFile(*bundlePath)
+	if err != nil {
+		fmt.Printf("Failed to read bundle: %v\n", err)
+		os.Exit(1)
+	}
+
+	var profileBundle model.ProfileBundle
+	if err := json.Unmarshal(bundleData, &profileBundle); err != nil {
+		fmt.Printf("Failed to parse bundle: %v\n", err)
+		os.Exit(1)
+	}
+
+	// Read findings
+	findingsData, err := os.ReadFile(*findingsPath)
+	if err != nil {
+		fmt.Printf("Failed to read findings: %v\n", err)
+		os.Exit(1)
+	}
+
+	var findingsBundle model.FindingsBundle
+	if err := json.Unmarshal(findingsData, &findingsBundle); err != nil {
+		fmt.Printf("Failed to parse findings: %v\n", err)
+		os.Exit(1)
+	}
+
+	// Get API key from environment
+	apiKey := os.Getenv("MISTRAL_API_KEY")
+	if apiKey == "" && !*dryRun {
+		fmt.Println("MISTRAL_API_KEY environment variable not set")
+		os.Exit(1)
+	}
+
+	// Create insights generator
+	generator := llm.NewInsightsGenerator(apiKey, *llmModel, *timeout, *maxResponse, *maxPromptChars, *dryRun)
+
+	ctx := context.Background()
+	insights, err := generator.GenerateInsights(ctx, &profileBundle, &findingsBundle)
+	if err != nil {
+		fmt.Printf("LLM insights generation failed: %v\n", err)
+		os.Exit(1)
+	}
+
+	// Save insights
+	insightsData, err := json.MarshalIndent(insights, "", "  ")
+	if err != nil {
+		fmt.Printf("Failed to serialize insights: %v\n", err)
+		os.Exit(1)
+	}
+
+	if err := os.WriteFile(*outPath, insightsData, 0644); err != nil {
+		fmt.Printf("Failed to write insights: %v\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("Insights saved to: %s\n", *outPath)
+	if *dryRun {
+		fmt.Println("✓ Dry-run mode: prompt saved to llm_prompt.json")
+	}
 }
 
 

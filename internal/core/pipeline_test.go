@@ -242,6 +242,90 @@ func TestPipeline_Report(t *testing.T) {
 	assert.Contains(t, string(reportData), "runtime.allocm")
 }
 
+func TestPipeline_ReportWithInsights(t *testing.T) {
+	pipeline := NewPipeline("../../plugins")
+	
+	// Create test findings
+	findings := model.FindingsBundle{
+		Summary: model.Summary{
+			OverallScore: 75,
+			TopIssueTags: []string{"performance", "memory"},
+			Notes:        []string{"test analysis"},
+		},
+		Findings: []model.Finding{
+			{
+				Category: "heap",
+				Title:    "Top CPU hotspots",
+				Severity: "medium",
+				Score:    80,
+				Top: []model.StackFrame{
+					{
+						Function: "runtime.allocm",
+						File:     "proc.go",
+						Line:     2276,
+						Cum:      256.0,
+						Flat:     256.0,
+					},
+				},
+				Evidence: model.Evidence{
+					ArtifactPath: "heap.pb.gz",
+					ProfileType:  "heap",
+					ExtractedAt:  time.Now(),
+				},
+			},
+		},
+	}
+	
+	// Create test insights
+	insights := &model.InsightsBundle{
+		SchemaVersion: "1.0",
+		GeneratedAt:  time.Now(),
+		Model:        "test-model",
+		ExecutiveSummary: model.ExecutiveSummary{
+			Overview:        "test overview",
+			OverallSeverity: "medium",
+			KeyThemes:       []string{"theme1", "theme2"},
+			Confidence:      85,
+		},
+		PerFinding: []model.FindingInsight{
+			{
+				FindingID:        "heap",
+				Narrative:        "test narrative",
+				LikelyRootCauses: []string{"cause1", "cause2"},
+				Suggestions:      []string{"suggestion1", "suggestion2"},
+				NextMeasurements: []string{"measurement1"},
+				Caveats:          []string{"caveat1"},
+				Confidence:       80,
+			},
+		},
+	}
+	
+	// Save test findings
+	tmpDir := t.TempDir()
+	findingsPath := filepath.Join(tmpDir, "findings.json")
+	findingsData, err := json.MarshalIndent(findings, "", "  ")
+	require.NoError(t, err)
+	require.NoError(t, os.WriteFile(findingsPath, findingsData, 0644))
+	
+	ctx := context.Background()
+	
+	// Test report generation with insights
+	reportPath := filepath.Join(tmpDir, "report.md")
+	err = pipeline.ReportWithInsights(ctx, findingsPath, reportPath, insights)
+	require.NoError(t, err)
+	
+	// Verify report file was created
+	reportData, err := os.ReadFile(reportPath)
+	require.NoError(t, err)
+	
+	// Verify insights are included
+	assert.Contains(t, string(reportData), "test overview")
+	assert.Contains(t, string(reportData), "test narrative")
+	assert.Contains(t, string(reportData), "cause1")
+	assert.Contains(t, string(reportData), "suggestion1")
+	assert.Contains(t, string(reportData), "Confidence: 80%")
+}
+
 func TestPipeline_NodeJS_Collect(t *testing.T) {
 	// This test requires a Node.js application to be running
 	t.Skip("Skipping integration test - requires running Node.js application")
@@ -307,6 +391,56 @@ func TestPipeline_EndToEnd(t *testing.T) {
 	require.NoError(t, err)
 	
 	// Verify report content
+	reportData, err := os.ReadFile(reportPath)
+	require.NoError(t, err)
+	assert.Contains(t, string(reportData), "Performance Analysis Report")
+}
+
+func TestPipeline_EndToEndWithLLM(t *testing.T) {
+	// This test requires a running demo server
+	t.Skip("Skipping integration test - requires running demo server")
+	
+	pipeline := NewPipeline("../../plugins")
+	
+	// Configure LLM (dry-run mode to avoid API calls)
+	pipeline.WithLLM("test-key", "test-model", 10, 1000, 12000, true)
+	
+	// Create temp directory
+	tmpDir := t.TempDir()
+	
+	ctx := context.Background()
+	
+	// Step 1: Collect
+	bundle, err := pipeline.Collect(ctx, "go-pprof-http", "http://localhost:6060", 5, 10, tmpDir)
+	require.NoError(t, err)
+	require.NotNil(t, bundle)
+	
+	// Step 2: Analyze
+	bundlePath := filepath.Join(tmpDir, "bundle.json")
+	findingsPath := filepath.Join(tmpDir, "findings.json")
+	findings, err := pipeline.Analyze(ctx, bundlePath, 5, findingsPath)
+	require.NoError(t, err)
+	require.NotNil(t, findings)
+	
+	// Step 3: Run full pipeline with LLM (should generate insights in dry-run mode)
+	err = pipeline.Run(ctx, "go-pprof-http", "http://localhost:6060", 5, 10, tmpDir)
+	require.NoError(t, err)
+	
+	// Verify insights file was created (dry-run mode)
+	insightsPath := filepath.Join(tmpDir, "insights.json")
+	_, err = os.Stat(insightsPath)
+	require.NoError(t, err)
+	
+	// Verify prompt file was created (dry-run mode)
+	promptPath := "llm_prompt.json"
+	_, err = os.Stat(promptPath)
+	require.NoError(t, err)
+	
+	// Clean up prompt file
+	os.Remove(promptPath)
+	
+	// Verify report with insights was created
+	reportPath := filepath.Join(tmpDir, "report.md")
 	reportData, err := os.ReadFile(reportPath)
 	require.NoError(t, err)
 	assert.Contains(t, string(reportData), "Performance Analysis Report")
