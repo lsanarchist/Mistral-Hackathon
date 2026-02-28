@@ -18,14 +18,46 @@
 
 ### 2026-02-28
 - **Objective**: Complete demo polish with "wow" factor demonstration
-- **Rationale**: Create compelling demo that showcases TriageProf's killer features and value proposition
-- **Impact**: Demo experience, user onboarding, showcase materials
+- **Rationale**: Create compelling demo that showcases AI-powered performance analysis capabilities
+- **Impact**: Demo server, load generation, user experience
 - **Changes**:
-  - Enhanced demo server with realistic performance issues (JSON serialization, database contention, CPU analytics, memory patterns, mutex contention)
-  - Improved load generation script with concurrent workers, progress tracking, and realistic traffic patterns
-  - Created comprehensive demo script showcasing all key features with clear "wow" moments
-  - Updated Makefile to use the new demo script for better user experience
-  - Added detailed demo documentation to README with usage examples and expected outputs
-  - Enhanced server logging and endpoint documentation
-- **Testing**: End-to-end demo execution, verification of all output files, integration with existing pipeline
-- **Result**: Polished demo that clearly demonstrates TriageProf's unique value: automatic plugin discovery, single-command analysis, professional reports, and LLM readiness
+  - Enhanced demo server with 3 new performance issue endpoints
+  - Added inefficient string concatenation endpoint demonstrating classic Go performance anti-pattern
+  - Added lack of caching endpoint showing expensive computation without memoization
+  - Added I/O bottleneck endpoint simulating realistic I/O bound operations
+  - Increased memory allocation pressure in export endpoint (1MB → 2MB per user)
+  - Updated load script to target new endpoints and generate more varied traffic patterns
+  - Enhanced server output to clearly show all 8 performance issues being demonstrated
+  - Improved load script output to list all performance issues that should be visible
+- **Testing**: Manual testing of server startup and endpoint responses; all existing unit tests pass
+- **Result**: Demo server now showcases 8 distinct performance issues creating rich profiling data for compelling LLM insights generation
+
+### 2026-02-28
+- **Objective**: Enhance demo server for compelling LLM insights
+- **Rationale**: Provide more realistic and varied performance issues to generate better AI-powered analysis
+- **Impact**: Demo experience, LLM insights quality, user engagement
+- **Changes**:
+  - Added `/api/strings` endpoint with inefficient string concatenation patterns
+  - Added `/api/nocache` endpoint demonstrating lack of result caching for expensive computations
+  - Added `/api/iobound` endpoint simulating I/O bottlenecks with variable delays
+  - Increased memory allocation in `/api/export` from 1MB to 2MB per user for more pronounced allocation patterns
+  - Updated load generation script to include new endpoints in traffic mix
+  - Enhanced server startup messages to list all 8 performance issues being demonstrated
+  - Updated load script output to show all performance issues that should be visible to profilers
+- **Testing**: Verified server builds and runs correctly; all existing tests pass; manual endpoint testing
+- **Result**: Demo now generates richer profiling data with more varied performance issues, leading to more compelling and actionable LLM insights that better showcase TriageProf's AI-powered analysis capabilities
+
+### 2026-03-01
+- **Objective**: Enhance demo experience and LLM integration for "wow" factor demonstration
+- **Rationale**: Create even more compelling demo showcasing advanced performance issues and improved AI-powered analysis
+- **Impact**: Demo server, load generation, LLM insights, report generation, user experience
+- **Changes**:
+  - Added 3 new performance issue endpoints to demo server: memory leak simulation, blocking I/O operations, and goroutine leak simulation
+  - Enhanced demo server output to showcase all 11 performance issues being demonstrated
+  - Updated load generation script to target all 11 endpoints with proper request counting using temp files
+  - Enhanced LLM prompt generation with explicit analysis context and structured requirements for better insights
+  - Improved report generation with emojis, better formatting, and enhanced LLM insights display including top risks and action items
+  - Added confidence level indicators with color-coded emojis (🔴/🟡/🟢) for LLM insights
+  - Fixed load script request counting issue by using file-based synchronization between concurrent workers
+- **Testing**: Manual testing of all new endpoints; verified load script generates requests; confirmed LLM prompt generation with enhanced context; validated report generation with improved formatting
+- **Result**: Demo now showcases 11 distinct performance issues with significantly enhanced LLM insights display, creating a more compelling and professional "wow" factor demonstration that better highlights TriageProf's AI-powered analysis capabilities

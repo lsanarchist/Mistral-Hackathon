@@ -42,17 +42,46 @@ func (r *Reporter) GenerateWithInsights(findings model.FindingsBundle, insights 
 
 	// Add LLM insights to executive summary if available
 	if insights != nil && insights.ExecutiveSummary.Overview != "" {
-		sb.WriteString("\n### LLM Insights\n\n")
+		sb.WriteString("\n### 🤖 LLM Insights\n\n")
 		sb.WriteString(fmt.Sprintf("**Overview**: %s\n", insights.ExecutiveSummary.Overview))
-		sb.WriteString(fmt.Sprintf("**Overall Severity**: %s (Confidence: %d%%)\n",
+		sb.WriteString(fmt.Sprintf("**Overall Severity**: %s (Confidence: %d%%)",
 			insights.ExecutiveSummary.OverallSeverity, insights.ExecutiveSummary.Confidence))
 		if len(insights.ExecutiveSummary.KeyThemes) > 0 {
-			sb.WriteString("**Key Themes**: ")
+			sb.WriteString("\n**Key Themes**: ")
 			sb.WriteString(strings.Join(insights.ExecutiveSummary.KeyThemes, ", "))
-			sb.WriteString("\n")
 		}
 		if insights.DisabledReason != "" {
-			sb.WriteString(fmt.Sprintf("*LLM Status*: %s\n", insights.DisabledReason))
+			sb.WriteString(fmt.Sprintf("\n*LLM Status*: %s", insights.DisabledReason))
+		}
+		
+		// Add top risks if available
+		if len(insights.TopRisks) > 0 {
+			sb.WriteString("\n\n#### 🚨 Top Risks\n\n")
+			for i, risk := range insights.TopRisks {
+				if i >= 3 {
+					break
+				}
+				sb.WriteString(fmt.Sprintf("**%d. %s**\n", i+1, risk.Description))
+				sb.WriteString(fmt.Sprintf("   - Severity: %s\n", risk.Severity))
+				sb.WriteString(fmt.Sprintf("   - Impact: %s\n", risk.Impact))
+				sb.WriteString(fmt.Sprintf("   - Likelihood: %s\n", risk.Likelihood))
+			}
+		}
+		
+		// Add top actions if available
+		if len(insights.TopActions) > 0 {
+			sb.WriteString("\n#### 🎯 Top Action Items\n\n")
+			for i, action := range insights.TopActions {
+				if i >= 3 {
+					break
+				}
+				sb.WriteString(fmt.Sprintf("**%d. %s**\n", i+1, action.Description))
+				sb.WriteString(fmt.Sprintf("   - Priority: %s\n", action.Priority))
+				sb.WriteString(fmt.Sprintf("   - Estimated Effort: %s\n", action.EstimatedEffort))
+				if len(action.Categories) > 0 {
+					sb.WriteString(fmt.Sprintf("   - Categories: %s\n", strings.Join(action.Categories, ", ")))
+				}
+			}
 		}
 	}
 
@@ -150,37 +179,53 @@ func (r *Reporter) GenerateWithInsights(findings model.FindingsBundle, insights 
 		if insights != nil && len(insights.PerFinding) > 0 {
 			for _, insight := range insights.PerFinding {
 				if insight.FindingID == finding.Category {
-					sb.WriteString("### LLM Insights\n\n")
+					sb.WriteString("### 🤖 LLM Insights\n\n")
 					sb.WriteString(fmt.Sprintf("**Narrative**: %s\n\n", insight.Narrative))
+					
+					// Add root causes with emojis
 					if len(insight.LikelyRootCauses) > 0 {
-						sb.WriteString("**Likely Root Causes**:\n")
-						for _, cause := range insight.LikelyRootCauses {
-							sb.WriteString(fmt.Sprintf("  - %s\n", cause))
+						sb.WriteString("**🔍 Likely Root Causes**:\n")
+						for i, cause := range insight.LikelyRootCauses {
+							sb.WriteString(fmt.Sprintf("  %d. %s\n", i+1, cause))
 						}
 						sb.WriteString("\n")
 					}
+					
+					// Add suggestions with emojis
 					if len(insight.Suggestions) > 0 {
-						sb.WriteString("**Suggestions**:\n")
-						for _, suggestion := range insight.Suggestions {
-							sb.WriteString(fmt.Sprintf("  - %s\n", suggestion))
+						sb.WriteString("**💡 Suggestions**:\n")
+						for i, suggestion := range insight.Suggestions {
+							sb.WriteString(fmt.Sprintf("  %d. %s\n", i+1, suggestion))
 						}
 						sb.WriteString("\n")
 					}
+					
+					// Add next measurements
 					if len(insight.NextMeasurements) > 0 {
-						sb.WriteString("**Next Measurements**:\n")
-						for _, measurement := range insight.NextMeasurements {
-							sb.WriteString(fmt.Sprintf("  - %s\n", measurement))
+						sb.WriteString("**📊 Next Measurements**:\n")
+						for i, measurement := range insight.NextMeasurements {
+							sb.WriteString(fmt.Sprintf("  %d. %s\n", i+1, measurement))
 						}
 						sb.WriteString("\n")
 					}
+					
+					// Add caveats with warning emoji
 					if len(insight.Caveats) > 0 {
-						sb.WriteString("**Caveats**:\n")
-						for _, caveat := range insight.Caveats {
-							sb.WriteString(fmt.Sprintf("  - %s\n", caveat))
+						sb.WriteString("**⚠️  Caveats**:\n")
+						for i, caveat := range insight.Caveats {
+							sb.WriteString(fmt.Sprintf("  %d. %s\n", i+1, caveat))
 						}
 						sb.WriteString("\n")
 					}
-					sb.WriteString(fmt.Sprintf("*Confidence: %d%%*\n\n", insight.Confidence))
+					
+					// Add confidence with appropriate emoji
+					confidenceEmoji := "🟡"
+					if insight.Confidence >= 80 {
+						confidenceEmoji = "🟢"
+					} else if insight.Confidence <= 50 {
+						confidenceEmoji = "🔴"
+					}
+					sb.WriteString(fmt.Sprintf("**Confidence**: %s %d%%\n\n", confidenceEmoji, insight.Confidence))
 					break
 				}
 			}

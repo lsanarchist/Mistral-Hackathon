@@ -129,6 +129,24 @@ func (p *PromptBuilder) buildFindingsSummary() string {
 			strings.Join(p.Findings.Summary.TopIssueTags, ", ")))
 	}
 
+	// Add analysis context for better LLM insights
+	sections = append(sections, "")
+	sections = append(sections, "=== ANALYSIS CONTEXT ===")
+	sections = append(sections, "Analyze these findings and provide actionable insights.")
+	sections = append(sections, "For each finding, provide:")
+	sections = append(sections, "1. Narrative explanation of the root cause")
+	sections = append(sections, "2. Likely root causes (2-4 specific technical reasons)")
+	sections = append(sections, "3. Concrete suggestions with code examples where possible")
+	sections = append(sections, "4. Next measurements to validate fixes")
+	sections = append(sections, "5. Caveats and limitations of the analysis")
+	sections = append(sections, "6. Confidence score (0-100)")
+	sections = append(sections, "")
+	sections = append(sections, "Also provide:")
+	sections = append(sections, "- Executive summary with overall severity assessment")
+	sections = append(sections, "- Top 3 risks with impact analysis")
+	sections = append(sections, "- Top 3 action items with priority and effort estimates")
+	sections = append(sections, "- Key themes and patterns across findings")
+
 	// Per-finding details (limit to top 5)
 	findingsCount := len(p.Findings.Findings)
 	if findingsCount > 5 {

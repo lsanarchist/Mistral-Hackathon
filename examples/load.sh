@@ -13,13 +13,14 @@ echo "📊 Generating realistic traffic patterns..."
 echo ""
 
 END_TIME=$((SECONDS + DURATION))
-REQUEST_COUNT=0
+REQUEST_COUNT_FILE=$(mktemp)
+echo "0" > "$REQUEST_COUNT_FILE"
 
 # Function to make requests with random endpoints
 make_request() {
     while [ $SECONDS -lt $END_TIME ]; do
         # Randomly select an endpoint
-        ENDPOINT_NUM=$((RANDOM % 6))
+        ENDPOINT_NUM=$((RANDOM % 11))
         
         case $ENDPOINT_NUM in
             0) curl -s "$SERVER_URL/api/users" > /dev/null ;;
@@ -30,9 +31,14 @@ make_request() {
             5) curl -s "$SERVER_URL/api/strings" > /dev/null ;;
             6) curl -s "$SERVER_URL/api/nocache" > /dev/null ;;
             7) curl -s "$SERVER_URL/api/iobound" > /dev/null ;;
+            8) curl -s "$SERVER_URL/api/leak" > /dev/null ;;
+            9) curl -s "$SERVER_URL/api/blocking" > /dev/null ;;
+            10) curl -s "$SERVER_URL/api/goroutine" > /dev/null ;;
         esac
         
-        REQUEST_COUNT=$((REQUEST_COUNT + 1))
+        # Increment request count using file
+        CURRENT_COUNT=$(cat "$REQUEST_COUNT_FILE")
+        echo $((CURRENT_COUNT + 1)) > "$REQUEST_COUNT_FILE"
         
         # Random delay between requests (50-500ms)
         sleep $(echo "scale=3; $RANDOM / 32768 * 0.45 + 0.05" | bc)
@@ -48,13 +54,18 @@ done
 # Show progress
 while [ $SECONDS -lt $END_TIME ]; do
     REMAINING=$((END_TIME - SECONDS))
-    echo -ne "📊 Progress: $((100 - (REMAINING * 100 / DURATION)))% | Requests: $REQUEST_COUNT | Remaining: ${REMAINING}s\r"
+    CURRENT_COUNT=$(cat "$REQUEST_COUNT_FILE")
+    echo -ne "📊 Progress: $((100 - (REMAINING * 100 / DURATION)))% | Requests: $CURRENT_COUNT | Remaining: ${REMAINING}s\r"
     sleep 1
 done
 
+CURRENT_COUNT=$(cat "$REQUEST_COUNT_FILE")
 echo -e "\n✅ Load generation completed!"
-echo "📈 Total requests generated: $REQUEST_COUNT"
+echo "📈 Total requests generated: $CURRENT_COUNT"
 echo "🎯 Load profile: Mixed read/write operations with realistic timing"
+
+# Clean up temp file
+rm -f "$REQUEST_COUNT_FILE"
 echo ""
 echo "💡 Performance issues that should be visible:"
 echo "  • JSON serialization overhead in /api/users"
@@ -64,6 +75,9 @@ echo "  • Memory allocation patterns in /api/export"
 echo "  • Mutex contention in /api/process"
 echo "  • Inefficient string operations in /api/strings"
 echo "  • Lack of caching in /api/nocache"
-echo "  • I/O bottlenecks in /api/iobound"
+echo "  • I/O bottlenecks in /api/iobound
+  • Memory leaks in /api/leak
+  • Blocking I/O operations in /api/blocking
+  • Goroutine leaks in /api/goroutine"
 echo ""
 echo "🚀 Ready for TriageProf analysis!"

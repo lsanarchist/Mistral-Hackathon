@@ -52,6 +52,9 @@ func main() {
 	http.HandleFunc("/api/strings", inefficientStringHandler)
 	http.HandleFunc("/api/nocache", noCacheHandler)
 	http.HandleFunc("/api/iobound", ioBoundHandler)
+	http.HandleFunc("/api/leak", memoryLeakHandler)
+	http.HandleFunc("/api/blocking", blockingIOHandler)
+	http.HandleFunc("/api/goroutine", goroutineLeakHandler)
 	http.HandleFunc("/health", healthHandler)
 
 	fmt.Println("🚀 Enhanced Demo Server running on :6060")
@@ -64,6 +67,9 @@ func main() {
 	fmt.Println("  - GET  /api/strings   - Inefficient string concatenation")
 	fmt.Println("  - GET  /api/nocache   - Lack of caching for expensive computations")
 	fmt.Println("  - GET  /api/iobound   - I/O bottleneck simulation")
+	fmt.Println("  - GET  /api/leak      - Memory leak simulation")
+	fmt.Println("  - GET  /api/blocking  - Blocking I/O operations")
+	fmt.Println("  - GET  /api/goroutine - Goroutine leak simulation")
 	fmt.Println("  - GET  /health       - Health check endpoint")
 	fmt.Println("  - GET  /debug/pprof/  - Performance profiling endpoints")
 	fmt.Println("\n🎯 Performance Issues Demonstrated:")
@@ -75,6 +81,9 @@ func main() {
 	fmt.Println("  ✅ I/O bottlenecks")
 	fmt.Println("  ✅ Inefficient string operations")
 	fmt.Println("  ✅ Lack of result caching")
+	fmt.Println("  ✅ Memory leaks")
+	fmt.Println("  ✅ Blocking I/O operations")
+	fmt.Println("  ✅ Goroutine leaks")
 
 	log.Fatal(http.ListenAndServe(":6060", nil))
 }
@@ -415,6 +424,93 @@ func processHandler(w http.ResponseWriter, r *http.Request) {
 	})
 	
 	fmt.Printf("🔄 Process handler completed with %d operations in %v\n", sharedCounter, time.Since(start))
+}
+
+// memoryLeakHandler demonstrates memory leak pattern
+func memoryLeakHandler(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+	
+	// Simulate memory leak - growing slice that's never released
+	var leakySlice [][]byte
+	
+	for i := 0; i < 100; i++ {
+		// Allocate 1MB chunks and keep references
+		chunk := make([]byte, 1024*1024)
+		for j := range chunk {
+			chunk[j] = byte(i % 256)
+		}
+		leakySlice = append(leakySlice, chunk)
+		
+		// Simulate some processing
+		time.Sleep(5 * time.Millisecond)
+	}
+	
+	// leakySlice is never released - this creates a memory leak
+	_ = leakySlice
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"message": "Memory leak simulation completed",
+		"processingTime": time.Since(start).String(),
+	})
+	
+	fmt.Printf("💀 Memory leak handler completed in %v (leaked ~100MB)\n", time.Since(start))
+}
+
+// blockingIOHandler demonstrates blocking I/O operations
+func blockingIOHandler(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+	
+	// Simulate blocking I/O operations that tie up goroutines
+	for i := 0; i < 50; i++ {
+		// Simulate slow I/O with random delays
+		delay := time.Duration(rand.Intn(50)+10) * time.Millisecond
+		time.Sleep(delay)
+		
+		// Simulate some processing after I/O
+		for j := 0; j < 1000; j++ {
+			_ = j * j * rand.Intn(10)
+		}
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"operations": 50,
+		"processingTime": time.Since(start).String(),
+	})
+	
+	fmt.Printf("🚧 Blocking I/O handler completed in %v\n", time.Since(start))
+}
+
+// goroutineLeakHandler demonstrates goroutine leak pattern
+func goroutineLeakHandler(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+	
+	// Simulate goroutine leak - starting goroutines without waiting
+	for i := 0; i < 100; i++ {
+		go func(id int) {
+			// Simulate work that never completes
+			for {
+				// Busy wait - this goroutine will never exit
+				time.Sleep(100 * time.Millisecond)
+				_ = id * rand.Intn(1000)
+			}
+		}(i)
+		
+		// Small delay to make the leak more visible
+		time.Sleep(2 * time.Millisecond)
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"message": "Goroutine leak simulation started (100 leaking goroutines)",
+		"processingTime": time.Since(start).String(),
+	})
+	
+	fmt.Printf("🌀 Goroutine leak handler completed in %v (leaked 100 goroutines)\n", time.Since(start))
 }
 
 // healthHandler provides server health information

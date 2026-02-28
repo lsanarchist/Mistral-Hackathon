@@ -323,7 +323,7 @@ func TestPipeline_ReportWithInsights(t *testing.T) {
 	assert.Contains(t, string(reportData), "test narrative")
 	assert.Contains(t, string(reportData), "cause1")
 	assert.Contains(t, string(reportData), "suggestion1")
-	assert.Contains(t, string(reportData), "Confidence: 80%")
+	assert.Contains(t, string(reportData), "**Confidence**: 🟢 80%")
 }
 
 func TestPipeline_NodeJS_Collect(t *testing.T) {
