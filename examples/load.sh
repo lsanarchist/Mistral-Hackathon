@@ -27,7 +27,9 @@ make_request() {
             2) curl -s "$SERVER_URL/api/analytics" > /dev/null ;;
             3) curl -s "$SERVER_URL/api/export" > /dev/null ;;
             4) curl -s -X POST "$SERVER_URL/api/process" -H "Content-Type: application/json" -d '{"data":"test"}' > /dev/null ;;
-            5) curl -s "$SERVER_URL/health" > /dev/null ;;
+            5) curl -s "$SERVER_URL/api/strings" > /dev/null ;;
+            6) curl -s "$SERVER_URL/api/nocache" > /dev/null ;;
+            7) curl -s "$SERVER_URL/api/iobound" > /dev/null ;;
         esac
         
         REQUEST_COUNT=$((REQUEST_COUNT + 1))
@@ -60,5 +62,8 @@ echo "  • Database lock contention in /api/search"
 echo "  • CPU-bound processing in /api/analytics"
 echo "  • Memory allocation patterns in /api/export"
 echo "  • Mutex contention in /api/process"
+echo "  • Inefficient string operations in /api/strings"
+echo "  • Lack of caching in /api/nocache"
+echo "  • I/O bottlenecks in /api/iobound"
 echo ""
 echo "🚀 Ready for TriageProf analysis!"

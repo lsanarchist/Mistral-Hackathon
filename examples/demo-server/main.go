@@ -49,6 +49,9 @@ func main() {
 	http.HandleFunc("/api/analytics", analyticsHandler)
 	http.HandleFunc("/api/export", exportHandler)
 	http.HandleFunc("/api/process", processHandler)
+	http.HandleFunc("/api/strings", inefficientStringHandler)
+	http.HandleFunc("/api/nocache", noCacheHandler)
+	http.HandleFunc("/api/iobound", ioBoundHandler)
 	http.HandleFunc("/health", healthHandler)
 
 	fmt.Println("🚀 Enhanced Demo Server running on :6060")
@@ -58,6 +61,9 @@ func main() {
 	fmt.Println("  - GET  /api/analytics - CPU-intensive analytics processing")
 	fmt.Println("  - GET  /api/export    - Memory-heavy data export")
 	fmt.Println("  - POST /api/process   - Complex business logic with mutex contention")
+	fmt.Println("  - GET  /api/strings   - Inefficient string concatenation")
+	fmt.Println("  - GET  /api/nocache   - Lack of caching for expensive computations")
+	fmt.Println("  - GET  /api/iobound   - I/O bottleneck simulation")
 	fmt.Println("  - GET  /health       - Health check endpoint")
 	fmt.Println("  - GET  /debug/pprof/  - Performance profiling endpoints")
 	fmt.Println("\n🎯 Performance Issues Demonstrated:")
@@ -67,6 +73,8 @@ func main() {
 	fmt.Println("  ✅ Memory allocation patterns")
 	fmt.Println("  ✅ Mutex contention in business logic")
 	fmt.Println("  ✅ I/O bottlenecks")
+	fmt.Println("  ✅ Inefficient string operations")
+	fmt.Println("  ✅ Lack of result caching")
 
 	log.Fatal(http.ListenAndServe(":6060", nil))
 }
@@ -253,7 +261,7 @@ func exportHandler(w http.ResponseWriter, r *http.Request) {
 		userCopy["name"] = user.Name
 		userCopy["email"] = user.Email
 		
-		// Create large metadata copies
+		// Create large metadata copies - this is inefficient!
 		friendsCopy := make([]string, len(user.Friends))
 		copy(friendsCopy, user.Friends)
 		userCopy["friends"] = friendsCopy
@@ -266,8 +274,8 @@ func exportHandler(w http.ResponseWriter, r *http.Request) {
 		
 		exportData = append(exportData, userCopy)
 		
-		// Simulate memory pressure
-		largeBuffer := make([]byte, 1024*1024) // 1MB per user
+		// Simulate memory pressure - allocate 2MB per user
+		largeBuffer := make([]byte, 2*1024*1024)
 		_ = largeBuffer
 	}
 	
@@ -279,6 +287,85 @@ func exportHandler(w http.ResponseWriter, r *http.Request) {
 	})
 	
 	fmt.Printf("💾 Export generated %d records in %v\n", len(exportData), time.Since(start))
+}
+
+// inefficientStringHandler demonstrates poor string concatenation
+func inefficientStringHandler(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+	
+	// Inefficient string concatenation - classic performance issue
+	var result string
+	for i := 0; i < 1000; i++ {
+		result += fmt.Sprintf("User %d: %s\n", i, database.users[i%len(database.users)].Name)
+	}
+	
+	// More inefficient string operations
+	for _, user := range database.users {
+		for _, friend := range user.Friends {
+			result += "Friend: " + friend + "\n"
+		}
+	}
+	
+	w.Header().Set("Content-Type", "text/plain")
+	fmt.Fprint(w, result)
+	
+	fmt.Printf("📝 Inefficient string handler completed in %v\n", time.Since(start))
+}
+
+// noCacheHandler demonstrates lack of caching
+func noCacheHandler(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+	
+	// Simulate expensive computation that should be cached
+	var totalOperations int
+	
+	for _, user := range database.users {
+		// Complex calculation that doesn't change
+		complexResult := 0
+		for i := 0; i < 1000; i++ {
+			complexResult += i * len(user.Name) * len(user.Email)
+		}
+		totalOperations += complexResult
+	}
+	
+	// This same calculation happens on every request - no caching!
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"totalOperations": totalOperations,
+		"processingTime": time.Since(start).String(),
+	})
+	
+	fmt.Printf("🔢 No-cache handler processed in %v\n", time.Since(start))
+}
+
+// ioBoundHandler demonstrates I/O bottlenecks
+func ioBoundHandler(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+	
+	// Simulate I/O bound operations
+	var results []string
+	
+	for i := 0; i < 100; i++ {
+		// Simulate file I/O with random delays
+		time.Sleep(time.Duration(rand.Intn(10)) * time.Millisecond)
+		results = append(results, fmt.Sprintf("I/O operation %d completed", i))
+	}
+	
+	// More I/O simulation
+	for range database.users[:50] {
+		// Simulate database writes
+		time.Sleep(5 * time.Millisecond)
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"operations": results,
+		"count": len(results),
+	})
+	
+	fmt.Printf("💾 I/O bound handler completed in %v\n", time.Since(start))
 }
 
 // processHandler demonstrates mutex contention in business logic
