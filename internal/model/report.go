@@ -28,6 +28,8 @@ type ReportFinding struct {
 	Severity    string       `json:"severity"`
 	Score       int          `json:"score"`
 	TopHotspots []StackFrame `json:"top_hotspots"`
+	Callgraph   []CallgraphNode `json:"callgraph,omitempty"`
+	Regression  *RegressionAnalysis `json:"regression,omitempty"`
 	Evidence    Evidence     `json:"evidence"`
 }
 

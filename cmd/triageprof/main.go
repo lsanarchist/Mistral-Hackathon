@@ -21,7 +21,7 @@ func main() {
 		fmt.Println("Commands:")
 		fmt.Println("  plugins list")
 		fmt.Println("  collect --plugin <name> --target-url <url> --duration <sec> --out <path>")
-		fmt.Println("  analyze --in <bundle.json> --out <findings.json> --top <N>")
+		fmt.Println("  analyze --in <bundle.json> --out <findings.json> --top <N> [--callgraph] [--regression --baseline <path>]")
 		fmt.Println("  report --in <findings.json> --out <report.md|json> --output markdown|json")
 		fmt.Println("  llm --bundle <path> --findings <path> --out <insights.json>")
 		fmt.Println("  run --plugin <name> --target-url <url> --duration <sec> --outdir <dir>")
@@ -125,6 +125,9 @@ func runAnalyzeCommand(pipeline *core.Pipeline) {
 	inPath := flagSet.String("in", "", "Input bundle path")
 	outPath := flagSet.String("out", "", "Output findings path")
 	topN := flagSet.Int("top", 20, "Top N findings")
+	callgraph := flagSet.Bool("callgraph", false, "Enable callgraph analysis")
+	regression := flagSet.Bool("regression", false, "Enable regression analysis")
+	baseline := flagSet.String("baseline", "", "Baseline bundle path for regression analysis")
 	flagSet.Parse(os.Args[2:])
 
 	if *inPath == "" || *outPath == "" {
@@ -132,14 +135,31 @@ func runAnalyzeCommand(pipeline *core.Pipeline) {
 		os.Exit(1)
 	}
 
+	if *regression && *baseline == "" {
+		fmt.Println("Regression analysis requires --baseline flag")
+		os.Exit(1)
+	}
+
 	ctx := context.Background()
-	_, err := pipeline.Analyze(ctx, *inPath, *topN, *outPath)
+	options := core.CoreAnalyzeOptions{
+		EnableCallgraph: *callgraph,
+		EnableRegression: *regression,
+		BaselineBundlePath: *baseline,
+	}
+	
+	_, err := pipeline.AnalyzeWithOptions(ctx, *inPath, *topN, *outPath, options)
 	if err != nil {
 		fmt.Printf("Analyze failed: %v\n", err)
 		os.Exit(1)
 	}
 
 	fmt.Printf("Findings saved to: %s\n", *outPath)
+	if *callgraph {
+		fmt.Println("✓ Callgraph analysis completed")
+	}
+	if *regression {
+		fmt.Println("✓ Regression analysis completed")
+	}
 }
 
 func runLLMCommand() {

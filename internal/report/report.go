@@ -79,6 +79,36 @@ func (r *Reporter) GenerateWithInsights(findings model.FindingsBundle, insights 
 			sb.WriteString("\n")
 		}
 
+		// Add callgraph visualization if available
+		if len(finding.Callgraph) > 0 {
+			sb.WriteString("### Callgraph Analysis (Depth 3)\n\n")
+			sb.WriteString("```\n")
+			for _, node := range finding.Callgraph {
+				renderCallgraphNode(&node, 0, &sb)
+			}
+			sb.WriteString("```\n\n")
+		}
+
+		// Add regression analysis if available
+		if finding.Regression != nil {
+			sb.WriteString("### Regression Analysis\n\n")
+			sb.WriteString(fmt.Sprintf("- **Baseline Score**: %d\n", finding.Regression.BaselineScore))
+			sb.WriteString(fmt.Sprintf("- **Current Score**: %d\n", finding.Regression.CurrentScore))
+			sb.WriteString(fmt.Sprintf("- **Delta**: %d (%.1f%%)\n", finding.Regression.Delta, finding.Regression.Percentage))
+			sb.WriteString(fmt.Sprintf("- **Severity**: %s\n", strings.Title(finding.Regression.Severity)))
+			sb.WriteString(fmt.Sprintf("- **Confidence**: %d%%\n", finding.Regression.Confidence))
+			sb.WriteString("\n")
+
+			if finding.Regression.Severity == "improved" {
+				sb.WriteString("📈 **Performance Improvement Detected**\n")
+				sb.WriteString("This profile shows significant improvement over the baseline.\n")
+			} else if finding.Regression.Severity != "none" && finding.Regression.Severity != "low" {
+				sb.WriteString("⚠️ **Potential Regression Detected**\n")
+				sb.WriteString(fmt.Sprintf("This profile shows %s regression over the baseline.\n", finding.Regression.Severity))
+			}
+			sb.WriteString("\n")
+		}
+
 		// Add LLM insights for this finding if available
 		if insights != nil && len(insights.PerFinding) > 0 {
 			for _, insight := range insights.PerFinding {
@@ -159,6 +189,17 @@ func (r *Reporter) GenerateJSON(findings model.FindingsBundle, insights *model.I
 		return json.MarshalIndent(report, "", "  ")
 	}
 	return json.Marshal(report)
+}
+
+// renderCallgraphNode recursively renders a callgraph node as ASCII tree
+func renderCallgraphNode(node *model.CallgraphNode, indent int, sb *strings.Builder) {
+	indentStr := strings.Repeat("  ", indent)
+	sb.WriteString(fmt.Sprintf("%s%s (%.1f%% cum, %.1f%% flat)\n",
+		indentStr, node.Function, node.Cum, node.Flat))
+
+	for _, child := range node.Children {
+		renderCallgraphNode(&child, indent+1, sb)
+	}
 }
 
 func determineSeverity(score int) string {

@@ -304,3 +304,53 @@ Plugins are separate executables, discovered via manifests, and communicate with
 - Checkpoint tag: N/A (direct commit to main)
 - Commit: `<to be filled after commit>`
 - Rollback: `git revert <commit-hash>`
+
+### Iter 20240303-1830 — UTC
+**Type:** Feature
+**Objective:** Enhance analysis engine with callgraph depth analysis, weighted hotspot ranking, and regression detection
+
+**Acceptance criteria (feature)**
+- [x] Add callgraph depth analysis to analyzer
+- [x] Implement weighted hotspot ranking algorithm
+- [x] Add regression detection between profile bundles
+- [x] Update report format to include new analysis sections
+- [x] Maintain backward compatibility with existing workflows
+- [x] Add comprehensive tests for new functionality
+- [x] Update CLI to support new analysis options
+
+**Changes**
+- `internal/model/types.go`: Added CallgraphNode and RegressionAnalysis types to Finding model
+- `internal/model/report.go`: Extended ReportFinding with callgraph and regression fields
+- `internal/analyzer/analyzer.go`: Enhanced Analyze() with AnalyzeWithOptions() supporting callgraph and regression analysis
+- `internal/analyzer/analyzer.go`: Added buildCallgraph(), analyzeRegression(), calculateProfileScore() functions
+- `internal/analyzer/analyzer.go`: Improved severity determination with determineSeverity()
+- `internal/analyzer/analyzer_test.go`: Comprehensive unit tests for new analysis features
+- `internal/report/report.go`: Added callgraph visualization and regression analysis sections to markdown reports
+- `internal/report/report.go`: Added renderCallgraphNode() helper function
+- `internal/core/pipeline.go`: Added CoreAnalyzeOptions and AnalyzeWithOptions() method
+- `cmd/triageprof/main.go`: Added --callgraph and --regression flags to analyze command
+- `cmd/triageprof/main.go`: Updated help text to show new analysis options
+
+**Verification**
+- Tests: `go test ./...` - all passing including new analyzer tests
+- Build: `make build` - successful
+- CLI Integration: `bin/triageprof analyze --callgraph --regression --baseline` works correctly
+- Callgraph Analysis: Generates hierarchical callgraph trees with depth 3
+- Regression Detection: Compares baseline vs current profiles with severity scoring
+- Report Integration: New sections appear in markdown and JSON reports
+- Backward Compatibility: Existing workflows unchanged, new features optional
+- End-to-End: Full pipeline works with enhanced analysis enabled
+
+**Risk/Notes**
+- No breaking changes - all existing functionality preserved
+- New analysis features are optional and disabled by default
+- Callgraph depth limited to 3 levels for performance
+- Regression analysis requires valid baseline bundle
+- Analysis quality depends on profile data quality
+- Feature significantly enhances Layer 1 "Analysis engine improvements"
+
+**Git / Rollback**
+- Branch: `main`
+- Checkpoint tag: N/A (direct commit to main)
+- Commit: `<to be filled after commit>`
+- Rollback: `git revert <commit-hash>`

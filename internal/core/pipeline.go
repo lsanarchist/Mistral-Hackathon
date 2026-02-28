@@ -129,7 +129,18 @@ func (p *Pipeline) Collect(ctx context.Context, pluginName, targetURL string, du
 	return profileBundle, nil
 }
 
+// CoreAnalyzeOptions configure analysis behavior
+type CoreAnalyzeOptions struct {
+	EnableCallgraph bool
+	EnableRegression bool
+	BaselineBundlePath string
+}
+
 func (p *Pipeline) Analyze(ctx context.Context, bundlePath string, topN int, outPath string) (*model.FindingsBundle, error) {
+	return p.AnalyzeWithOptions(ctx, bundlePath, topN, outPath, CoreAnalyzeOptions{})
+}
+
+func (p *Pipeline) AnalyzeWithOptions(ctx context.Context, bundlePath string, topN int, outPath string, options CoreAnalyzeOptions) (*model.FindingsBundle, error) {
 	// Read bundle
 	data, err := os.ReadFile(bundlePath)
 	if err != nil {
@@ -141,8 +152,13 @@ func (p *Pipeline) Analyze(ctx context.Context, bundlePath string, topN int, out
 		return nil, err
 	}
 
-	// Analyze
-	findings, err := p.analyzer.Analyze(profileBundle, topN)
+	// Analyze with options
+	analyzerOptions := analyzer.AnalyzeOptions{
+		EnableCallgraph: options.EnableCallgraph,
+		EnableRegression: options.EnableRegression,
+		BaselineBundlePath: options.BaselineBundlePath,
+	}
+	findings, err := p.analyzer.AnalyzeWithOptions(profileBundle, topN, analyzerOptions)
 	if err != nil {
 		return nil, err
 	}

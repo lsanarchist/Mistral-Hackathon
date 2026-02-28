@@ -58,7 +58,28 @@ type Finding struct {
 	Severity  string      `json:"severity"`
 	Score     int         `json:"score"`
 	Top       []StackFrame `json:"top"`
+	Callgraph []CallgraphNode `json:"callgraph,omitempty"`
+	Regression *RegressionAnalysis `json:"regression,omitempty"`
 	Evidence  Evidence    `json:"evidence"`
+}
+
+type CallgraphNode struct {
+	Function string  `json:"function"`
+	File     string  `json:"file"`
+	Line     int     `json:"line"`
+	Depth    int     `json:"depth"`
+	Cum      float64 `json:"cum"`
+	Flat     float64 `json:"flat"`
+	Children []CallgraphNode `json:"children,omitempty"`
+}
+
+type RegressionAnalysis struct {
+	BaselineScore int     `json:"baseline_score"`
+	CurrentScore  int     `json:"current_score"`
+	Delta         int     `json:"delta"`
+	Percentage    float64 `json:"percentage"`
+	Severity      string  `json:"severity"`
+	Confidence    int     `json:"confidence"`
 }
 
 type StackFrame struct {
