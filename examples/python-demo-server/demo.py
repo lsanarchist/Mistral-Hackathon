@@ -81,7 +81,7 @@ class DemoHandler(BaseHTTPRequestHandler):
         for i in range(1000):
             leak_chunk.append({
                 'id': self.memory_leak_counter + i,
-                'data': [random.random() for _ in range(1000]],
+                'data': [random.random() for _ in range(1000)],
                 'timestamp': time.time()
             })
         

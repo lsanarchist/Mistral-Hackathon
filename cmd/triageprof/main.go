@@ -22,6 +22,7 @@ func main() {
 		fmt.Println("  report --in <findings.json> --out <report.md|json> --output markdown|json")
 		fmt.Println("  llm (command removed - LLM functionality temporarily disabled)")
 		fmt.Println("  run --plugin <name> --target-url <url> --duration <sec> --outdir <dir>")
+		fmt.Println("  run --plugin <name> --target-type python --target-command <cmd> --duration <sec> --outdir <dir>")
 		// fmt.Println("\nLLM Options for 'run' command:")
 		// fmt.Println("  --llm (enable LLM insights)")
 		// fmt.Println("  --llm-model <model> (default: devstral-small-latest)")
@@ -97,18 +98,42 @@ func runPluginsCommand() {
 func runCollectCommand(pipeline *core.Pipeline) {
 	flagSet := flag.NewFlagSet("collect", flag.ExitOnError)
 	pluginName := flagSet.String("plugin", "", "Plugin name")
-	targetURL := flagSet.String("target-url", "", "Target URL")
+	targetURL := flagSet.String("target-url", "", "Target URL (for URL-based targets)")
+	targetType := flagSet.String("target-type", "", "Target type (url/python)")
+	targetCommand := flagSet.String("target-command", "", "Target command (for Python targets)")
 	duration := flagSet.Int("duration", 15, "Duration in seconds")
 	outPath := flagSet.String("out", "", "Output bundle path")
 	flagSet.Parse(os.Args[2:])
 
-	if *pluginName == "" || *targetURL == "" || *outPath == "" {
-		fmt.Println("Required flags: --plugin, --target-url, --out")
+	if *pluginName == "" || *outPath == "" {
+		fmt.Println("Required flags: --plugin, --out")
+		fmt.Println("For URL targets: --target-url")
+		fmt.Println("For Python targets: --target-type python --target-command")
 		os.Exit(1)
 	}
 
+	// Validate target parameters
+	if *targetType == "python" {
+		if *targetCommand == "" {
+			fmt.Println("Python target requires --target-command")
+			os.Exit(1)
+		}
+	} else if *targetURL == "" {
+		// Default to URL target if target-type not specified
+		*targetType = "url"
+		if *targetURL == "" {
+			fmt.Println("URL target requires --target-url")
+			os.Exit(1)
+		}
+	}
+
 	ctx := context.Background()
-	_, err := pipeline.Collect(ctx, *pluginName, *targetURL, *duration, 20, filepath.Dir(*outPath))
+	var err error
+	if *targetType == "python" {
+		_, err = pipeline.CollectWithTarget(ctx, *pluginName, "", *targetCommand, *duration, 20, filepath.Dir(*outPath))
+	} else {
+		_, err = pipeline.Collect(ctx, *pluginName, *targetURL, *duration, 20, filepath.Dir(*outPath))
+	}
 	if err != nil {
 		fmt.Printf("Collect failed: %v\n", err)
 		os.Exit(1)
@@ -226,7 +251,9 @@ func runReportCommand(pipeline *core.Pipeline) {
 func runRunCommand(pipeline *core.Pipeline) {
 	flagSet := flag.NewFlagSet("run", flag.ExitOnError)
 	pluginName := flagSet.String("plugin", "", "Plugin name")
-	targetURL := flagSet.String("target-url", "", "Target URL")
+	targetURL := flagSet.String("target-url", "", "Target URL (for URL-based targets)")
+	targetType := flagSet.String("target-type", "", "Target type (url/python)")
+	targetCommand := flagSet.String("target-command", "", "Target command (for Python targets)")
 	duration := flagSet.Int("duration", 15, "Duration in seconds")
 	outDir := flagSet.String("outdir", "", "Output directory")
 	// llmEnabled := flagSet.Bool("llm", false, "Enable LLM insights")
@@ -236,9 +263,26 @@ func runRunCommand(pipeline *core.Pipeline) {
 	// llmDryRun := flagSet.Bool("llm-dry-run", false, "Dry run - save prompt without API call")
 	flagSet.Parse(os.Args[2:])
 
-	if *pluginName == "" || *targetURL == "" || *outDir == "" {
-		fmt.Println("Required flags: --plugin, --target-url, --outdir")
+	if *pluginName == "" || *outDir == "" {
+		fmt.Println("Required flags: --plugin, --outdir")
+		fmt.Println("For URL targets: --target-url")
+		fmt.Println("For Python targets: --target-type python --target-command")
 		os.Exit(1)
+	}
+
+	// Validate target parameters
+	if *targetType == "python" {
+		if *targetCommand == "" {
+			fmt.Println("Python target requires --target-command")
+			os.Exit(1)
+		}
+	} else if *targetURL == "" {
+		// Default to URL target if target-type not specified
+		*targetType = "url"
+		if *targetURL == "" {
+			fmt.Println("URL target requires --target-url")
+			os.Exit(1)
+		}
 	}
 
 	ctx := context.Background()
@@ -249,7 +293,13 @@ func runRunCommand(pipeline *core.Pipeline) {
 	// 	pipeline.WithLLM(apiKey, *llmModel, *llmTimeout, 4096, *llmMaxChars, *llmDryRun)
 	// }
 
-	err := pipeline.Run(ctx, *pluginName, *targetURL, *duration, 20, *outDir)
+	var err error
+	if *targetType == "python" {
+		err = pipeline.RunWithTarget(ctx, *pluginName, "", *targetCommand, *duration, 20, *outDir)
+	} else {
+		err = pipeline.Run(ctx, *pluginName, *targetURL, *duration, 20, *outDir)
+	}
+
 	if err != nil {
 		fmt.Printf("Run failed: %v\n", err)
 		os.Exit(1)

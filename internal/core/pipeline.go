@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/mistral-hackathon/triageprof/internal/analyzer"
@@ -30,6 +31,10 @@ func NewPipeline(pluginDir string) *Pipeline {
 
 
 func (p *Pipeline) Collect(ctx context.Context, pluginName, targetURL string, durationSec, topN int, outDir string) (*model.ProfileBundle, error) {
+	return p.CollectWithTarget(ctx, pluginName, targetURL, "", durationSec, topN, outDir)
+}
+
+func (p *Pipeline) CollectWithTarget(ctx context.Context, pluginName, targetURL, targetCommand string, durationSec, topN int, outDir string) (*model.ProfileBundle, error) {
 	// Create output directory
 	if err := os.MkdirAll(outDir, 0755); err != nil {
 		return nil, err
@@ -41,13 +46,23 @@ func (p *Pipeline) Collect(ctx context.Context, pluginName, targetURL string, du
 		return nil, err
 	}
 
-	// Validate target type compatibility
-	if err := manifest.ValidateTarget("url"); err != nil {
+	// Determine target type and validate compatibility
+	targetType := "url"
+	if targetCommand != "" {
+		targetType = "python"
+	}
+	
+	if err := manifest.ValidateTarget(targetType); err != nil {
 		return nil, err
 	}
 
-	// Validate profile compatibility
+	// Determine profiles based on target type
 	requestedProfiles := []string{"cpu", "heap", "mutex", "block", "goroutine", "allocs"}
+	if targetType == "python" {
+		requestedProfiles = []string{"cpu", "heap", "allocs", "memory-leak"}
+	}
+	
+	// Validate profile compatibility
 	if err := manifest.ValidateProfiles(requestedProfiles); err != nil {
 		return nil, err
 	}
@@ -65,17 +80,32 @@ func (p *Pipeline) Collect(ctx context.Context, pluginName, targetURL string, du
 		return nil, err
 	}
 
+	// Create target based on type
+	target := model.Target{Type: targetType}
+	if targetType == "url" {
+		target.BaseURL = targetURL
+	} else if targetType == "python" {
+		// For Python targets, parse the command string into a list
+		// Simple shell-like parsing (basic space splitting, no complex shell features)
+		cmdParts := strings.Fields(targetCommand)
+		target.Command = cmdParts
+	}
+
 	// Validate target (plugin-side validation)
-	target := model.Target{Type: "url", BaseURL: targetURL}
 	if err := codec.Call("rpc.validateTarget", target, nil); err != nil {
 		return nil, err
 	}
 
-	// Prepare collect request
+	// Prepare collect request with appropriate profiles
+	profiles := []string{"cpu", "heap", "mutex", "block", "goroutine", "allocs"}
+	if targetType == "python" {
+		profiles = []string{"cpu", "heap", "allocs", "memory-leak"}
+	}
+	
 	req := model.CollectRequest{
 		Target:      target,
 		DurationSec: durationSec,
-		Profiles:    []string{"cpu", "heap", "mutex", "block", "goroutine", "allocs"},
+		Profiles:    profiles,
 		OutDir:      outDir,
 		Metadata: map[string]string{
 			"service":  "demo",
@@ -192,8 +222,12 @@ func (p *Pipeline) Report(ctx context.Context, findingsPath, outPath string) err
 }
 
 func (p *Pipeline) Run(ctx context.Context, pluginName, targetURL string, durationSec, topN int, outDir string) error {
+	return p.RunWithTarget(ctx, pluginName, targetURL, "", durationSec, topN, outDir)
+}
+
+func (p *Pipeline) RunWithTarget(ctx context.Context, pluginName, targetURL, targetCommand string, durationSec, topN int, outDir string) error {
 	// Collect
-	_, err := p.Collect(ctx, pluginName, targetURL, durationSec, topN, outDir)
+	_, err := p.CollectWithTarget(ctx, pluginName, targetURL, targetCommand, durationSec, topN, outDir)
 	if err != nil {
 		return err
 	}

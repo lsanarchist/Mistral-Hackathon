@@ -3,8 +3,9 @@ package model
 import "time"
 
 type Target struct {
-	Type    string `json:"type"`
-	BaseURL string `json:"baseUrl"`
+	Type    string   `json:"type"`
+	BaseURL string   `json:"baseUrl"`
+	Command []string `json:"command,omitempty"`
 }
 
 type PluginInfo struct {

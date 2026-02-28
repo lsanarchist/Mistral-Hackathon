@@ -1,15 +1,18 @@
 GO=go
 GOFLAGS=
 BIN=triageprof
-PLUGIN=go-pprof-http
+GO_PLUGIN=go-pprof-http
+PYTHON_PLUGIN=python-cprofile
 
-.PHONY: all build test demo clean
+.PHONY: all build test demo demo-python clean
 
 all: build
 
 build:
 	$(GO) build $(GOFLAGS) -o bin/$(BIN) ./cmd/triageprof
-	$(GO) build $(GOFLAGS) -o plugins/bin/$(PLUGIN) ./plugins/src/$(PLUGIN)
+	$(GO) build $(GOFLAGS) -o plugins/bin/$(GO_PLUGIN) ./plugins/src/$(GO_PLUGIN)
+	chmod +x plugins/src/$(PYTHON_PLUGIN)/main.py
+	cp plugins/src/$(PYTHON_PLUGIN)/main.py plugins/bin/$(PYTHON_PLUGIN)
 
 test:
 	$(GO) test $(GOFLAGS) ./...
@@ -28,12 +31,36 @@ demo: build
 	
 	# Run triageprof
 	mkdir -p out
-	bin/$(BIN) run --plugin $(PLUGIN) --target-url http://localhost:6060 --duration 5 --outdir out
+	bin/$(BIN) run --plugin $(GO_PLUGIN) --target-url http://localhost:6060 --duration 5 --outdir out
 	
 	# Cleanup
 	kill $$SERVER_PID || true
 	
 	echo "Demo completed. Results in out/ directory."
+
+demo-python: build
+	# Start Python demo server in background
+	cd examples/python-demo-server && python3 demo.py &
+	SERVER_PID=$$!
+	echo "Python demo server started on PID $$SERVER_PID"
+	
+	# Wait for server to start
+	sleep 2
+	
+	# Generate load on Python server
+	curl -s http://localhost:8080/cpu-hotspot > /dev/null &
+	curl -s http://localhost:8080/alloc-heavy > /dev/null &
+	curl -s http://localhost:8080/memory-leak > /dev/null &
+	wait
+	
+	# Run triageprof with Python plugin
+	mkdir -p out-python
+	bin/$(BIN) run --plugin $(PYTHON_PLUGIN) --target-type python --target-command "python3 ../../examples/python-demo-server/demo.py" --duration 5 --outdir out-python
+	
+	# Cleanup
+	kill $$SERVER_PID || true
+	
+	echo "Python demo completed. Results in out-python/ directory."
 
 clean:
 	rm -rf bin/ plugins/bin/ out/
