@@ -305,8 +305,8 @@ Plugins are separate executables, discovered via manifests, and communicate with
 **Git / Rollback**
 - Branch: `main`
 - Checkpoint tag: N/A (direct commit to main)
-- Commit: `<to be filled after commit>`
-- Rollback: `git revert <commit-hash>`
+- Commit: `68b47fc`
+- Rollback: `git revert 68b47fc`
 
 ### Iter 20240303-2000 — UTC
 **Type:** Feature
@@ -486,5 +486,5 @@ Plugins are separate executables, discovered via manifests, and communicate with
 **Git / Rollback**
 - Branch: `main`
 - Checkpoint tag: N/A (direct commit to main)
-- Commit: `<to be filled after commit>`
-- Rollback: `git revert <commit-hash>`
+- Commit: `68b47fc`
+- Rollback: `git revert 68b47fc`
