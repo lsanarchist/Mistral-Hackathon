@@ -1,0 +1,11 @@
+{
+  "name": "go-pprof-http",
+  "version": "0.1.0",
+  "sdkVersion": "1.0",
+  "capabilities": {
+    "targets": ["url"],
+    "profiles": ["cpu", "heap", "mutex", "block", "goroutine"]
+  },
+  "description": "Go pprof HTTP plugin for collecting profiles from Go applications",
+  "author": "Mistral Hackathon"
+}
