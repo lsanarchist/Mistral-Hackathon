@@ -64,8 +64,8 @@ func TestPipeline_Analyze(t *testing.T) {
 		Artifacts: []model.Artifact{
 			{
 				Kind:        "pprof",
-				ProfileType: "cpu",
-				Path:        "../../out/cpu.pb.gz",
+				ProfileType: "heap",
+				Path:        "../../out/heap.pb.gz",
 				ContentType: "application/octet-stream",
 			},
 		},
@@ -79,8 +79,8 @@ func TestPipeline_Analyze(t *testing.T) {
 	require.NoError(t, os.WriteFile(bundlePath, bundleData, 0644))
 	
 	// Copy profile file to temp directory
-	srcProfile := "../../out/cpu.pb.gz"
-	dstProfile := filepath.Join(tmpDir, "cpu.pb.gz")
+	srcProfile := "../../out/heap.pb.gz"
+	dstProfile := filepath.Join(tmpDir, "heap.pb.gz")
 	profileData, err := os.ReadFile(srcProfile)
 	require.NoError(t, err)
 	require.NoError(t, os.WriteFile(dstProfile, profileData, 0644))
@@ -104,7 +104,7 @@ func TestPipeline_Analyze(t *testing.T) {
 	// Verify findings structure
 	assert.NotEmpty(t, findings.Findings)
 	if len(findings.Findings) > 0 {
-		assert.Equal(t, "cpu", findings.Findings[0].Category)
+		assert.Equal(t, "heap", findings.Findings[0].Category)
 		assert.NotEmpty(t, findings.Findings[0].Top)
 	}
 	
@@ -136,7 +136,7 @@ func TestPipeline_AnalyzeWithOptions(t *testing.T) {
 		Artifacts: []model.Artifact{
 			{
 				Kind:        "pprof",
-				ProfileType: "cpu",
+				ProfileType: "heap",
 				Path:        "../../out/cpu.pb.gz",
 				ContentType: "application/octet-stream",
 			},
@@ -151,8 +151,8 @@ func TestPipeline_AnalyzeWithOptions(t *testing.T) {
 	require.NoError(t, os.WriteFile(bundlePath, bundleData, 0644))
 	
 	// Copy profile file to temp directory
-	srcProfile := "../../out/cpu.pb.gz"
-	dstProfile := filepath.Join(tmpDir, "cpu.pb.gz")
+	srcProfile := "../../out/heap.pb.gz"
+	dstProfile := filepath.Join(tmpDir, "heap.pb.gz")
 	profileData, err := os.ReadFile(srcProfile)
 	require.NoError(t, err)
 	require.NoError(t, os.WriteFile(dstProfile, profileData, 0644))
@@ -198,7 +198,7 @@ func TestPipeline_Report(t *testing.T) {
 		},
 		Findings: []model.Finding{
 			{
-				Category: "cpu",
+				Category: "heap",
 				Title:    "Top CPU hotspots",
 				Severity: "medium",
 				Score:    80,
@@ -212,8 +212,8 @@ func TestPipeline_Report(t *testing.T) {
 					},
 				},
 				Evidence: model.Evidence{
-					ArtifactPath: "cpu.pb.gz",
-					ProfileType:  "cpu",
+					ArtifactPath: "heap.pb.gz",
+					ProfileType:  "heap",
 					ExtractedAt:  time.Now(),
 				},
 			},
@@ -294,7 +294,7 @@ func TestPipeline_ReportJSON(t *testing.T) {
 		},
 		Findings: []model.Finding{
 			{
-				Category: "cpu",
+				Category: "heap",
 				Title:    "Top CPU hotspots",
 				Severity: "medium",
 				Score:    80,
@@ -308,8 +308,8 @@ func TestPipeline_ReportJSON(t *testing.T) {
 					},
 				},
 				Evidence: model.Evidence{
-					ArtifactPath: "cpu.pb.gz",
-					ProfileType:  "cpu",
+					ArtifactPath: "heap.pb.gz",
+					ProfileType:  "heap",
 					ExtractedAt:  time.Now(),
 				},
 			},
@@ -343,5 +343,5 @@ func TestPipeline_ReportJSON(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "1.0", jsonReport.SchemaVersion)
 	assert.Equal(t, 1, len(jsonReport.Findings))
-	assert.Equal(t, "cpu", jsonReport.Findings[0].Category)
+	assert.Equal(t, "heap", jsonReport.Findings[0].Category)
 }
