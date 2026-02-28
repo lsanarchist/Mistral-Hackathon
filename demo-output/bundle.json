@@ -1,0 +1,55 @@
+{
+  "metadata": {
+    "timestamp": "2026-03-01T00:32:37.328965003+01:00",
+    "durationSec": 20,
+    "service": "demo",
+    "scenario": "default",
+    "gitSha": ""
+  },
+  "target": {
+    "type": "url",
+    "baseUrl": "http://localhost:6060"
+  },
+  "plugin": {
+    "name": "go-pprof-http",
+    "version": "0.1.0"
+  },
+  "artifacts": [
+    {
+      "kind": "pprof",
+      "profileType": "cpu",
+      "path": "demo-output/cpu.pb.gz",
+      "contentType": "application/octet-stream"
+    },
+    {
+      "kind": "pprof",
+      "profileType": "heap",
+      "path": "demo-output/heap.pb.gz",
+      "contentType": "application/octet-stream"
+    },
+    {
+      "kind": "pprof",
+      "profileType": "mutex",
+      "path": "demo-output/mutex.pb.gz",
+      "contentType": "application/octet-stream"
+    },
+    {
+      "kind": "pprof",
+      "profileType": "block",
+      "path": "demo-output/block.pb.gz",
+      "contentType": "application/octet-stream"
+    },
+    {
+      "kind": "text",
+      "profileType": "goroutine",
+      "path": "demo-output/goroutine.txt",
+      "contentType": "text/plain"
+    },
+    {
+      "kind": "pprof",
+      "profileType": "allocs",
+      "path": "demo-output/allocs.pb.gz",
+      "contentType": "application/octet-stream"
+    }
+  ]
+}

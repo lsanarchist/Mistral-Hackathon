@@ -4,6 +4,7 @@ BIN=triageprof
 GO_PLUGIN=go-pprof-http
 PYTHON_PLUGIN=python-cprofile
 NODE_PLUGIN=node-inspector
+RUBY_PLUGIN=ruby-stackprof
 
 .PHONY: all build test demo demo-python clean
 
@@ -15,6 +16,8 @@ build:
 	$(GO) build $(GOFLAGS) -o plugins/bin/$(NODE_PLUGIN) ./plugins/src/$(NODE_PLUGIN)
 	chmod +x plugins/src/$(PYTHON_PLUGIN)/main.py
 	cp plugins/src/$(PYTHON_PLUGIN)/main.py plugins/bin/$(PYTHON_PLUGIN)
+	chmod +x plugins/src/$(RUBY_PLUGIN)/main.rb
+	cp plugins/src/$(RUBY_PLUGIN)/main.rb plugins/bin/$(RUBY_PLUGIN)
 
 test:
 	$(GO) test $(GOFLAGS) ./...
@@ -71,6 +74,30 @@ demo-node: build
 	kill $$SERVER_PID || true
 	
 	echo "Node.js demo completed. Results in out-node/ directory."
+
+demo-ruby: build
+	# Start Ruby demo server in background
+	cd examples/ruby-demo-server && ruby server.rb &
+	SERVER_PID=$$!
+	echo "Ruby demo server started on PID $$SERVER_PID"
+	
+	# Wait for server to start
+	sleep 2
+	
+	# Generate load on Ruby server
+	curl -s http://localhost:4567/cpu-intensive > /dev/null &
+	curl -s http://localhost:4567/memory-heavy > /dev/null &
+	curl -s http://localhost:4567/object-creation > /dev/null &
+	wait
+	
+	# Run triageprof with Ruby plugin
+	mkdir -p out-ruby
+	bin/$(BIN) run --plugin $(RUBY_PLUGIN) --target-url http://localhost:4567 --duration 5 --outdir out-ruby
+	
+	# Cleanup
+	kill $$SERVER_PID || true
+	
+	echo "Ruby demo completed. Results in out-ruby/ directory."
 
 clean:
 	rm -rf bin/ plugins/bin/ out/

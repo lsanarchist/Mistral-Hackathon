@@ -1,0 +1,13 @@
+==1973==
+Mode: cpu(1000)
+Samples: 1000
+Thread: 1973
+==1973==
+400  main
+  main@/app/main.rb:5
+300  process_request
+  process_request@/app/request_handler.rb:12
+200  parse_json
+  parse_json@/app/json_parser.rb:8
+100  database_query
+  database_query@/app/db.rb:15

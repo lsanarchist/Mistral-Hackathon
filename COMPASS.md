@@ -93,6 +93,10 @@ Plugins are separate executables, discovered via manifests, and communicate with
    - Test coverage and validation
    - Performance optimization
 
+4. **Cool web page of results**
+
+5. **Make more clear where each plugin-module lives**
+
 ## Decision Log
 
 ### 2026-02-28: Plugin Manifest Approach

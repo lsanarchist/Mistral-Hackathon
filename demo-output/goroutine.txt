@@ -1,0 +1,4063 @@
+goroutine 780 [running]:
+runtime/pprof.writeGoroutineStacks({0x7fc640, 0xc0006da000})
+	/usr/lib/go-1.24/src/runtime/pprof/pprof.go:764 +0x6a
+runtime/pprof.writeGoroutine({0x7fc640?, 0xc0006da000?}, 0x5c?)
+	/usr/lib/go-1.24/src/runtime/pprof/pprof.go:753 +0x25
+runtime/pprof.(*Profile).WriteTo(0xa27ab0?, {0x7fc640?, 0xc0006da000?}, 0xc?)
+	/usr/lib/go-1.24/src/runtime/pprof/pprof.go:377 +0x14b
+net/http/pprof.handler.ServeHTTP({0xc000610011, 0x9}, {0x7fec50, 0xc0006da000}, 0xc0005ca000)
+	/usr/lib/go-1.24/src/net/http/pprof/pprof.go:272 +0x52f
+net/http/pprof.Index({0x7fec50, 0xc0006da000}, 0xc0005ca000?)
+	/usr/lib/go-1.24/src/net/http/pprof/pprof.go:389 +0xde
+net/http.HandlerFunc.ServeHTTP(0xa34960?, {0x7fec50?, 0xc0006da000?}, 0x639916?)
+	/usr/lib/go-1.24/src/net/http/server.go:2294 +0x29
+net/http.(*ServeMux).ServeHTTP(0x4724d9?, {0x7fec50, 0xc0006da000}, 0xc0005ca000)
+	/usr/lib/go-1.24/src/net/http/server.go:2822 +0x1c4
+net/http.serverHandler.ServeHTTP({0xc000c86120?}, {0x7fec50?, 0xc0006da000?}, 0x1?)
+	/usr/lib/go-1.24/src/net/http/server.go:3301 +0x8e
+net/http.(*conn).serve(0xc00016a480, {0x7ff0b0, 0xc0004f12c0})
+	/usr/lib/go-1.24/src/net/http/server.go:2102 +0x625
+created by net/http.(*Server).Serve in goroutine 1
+	/usr/lib/go-1.24/src/net/http/server.go:3454 +0x485
+
+goroutine 1 [IO wait]:
+internal/poll.runtime_pollWait(0x7ffa334aa228, 0x72)
+	/usr/lib/go-1.24/src/runtime/netpoll.go:351 +0x85
+internal/poll.(*pollDesc).wait(0xc000623a80?, 0x900415bfe?, 0x0)
+	/usr/lib/go-1.24/src/internal/poll/fd_poll_runtime.go:84 +0x27
+internal/poll.(*pollDesc).waitRead(...)
+	/usr/lib/go-1.24/src/internal/poll/fd_poll_runtime.go:89
+internal/poll.(*FD).Accept(0xc000623a80)
+	/usr/lib/go-1.24/src/internal/poll/fd_unix.go:620 +0x295
+net.(*netFD).accept(0xc000623a80)
+	/usr/lib/go-1.24/src/net/fd_unix.go:172 +0x29
+net.(*TCPListener).accept(0xc0004f9a80)
+	/usr/lib/go-1.24/src/net/tcpsock_posix.go:159 +0x1b
+net.(*TCPListener).Accept(0xc0004f9a80)
+	/usr/lib/go-1.24/src/net/tcpsock.go:380 +0x30
+net/http.(*Server).Serve(0xc000214200, {0x7fed40, 0xc0004f9a80})
+	/usr/lib/go-1.24/src/net/http/server.go:3424 +0x30c
+net/http.(*Server).ListenAndServe(0xc000214200)
+	/usr/lib/go-1.24/src/net/http/server.go:3350 +0x71
+net/http.ListenAndServe(...)
+	/usr/lib/go-1.24/src/net/http/server.go:3665
+main.main()
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:88 +0x885
+
+goroutine 767 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 630 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 623 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 646 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1330 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 185 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 609 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 571 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 583 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 582 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 700 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 177 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1379 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 175 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 614 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 432 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 615 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 775 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 576 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 689 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 688 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1157 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 568 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 431 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 430 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1063 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1011 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 660 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1061 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1050 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 399 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 566 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1064 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 909 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1168 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 612 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 776 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 429 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 424 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 733 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1186 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 613 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 423 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 425 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 687 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 686 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 188 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 611 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1009 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 536 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 675 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1047 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 433 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 628 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 426 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1030 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 422 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1188 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1172 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 367 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1171 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1125 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1036 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 735 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 428 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 691 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 699 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1065 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 577 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 573 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 773 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1154 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 574 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 750 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1126 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1127 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1129 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 752 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1128 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1046 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 698 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1062 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 619 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 753 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1362 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 572 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 745 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 567 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 668 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1027 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 667 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1139 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1077 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 669 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1131 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1158 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 751 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 777 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1023 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1130 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 666 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1017 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 665 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 677 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 761 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 616 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 398 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 754 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 174 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 676 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 674 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 365 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 633 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 366 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 570 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 678 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 400 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1031 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1124 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 817 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 741 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 740 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 558 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 368 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 557 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1140 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 739 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 190 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1167 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 661 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 176 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1352 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 662 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 608 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 569 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 581 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1165 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 692 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 664 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 401 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 186 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1051 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 629 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 663 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 690 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1054 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1074 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 191 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 695 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1191 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1170 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 694 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 738 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 561 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 693 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 560 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 369 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 744 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1189 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 697 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 559 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 696 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1024 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 907 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 565 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 631 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 187 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 769 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 634 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 772 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 395 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 396 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 643 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 642 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 412 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 360 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 359 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 411 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 358 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 580 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 362 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 417 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 579 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 410 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 604 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 184 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 563 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 603 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 415 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 416 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 549 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 12 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 419 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 11 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 607 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 406 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 594 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 601 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 407 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 648 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 408 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 606 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 605 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 596 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 602 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 414 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 397 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 610 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 193 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 383 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 647 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 409 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 13 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 556 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 382 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 548 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 14 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 10 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 655 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 644 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 595 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 413 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 537 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 645 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 723 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1123 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 627 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 626 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 385 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 384 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 600 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 381 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 351 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 554 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 578 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 653 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 727 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 420 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 547 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 555 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 599 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 598 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 654 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 585 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 722 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 728 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 16 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 652 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 546 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 553 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 685 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 575 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 421 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 651 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 552 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 350 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 726 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 650 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 349 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 725 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 361 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 649 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 15 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 724 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 564 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 562 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 550 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 551 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 357 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 380
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1122 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 706 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 635 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 636 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 637 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 638 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 584 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 617 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 639 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 363
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1010 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1438 [IO wait]:
+internal/poll.runtime_pollWait(0x7ffa334a9cb0, 0x72)
+	/usr/lib/go-1.24/src/runtime/netpoll.go:351 +0x85
+internal/poll.(*pollDesc).wait(0xc0002da080?, 0xc000c86131?, 0x0)
+	/usr/lib/go-1.24/src/internal/poll/fd_poll_runtime.go:84 +0x27
+internal/poll.(*pollDesc).waitRead(...)
+	/usr/lib/go-1.24/src/internal/poll/fd_poll_runtime.go:89
+internal/poll.(*FD).Read(0xc0002da080, {0xc000c86131, 0x1, 0x1})
+	/usr/lib/go-1.24/src/internal/poll/fd_unix.go:165 +0x27a
+net.(*netFD).Read(0xc0002da080, {0xc000c86131?, 0xc00042a018?, 0xc000766f70?})
+	/usr/lib/go-1.24/src/net/fd_posix.go:55 +0x25
+net.(*conn).Read(0xc0000c2010, {0xc000c86131?, 0x689e60?, 0xc0006126b0?})
+	/usr/lib/go-1.24/src/net/net.go:194 +0x45
+net/http.(*connReader).backgroundRead(0xc000c86120)
+	/usr/lib/go-1.24/src/net/http/server.go:690 +0x37
+created by net/http.(*connReader).startBackgroundRead in goroutine 780
+	/usr/lib/go-1.24/src/net/http/server.go:686 +0xb6
+
+goroutine 1014 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1018 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1008 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1160 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 620 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1041 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1022 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1138 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1021 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1187 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1049 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1029 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 749 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 748 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1059 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1159 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 743 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1197 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1052 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1196 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1195 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1166 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1042 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1067 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 538 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1034 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1033 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1076 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 766 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 684 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1066 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1038 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1193 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1194 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1060 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 774 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 622 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1012 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1192 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1037 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1039 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1053 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1363 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 737 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1040 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1058 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1007 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1075 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 621 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1015 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 747 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1056 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1156 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1019 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1043 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1020 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 908 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1155 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1169 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 762 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1161 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 763 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1016 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1079 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1026 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 760 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1048 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 759 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1013 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1078 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 765 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 764 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1028 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 911 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1035 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 912 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 746 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1190 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1032 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1339 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 910 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 586 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1090 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 707 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1080 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 624 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 625 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1106 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1081 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1107 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1082 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1108 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 816
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 768 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 736 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1085 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1338 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1145 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1146 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1086 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1110 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1087 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 588 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1111 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1088 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1089 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1202 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1203 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 589 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1204 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1205 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1147 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1148 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 708 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1132 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 709 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1133 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1206 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1207 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1112 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 590 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1134 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1208 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1149 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1150 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1151 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1209 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1210 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1211 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 591 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1152 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1212 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1113 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1114 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1153 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1135 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1136 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1115 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 587
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1173 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1025 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1200 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1137 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1351 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1394 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1395 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1180 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1349 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1347 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1346 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1179 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1348 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1350 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1055 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1336 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1177 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1175 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1410 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1398 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1176 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1334 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1414 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1116 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1333 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1178 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1413 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1174 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1337 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1412 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1335 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1331 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1332 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 592 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1057 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1378 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1397 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 539 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1396 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1201 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1411 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1442 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1316 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1317 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1318 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1319 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1320 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1364 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1365 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1366 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1321 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1322 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1323 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1324 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1325 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1367 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1380 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1326 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1327 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1368 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1369 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1328 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1117 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1118 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1329 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1426 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1370 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1381 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1427 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1371 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1372 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1428 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1340 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 593 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1429 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1430 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1431 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1432 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1433 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1119 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1341 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1342 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1382 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c
+
+goroutine 1434 [sleep]:
+time.Sleep(0x5f5e100)
+	/usr/lib/go-1.24/src/runtime/time.go:338 +0x165
+main.goroutineLeakHandler.func1(...)
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:497
+created by main.goroutineLeakHandler in goroutine 1199
+	/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go:493 +0x7c

@@ -1,5 +1,38 @@
 ## Change Log
 
+### 2026-03-01
+- **Objective**: Add Ruby stackprof plugin support
+- **Rationale**: Extend TriageProf's language coverage to include Ruby applications
+- **Impact**: Plugin system, core pipeline, build process, demo capabilities
+- **Changes**:
+  - Created Ruby stackprof plugin with JSON-RPC interface
+  - Added Ruby plugin manifest for discovery
+  - Enhanced core pipeline to handle Ruby-specific profiles (cpu, memory, object_allocation)
+  - Updated Makefile to build and install Ruby plugin
+  - Added Ruby demo server and load generation scripts
+  - Created comprehensive plugin tests
+- **Testing**: 
+  - Plugin discovery and validation tests
+  - Full pipeline integration tests
+  - Demo script verification
+  - Build process validation
+- **Result**: Ruby applications can now be profiled using TriageProf with stackprof support
+
+### 2026-03-01
+- **Objective**: Enhance demo experience and LLM integration for "wow" factor demonstration
+- **Rationale**: Create even more compelling demo showcasing advanced performance issues and improved AI-powered analysis
+- **Impact**: Demo server, load generation, LLM insights, report generation, user experience
+- **Changes**:
+  - Added 3 new performance issue endpoints to demo server: memory leak simulation, blocking I/O operations, and goroutine leak simulation
+  - Enhanced demo server output to showcase all 11 performance issues being demonstrated
+  - Updated load generation script to target all 11 endpoints with proper request counting using temp files
+  - Enhanced LLM prompt generation with explicit analysis context and structured requirements for better insights
+  - Improved report generation with emojis, better formatting, and enhanced LLM insights display including top risks and action items
+  - Added confidence level indicators with color-coded emojis (🔴/🟡/🟢) for LLM insights
+  - Fixed load script request counting issue by using file-based synchronization between concurrent workers
+- **Testing**: Manual testing of all new endpoints; verified load script generates requests; confirmed LLM prompt generation with enhanced context; validated report generation with improved formatting
+- **Result**: Demo now showcases 11 distinct performance issues with significantly enhanced LLM insights display, creating a more compelling and professional "wow" factor demonstration that better highlights TriageProf's AI-powered analysis capabilities
+
 ### 2026-02-28
 - **Objective**: Implement manifest-based plugin discovery and validation
 - **Rationale**: Enhance plugin system maturity with proper discovery, capability checking, and compatibility validation
@@ -46,18 +79,3 @@
   - Updated load script output to show all performance issues that should be visible to profilers
 - **Testing**: Verified server builds and runs correctly; all existing tests pass; manual endpoint testing
 - **Result**: Demo now generates richer profiling data with more varied performance issues, leading to more compelling and actionable LLM insights that better showcase TriageProf's AI-powered analysis capabilities
-
-### 2026-03-01
-- **Objective**: Enhance demo experience and LLM integration for "wow" factor demonstration
-- **Rationale**: Create even more compelling demo showcasing advanced performance issues and improved AI-powered analysis
-- **Impact**: Demo server, load generation, LLM insights, report generation, user experience
-- **Changes**:
-  - Added 3 new performance issue endpoints to demo server: memory leak simulation, blocking I/O operations, and goroutine leak simulation
-  - Enhanced demo server output to showcase all 11 performance issues being demonstrated
-  - Updated load generation script to target all 11 endpoints with proper request counting using temp files
-  - Enhanced LLM prompt generation with explicit analysis context and structured requirements for better insights
-  - Improved report generation with emojis, better formatting, and enhanced LLM insights display including top risks and action items
-  - Added confidence level indicators with color-coded emojis (🔴/🟡/🟢) for LLM insights
-  - Fixed load script request counting issue by using file-based synchronization between concurrent workers
-- **Testing**: Manual testing of all new endpoints; verified load script generates requests; confirmed LLM prompt generation with enhanced context; validated report generation with improved formatting
-- **Result**: Demo now showcases 11 distinct performance issues with significantly enhanced LLM insights display, creating a more compelling and professional "wow" factor demonstration that better highlights TriageProf's AI-powered analysis capabilities

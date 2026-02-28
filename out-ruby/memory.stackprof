@@ -1,0 +1,11 @@
+==1974==
+Mode: object(1000)
+Samples: 1000
+Thread: 1974
+==1974==
+500  String.new
+  String.new@/app/main.rb:10
+300  Array.new
+  Array.new@/app/request_handler.rb:20
+200  Hash.new
+  Hash.new@/app/json_parser.rb:15

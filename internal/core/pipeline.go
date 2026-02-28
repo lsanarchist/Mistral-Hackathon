@@ -88,6 +88,9 @@ func (p *Pipeline) CollectWithTarget(ctx context.Context, pluginName, targetURL,
 		requestedProfiles = []string{"cpu", "heap", "allocs", "memory-leak"}
 	} else if targetType == "node" {
 		requestedProfiles = []string{"cpu", "heap", "allocs"}
+	} else if pluginName == "ruby-stackprof" {
+		// Ruby stackprof plugin has different profile capabilities
+		requestedProfiles = []string{"cpu", "memory", "object_allocation"}
 	}
 	
 	// Validate profile compatibility
@@ -130,6 +133,9 @@ func (p *Pipeline) CollectWithTarget(ctx context.Context, pluginName, targetURL,
 		profiles = []string{"cpu", "heap", "allocs", "memory-leak"}
 	} else if targetType == "node" {
 		profiles = []string{"cpu", "heap", "allocs"}
+	} else if pluginName == "ruby-stackprof" {
+		// Ruby stackprof plugin has different profile capabilities
+		profiles = []string{"cpu", "memory", "object_allocation"}
 	}
 	
 	req := model.CollectRequest{

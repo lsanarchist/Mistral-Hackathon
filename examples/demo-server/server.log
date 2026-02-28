@@ -1,0 +1,96 @@
+🚀 Enhanced Demo Server running on :6060
+📊 Endpoints:
+  - GET  /api/users     - User listing with JSON serialization overhead
+  - GET  /api/search    - Search with database contention
+  - GET  /api/analytics - CPU-intensive analytics processing
+  - GET  /api/export    - Memory-heavy data export
+  - POST /api/process   - Complex business logic with mutex contention
+  - GET  /api/strings   - Inefficient string concatenation
+  - GET  /api/nocache   - Lack of caching for expensive computations
+  - GET  /api/iobound   - I/O bottleneck simulation
+  - GET  /api/leak      - Memory leak simulation
+  - GET  /api/blocking  - Blocking I/O operations
+  - GET  /api/goroutine - Goroutine leak simulation
+  - GET  /health       - Health check endpoint
+  - GET  /debug/pprof/  - Performance profiling endpoints
+
+🎯 Performance Issues Demonstrated:
+  ✅ JSON serialization overhead
+  ✅ Database lock contention
+  ✅ CPU-bound analytics
+  ✅ Memory allocation patterns
+  ✅ Mutex contention in business logic
+  ✅ I/O bottlenecks
+  ✅ Inefficient string operations
+  ✅ Lack of result caching
+  ✅ Memory leaks
+  ✅ Blocking I/O operations
+  ✅ Goroutine leaks
+🔢 No-cache handler processed in 1.278349ms
+🔄 Process handler completed with 100 operations in 5.985119ms
+🔄 Process handler completed with 100 operations in 7.22244ms
+🔄 Process handler completed with 100 operations in 5.548425ms
+🔍 Search for 'test' found 0 results in 25.704186ms
+🔍 Search for 'test' found 0 results in 52.121005ms
+🔢 No-cache handler processed in 947.205µs
+📊 Users endpoint served 1000 users in 22.302526ms
+🔢 No-cache handler processed in 1.674475ms
+🔢 No-cache handler processed in 1.245367ms
+🔄 Process handler completed with 100 operations in 6.866859ms
+🔢 No-cache handler processed in 1.438811ms
+🌀 Goroutine leak handler completed in 230.843503ms (leaked 100 goroutines)
+💾 Export generated 1000 records in 1.151136392s
+💾 Export generated 1000 records in 1.199795222s
+🌀 Goroutine leak handler completed in 223.224546ms (leaked 100 goroutines)
+💾 I/O bound handler completed in 730.672044ms
+💾 Export generated 1000 records in 1.094807126s
+🚧 Blocking I/O handler completed in 1.661658942s
+💾 I/O bound handler completed in 756.162296ms
+💀 Memory leak handler completed in 712.806467ms (leaked ~100MB)
+📈 Analytics processed in 36.196086ms
+💾 I/O bound handler completed in 730.43686ms
+🔢 No-cache handler processed in 1.447568ms
+📊 Users endpoint served 1000 users in 24.18834ms
+💾 Export generated 1000 records in 1.366346075s
+💀 Memory leak handler completed in 779.860893ms (leaked ~100MB)
+💾 I/O bound handler completed in 793.201943ms
+💾 Export generated 1000 records in 1.346653628s
+🔄 Process handler completed with 100 operations in 4.549583ms
+💀 Memory leak handler completed in 738.061929ms (leaked ~100MB)
+🔢 No-cache handler processed in 1.917603ms
+💾 I/O bound handler completed in 729.969981ms
+📈 Analytics processed in 49.790343ms
+🚧 Blocking I/O handler completed in 1.677523339s
+🔄 Process handler completed with 100 operations in 6.164275ms
+📈 Analytics processed in 48.205988ms
+🌀 Goroutine leak handler completed in 230.834096ms (leaked 100 goroutines)
+📊 Users endpoint served 1000 users in 36.56962ms
+🚧 Blocking I/O handler completed in 1.797379443s
+📊 Users endpoint served 1000 users in 35.053214ms
+🔢 No-cache handler processed in 1.61844ms
+🌀 Goroutine leak handler completed in 236.46122ms (leaked 100 goroutines)
+🔄 Process handler completed with 100 operations in 5.322309ms
+💾 Export generated 1000 records in 2.385593547s
+📝 Inefficient string handler completed in 13.461458896s
+💾 I/O bound handler completed in 757.740343ms
+🌀 Goroutine leak handler completed in 230.986464ms (leaked 100 goroutines)
+📊 Users endpoint served 1000 users in 38.718349ms
+📈 Analytics processed in 47.351628ms
+🔄 Process handler completed with 100 operations in 5.525412ms
+💀 Memory leak handler completed in 788.245526ms (leaked ~100MB)
+📝 Inefficient string handler completed in 15.505455377s
+💾 I/O bound handler completed in 696.128444ms
+💾 Export generated 1000 records in 2.427631385s
+📝 Inefficient string handler completed in 16.690433315s
+🔍 Search for 'test' found 0 results in 25.911297ms
+📊 Users endpoint served 1000 users in 40.833877ms
+📝 Inefficient string handler completed in 17.197135s
+💾 I/O bound handler completed in 756.343552ms
+💀 Memory leak handler completed in 767.541352ms (leaked ~100MB)
+🔍 Search for 'test' found 0 results in 26.707075ms
+💾 I/O bound handler completed in 718.449195ms
+📝 Inefficient string handler completed in 18.079147971s
+📝 Inefficient string handler completed in 17.915394058s
+📝 Inefficient string handler completed in 16.709264746s
+📝 Inefficient string handler completed in 10.884336487s
+📝 Inefficient string handler completed in 7.905723661s
