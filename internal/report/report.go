@@ -81,12 +81,17 @@ func (r *Reporter) GenerateWithInsights(findings model.FindingsBundle, insights 
 
 		// Add callgraph visualization if available
 		if len(finding.Callgraph) > 0 {
-			sb.WriteString("### Callgraph Analysis (Depth 3)\n\n")
+			sb.WriteString("### Callgraph Analysis\n\n")
 			sb.WriteString("```\n")
 			for _, node := range finding.Callgraph {
 				renderCallgraphNode(&node, 0, &sb)
 			}
 			sb.WriteString("```\n\n")
+			
+			// Add callgraph statistics
+			totalNodes := countCallgraphNodes(finding.Callgraph)
+			maxDepth := findMaxCallgraphDepth(finding.Callgraph)
+			sb.WriteString(fmt.Sprintf("**Callgraph Statistics**: %d nodes, max depth %d\n\n", totalNodes, maxDepth))
 		}
 
 		// Add regression analysis if available
@@ -196,12 +201,61 @@ func (r *Reporter) GenerateJSON(findings model.FindingsBundle, insights *model.I
 // renderCallgraphNode recursively renders a callgraph node as ASCII tree
 func renderCallgraphNode(node *model.CallgraphNode, indent int, sb *strings.Builder) {
 	indentStr := strings.Repeat("  ", indent)
-	sb.WriteString(fmt.Sprintf("%s%s (%.1f%% cum, %.1f%% flat)\n",
-		indentStr, node.Function, node.Cum, node.Flat))
+	
+	// Use tree characters for better visualization
+	treePrefix := "├── "
+	if indent == 0 {
+		treePrefix = ""
+	}
+	
+	sb.WriteString(fmt.Sprintf("%s%s%s (cum: %.1f, flat: %.1f, depth: %d)\n",
+		indentStr, treePrefix, node.Function, node.Cum, node.Flat, node.Depth))
 
 	for _, child := range node.Children {
 		renderCallgraphNode(&child, indent+1, sb)
 	}
+}
+
+// countCallgraphNodes counts total nodes in callgraph
+func countCallgraphNodes(nodes []model.CallgraphNode) int {
+	count := 0
+	for _, node := range nodes {
+		count += countCallgraphNode(&node)
+	}
+	return count
+}
+
+// countCallgraphNode recursively counts nodes
+func countCallgraphNode(node *model.CallgraphNode) int {
+	count := 1
+	for _, child := range node.Children {
+		count += countCallgraphNode(&child)
+	}
+	return count
+}
+
+// findMaxCallgraphDepth finds maximum depth in callgraph
+func findMaxCallgraphDepth(nodes []model.CallgraphNode) int {
+	maxDepth := 0
+	for _, node := range nodes {
+		depth := findMaxCallgraphNodeDepth(&node)
+		if depth > maxDepth {
+			maxDepth = depth
+		}
+	}
+	return maxDepth
+}
+
+// findMaxCallgraphNodeDepth recursively finds max depth
+func findMaxCallgraphNodeDepth(node *model.CallgraphNode) int {
+	maxDepth := node.Depth
+	for _, child := range node.Children {
+		childDepth := findMaxCallgraphNodeDepth(&child)
+		if childDepth > maxDepth {
+			maxDepth = childDepth
+		}
+	}
+	return maxDepth
 }
 
 func determineSeverity(score int) string {

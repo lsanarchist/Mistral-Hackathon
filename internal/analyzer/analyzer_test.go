@@ -139,6 +139,7 @@ func TestAnalyzeWithOptions(t *testing.T) {
 	t.Run("callgraph analysis", func(t *testing.T) {
 		findings, err := analyzer.AnalyzeWithOptions(bundle, 5, AnalyzeOptions{
 			EnableCallgraph: true,
+			CallgraphDepth:  3,
 		})
 		require.NoError(t, err)
 		require.NotNil(t, findings)
@@ -146,6 +147,36 @@ func TestAnalyzeWithOptions(t *testing.T) {
 		if len(findings.Findings) > 0 {
 			assert.NotEmpty(t, findings.Findings[0].Callgraph)
 			assert.Nil(t, findings.Findings[0].Regression)
+			// Verify callgraph has expected structure
+			for _, node := range findings.Findings[0].Callgraph {
+				assert.NotEmpty(t, node.Function)
+				assert.GreaterOrEqual(t, node.Depth, 0)
+				assert.Greater(t, node.Cum, 0.0)
+			}
+		}
+	})
+
+	// Test callgraph depth variation
+	t.Run("callgraph depth variation", func(t *testing.T) {
+		// Test depth 2
+		findings2, err := analyzer.AnalyzeWithOptions(bundle, 5, AnalyzeOptions{
+			EnableCallgraph: true,
+			CallgraphDepth:  2,
+		})
+		require.NoError(t, err)
+		
+		// Test depth 4
+		findings4, err := analyzer.AnalyzeWithOptions(bundle, 5, AnalyzeOptions{
+			EnableCallgraph: true,
+			CallgraphDepth:  4,
+		})
+		require.NoError(t, err)
+		
+		// Depth 4 should generally have more nodes than depth 2
+		if len(findings2.Findings) > 0 && len(findings4.Findings) > 0 {
+			nodes2 := countCallgraphNodes(findings2.Findings[0].Callgraph)
+			nodes4 := countCallgraphNodes(findings4.Findings[0].Callgraph)
+			assert.GreaterOrEqual(t, nodes4, nodes2, "Depth 4 should have at least as many nodes as depth 2")
 		}
 	})
 
@@ -171,6 +202,24 @@ func TestCalculateProfileScore(t *testing.T) {
 
 	score := calculateProfileScore(prof)
 	assert.Greater(t, score, 50, "Expected high score for concentrated profile")
+}
+
+// countCallgraphNodes counts total nodes in callgraph (test helper)
+func countCallgraphNodes(nodes []model.CallgraphNode) int {
+	count := 0
+	for _, node := range nodes {
+		count += countCallgraphNode(&node)
+	}
+	return count
+}
+
+// countCallgraphNode recursively counts nodes (test helper)
+func countCallgraphNode(node *model.CallgraphNode) int {
+	count := 1
+	for _, child := range node.Children {
+		count += countCallgraphNode(&child)
+	}
+	return count
 }
 
 func TestMaxFunction(t *testing.T) {

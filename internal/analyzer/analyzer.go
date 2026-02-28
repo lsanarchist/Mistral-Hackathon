@@ -21,6 +21,7 @@ func NewAnalyzer() *Analyzer {
 // AnalyzeOptions configure analysis behavior
 type AnalyzeOptions struct {
 	EnableCallgraph    bool
+	CallgraphDepth     int
 	EnableRegression   bool
 	BaselineBundlePath string
 }
@@ -67,7 +68,11 @@ func (a *Analyzer) AnalyzeWithOptions(bundle model.ProfileBundle, topN int, opti
 		// Build callgraph if enabled
 		var callgraph []model.CallgraphNode
 		if options.EnableCallgraph {
-			callgraph = buildCallgraph(prof, topN, 3) // max depth 3
+			maxDepth := options.CallgraphDepth
+			if maxDepth <= 0 {
+				maxDepth = 3 // default depth
+			}
+			callgraph = buildCallgraph(prof, topN, maxDepth)
 		}
 
 		// Perform regression analysis if baseline available
@@ -230,13 +235,15 @@ func buildCallgraphNode(sample *profile.Sample, depth, maxDepth int) model.Callg
 	}
 
 	line := location.Line[0]
+	totalValue := float64(sample.Value[0])
+	
 	node := model.CallgraphNode{
 		Function: line.Function.Name,
 		File:     line.Function.Filename,
 		Line:     int(line.Line),
 		Depth:    depth,
-		Cum:      float64(sample.Value[0]),
-		Flat:     float64(sample.Value[0]),
+		Cum:      totalValue,
+		Flat:     totalValue,
 	}
 
 	// Build children from call stack

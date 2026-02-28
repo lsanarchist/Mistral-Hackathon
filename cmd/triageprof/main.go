@@ -21,7 +21,7 @@ func main() {
 		fmt.Println("Commands:")
 		fmt.Println("  plugins list")
 		fmt.Println("  collect --plugin <name> --target-url <url> --duration <sec> --out <path>")
-		fmt.Println("  analyze --in <bundle.json> --out <findings.json> --top <N> [--callgraph] [--regression --baseline <path>]")
+		fmt.Println("  analyze --in <bundle.json> --out <findings.json> --top <N> [--callgraph --callgraph-depth <depth>] [--regression --baseline <path>]")
 		fmt.Println("  report --in <findings.json> --out <report.md|json> --output markdown|json")
 		fmt.Println("  llm --bundle <path> --findings <path> --out <insights.json>")
 		fmt.Println("  run --plugin <name> --target-url <url> --duration <sec> --outdir <dir>")
@@ -126,6 +126,7 @@ func runAnalyzeCommand(pipeline *core.Pipeline) {
 	outPath := flagSet.String("out", "", "Output findings path")
 	topN := flagSet.Int("top", 20, "Top N findings")
 	callgraph := flagSet.Bool("callgraph", false, "Enable callgraph analysis")
+	callgraphDepth := flagSet.Int("callgraph-depth", 3, "Callgraph maximum depth (default: 3)")
 	regression := flagSet.Bool("regression", false, "Enable regression analysis")
 	baseline := flagSet.String("baseline", "", "Baseline bundle path for regression analysis")
 	flagSet.Parse(os.Args[2:])
@@ -143,6 +144,7 @@ func runAnalyzeCommand(pipeline *core.Pipeline) {
 	ctx := context.Background()
 	options := core.CoreAnalyzeOptions{
 		EnableCallgraph:    *callgraph,
+		CallgraphDepth:     *callgraphDepth,
 		EnableRegression:   *regression,
 		BaselineBundlePath: *baseline,
 	}
@@ -155,7 +157,7 @@ func runAnalyzeCommand(pipeline *core.Pipeline) {
 
 	fmt.Printf("Findings saved to: %s\n", *outPath)
 	if *callgraph {
-		fmt.Println("✓ Callgraph analysis completed")
+		fmt.Printf("✓ Callgraph analysis completed (depth %d)\n", *callgraphDepth)
 	}
 	if *regression {
 		fmt.Println("✓ Regression analysis completed")

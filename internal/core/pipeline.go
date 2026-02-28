@@ -132,6 +132,7 @@ func (p *Pipeline) Collect(ctx context.Context, pluginName, targetURL string, du
 // CoreAnalyzeOptions configure analysis behavior
 type CoreAnalyzeOptions struct {
 	EnableCallgraph    bool
+	CallgraphDepth     int
 	EnableRegression   bool
 	BaselineBundlePath string
 }
@@ -155,6 +156,7 @@ func (p *Pipeline) AnalyzeWithOptions(ctx context.Context, bundlePath string, to
 	// Analyze with options
 	analyzerOptions := analyzer.AnalyzeOptions{
 		EnableCallgraph:    options.EnableCallgraph,
+		CallgraphDepth:     options.CallgraphDepth,
 		EnableRegression:   options.EnableRegression,
 		BaselineBundlePath: options.BaselineBundlePath,
 	}
