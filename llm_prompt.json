@@ -1,0 +1,66 @@
+Analyze the following performance findings and provide insights in JSON format matching the schema:
+
+METADATA:
+Service: demo
+Scenario: default
+Duration: 3 seconds
+Target: http://[REDACTED_HOSTNAME]:6060
+Profiles Collected: - cpu (pprof), - heap (pprof), - mutex (pprof), - block (pprof), - goroutine (text)
+Artifacts: 5 total
+Timestamp: 2026-02-28 15:30:28
+
+FINDINGS SUMMARY:
+Overall Score: 75/100
+Top Issue Tags: performance
+
+
+FINDING 1: Top cpu hotspots
+Category: cpu
+Severity: medium
+Score: 50
+Top Stack Frames:
+
+Evidence: cpu profile from cpu.pb.gz
+
+FINDING 2: Top heap hotspots
+Category: heap
+Severity: medium
+Score: 90
+Top Stack Frames:
+  - internal[REDACTED_PATH][REDACTED_PATH]/netip.zoneV6 string }; weak.u unsafe.Pointer }]).All (line 483) (21845.0s cum, 21845.0s flat)
+  - unique.addUniqueMap[[REDACTED_HOSTNAME] { net[REDACTED_PATH] (line 134) (21845.0s cum, 21845.0s flat)
+  - unique.registerCleanup.func1 (line 162) (21845.0s cum, 21845.0s flat)
+  - runtime.[REDACTED_TOKEN].func2 (line 1798) (21845.0s cum, 21845.0s flat)
+  - syscall.anyToSockaddr (line 675) (16385.0s cum, 16385.0s flat)
+  - syscall.Accept4 (line 699) (16385.0s cum, 16385.0s flat)
+  - internal/poll.accept (line 17) (16385.0s cum, 16385.0s flat)
+  - internal/poll.(*FD).Accept (line 611) (16385.0s cum, 16385.0s flat)
+  - net.(*netFD).accept (line 172) (16385.0s cum, 16385.0s flat)
+  - net.(*TCPListener).accept (line 159) (16385.0s cum, 16385.0s flat)
+
+Evidence: heap profile from heap.pb.gz
+
+FINDING 3: Top mutex hotspots
+Category: mutex
+Severity: medium
+Score: 50
+Top Stack Frames:
+
+Evidence: mutex profile from mutex.pb.gz
+
+FINDING 4: Top block hotspots
+Category: block
+Severity: medium
+Score: 50
+Top Stack Frames:
+
+Evidence: block profile from block.pb.gz
+
+
+INSTRUCTIONS:
+1. Generate an executive summary with overall severity assessment
+2. Identify top 3 risks with impact/likelihood
+3. Suggest top 3 actions with priority/effort estimates
+4. For each finding, provide narrative, likely root causes, suggestions, and next measurements
+5. Include caveats about limitations and confidence levels
+6. Output JSON ONLY, no markdown or explanations

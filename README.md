@@ -1,3 +1,5 @@
+Your mistral key is at apikey.swaga
+
 # TriageProf - Plugin-based Profiling Triage Tool
 
 A Go-based tool for collecting, analyzing, and reporting performance profiles from various sources using a plugin architecture.

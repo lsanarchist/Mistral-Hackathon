@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-02-28T15:30:33.551892342+01:00",
+  "disabled_reason": "Dry run mode - prompt saved to llm_prompt.json",
+  "executive_summary": {
+    "overview": "LLM insights disabled: dry run mode",
+    "overall_severity": "low",
+    "confidence": 0
+  }
+}

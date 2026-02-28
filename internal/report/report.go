@@ -15,7 +15,13 @@ func NewReporter() *Reporter {
 	return &Reporter{}
 }
 
+// Generate creates a markdown report from findings (backward compatible)
 func (r *Reporter) Generate(findings model.FindingsBundle) (string, error) {
+	return r.GenerateWithInsights(findings, nil)
+}
+
+// GenerateWithInsights creates a markdown report with optional LLM insights
+func (r *Reporter) GenerateWithInsights(findings model.FindingsBundle, insights *model.InsightsBundle) (string, error) {
 	var sb strings.Builder
 
 	// Header
@@ -32,6 +38,23 @@ func (r *Reporter) Generate(findings model.FindingsBundle) (string, error) {
 			sb.WriteString(fmt.Sprintf("  - %s\n", note))
 		}
 	}
+
+	// Add LLM insights to executive summary if available
+	if insights != nil && insights.ExecutiveSummary.Overview != "" {
+		sb.WriteString("\n### LLM Insights\n\n")
+		sb.WriteString(fmt.Sprintf("**Overview**: %s\n", insights.ExecutiveSummary.Overview))
+		sb.WriteString(fmt.Sprintf("**Overall Severity**: %s (Confidence: %d%%)\n", 
+			insights.ExecutiveSummary.OverallSeverity, insights.ExecutiveSummary.Confidence))
+		if len(insights.ExecutiveSummary.KeyThemes) > 0 {
+			sb.WriteString("**Key Themes**: ")
+			sb.WriteString(strings.Join(insights.ExecutiveSummary.KeyThemes, ", "))
+			sb.WriteString("\n")
+		}
+		if insights.DisabledReason != "" {
+			sb.WriteString(fmt.Sprintf("*LLM Status*: %s\n", insights.DisabledReason))
+		}
+	}
+
 	sb.WriteString("\n")
 
 	// Findings by category
@@ -53,6 +76,46 @@ func (r *Reporter) Generate(findings model.FindingsBundle) (string, error) {
 					frame.Function, frame.File, frame.Line, frame.Cum, frame.Flat))
 			}
 			sb.WriteString("\n")
+		}
+
+		// Add LLM insights for this finding if available
+		if insights != nil && len(insights.PerFinding) > 0 {
+			for _, insight := range insights.PerFinding {
+				if insight.FindingID == finding.Category {
+					sb.WriteString("### LLM Insights\n\n")
+					sb.WriteString(fmt.Sprintf("**Narrative**: %s\n\n", insight.Narrative))
+					if len(insight.LikelyRootCauses) > 0 {
+						sb.WriteString("**Likely Root Causes**:\n")
+						for _, cause := range insight.LikelyRootCauses {
+							sb.WriteString(fmt.Sprintf("  - %s\n", cause))
+						}
+						sb.WriteString("\n")
+					}
+					if len(insight.Suggestions) > 0 {
+						sb.WriteString("**Suggestions**:\n")
+						for _, suggestion := range insight.Suggestions {
+							sb.WriteString(fmt.Sprintf("  - %s\n", suggestion))
+						}
+						sb.WriteString("\n")
+					}
+					if len(insight.NextMeasurements) > 0 {
+						sb.WriteString("**Next Measurements**:\n")
+						for _, measurement := range insight.NextMeasurements {
+							sb.WriteString(fmt.Sprintf("  - %s\n", measurement))
+						}
+						sb.WriteString("\n")
+					}
+					if len(insight.Caveats) > 0 {
+						sb.WriteString("**Caveats**:\n")
+						for _, caveat := range insight.Caveats {
+							sb.WriteString(fmt.Sprintf("  - %s\n", caveat))
+						}
+						sb.WriteString("\n")
+					}
+					sb.WriteString(fmt.Sprintf("*Confidence: %d%%*\n\n", insight.Confidence))
+					break
+				}
+			}
 		}
 	}
 

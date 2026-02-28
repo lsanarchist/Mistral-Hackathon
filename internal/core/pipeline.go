@@ -3,11 +3,13 @@ package core
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/mistral-hackathon/triageprof/internal/analyzer"
+	"github.com/mistral-hackathon/triageprof/internal/llm"
 	"github.com/mistral-hackathon/triageprof/internal/model"
 	"github.com/mistral-hackathon/triageprof/internal/plugin"
 	"github.com/mistral-hackathon/triageprof/internal/report"
@@ -17,6 +19,7 @@ type Pipeline struct {
 	pluginManager *plugin.PluginManager
 	analyzer      *analyzer.Analyzer
 	reporter      *report.Reporter
+	llmGenerator  *llm.InsightsGenerator
 }
 
 func NewPipeline(pluginDir string) *Pipeline {
@@ -24,7 +27,14 @@ func NewPipeline(pluginDir string) *Pipeline {
 		pluginManager: plugin.NewPluginManager(pluginDir),
 		analyzer:      analyzer.NewAnalyzer(),
 		reporter:      report.NewReporter(),
+		llmGenerator:  nil, // LLM is optional and configured separately
 	}
+}
+
+// WithLLM configures LLM insights generation
+func (p *Pipeline) WithLLM(apiKey, model string, timeout, maxResponse, maxPromptChars int, dryRun bool) *Pipeline {
+	p.llmGenerator = llm.NewInsightsGenerator(apiKey, model, timeout, maxResponse, maxPromptChars, dryRun)
+	return p
 }
 
 func (p *Pipeline) Collect(ctx context.Context, pluginName, targetURL string, durationSec, topN int, outDir string) (*model.ProfileBundle, error) {
@@ -186,7 +196,69 @@ func (p *Pipeline) Run(ctx context.Context, pluginName, targetURL string, durati
 		return err
 	}
 
+	// Generate LLM insights (optional)
+	var insights *model.InsightsBundle
+	if p.llmGenerator != nil {
+		insights, err = p.GenerateInsights(ctx, bundlePath, findingsPath)
+		if err != nil {
+			// LLM failure is non-fatal
+			fmt.Printf("Warning: LLM insights generation failed: %v\n", err)
+		}
+	}
+
 	// Report
 	reportPath := filepath.Join(outDir, "report.md")
-	return p.Report(ctx, findingsPath, reportPath)
+	return p.ReportWithInsights(ctx, findingsPath, insights, reportPath)
+}
+
+// GenerateInsights creates LLM insights from bundle and findings
+func (p *Pipeline) GenerateInsights(ctx context.Context, bundlePath, findingsPath string) (*model.InsightsBundle, error) {
+	if p.llmGenerator == nil {
+		return nil, fmt.Errorf("LLM generator not configured")
+	}
+
+	// Load bundle
+	bundleData, err := os.ReadFile(bundlePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read bundle: %w", err)
+	}
+	var bundle model.ProfileBundle
+	if err := json.Unmarshal(bundleData, &bundle); err != nil {
+		return nil, fmt.Errorf("failed to parse bundle: %w", err)
+	}
+
+	// Load findings
+	findingsData, err := os.ReadFile(findingsPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read findings: %w", err)
+	}
+	var findings model.FindingsBundle
+	if err := json.Unmarshal(findingsData, &findings); err != nil {
+		return nil, fmt.Errorf("failed to parse findings: %w", err)
+	}
+
+	// Generate insights
+	return p.llmGenerator.GenerateInsights(ctx, &bundle, &findings)
+}
+
+// ReportWithInsights generates a report with optional LLM insights
+func (p *Pipeline) ReportWithInsights(ctx context.Context, findingsPath string, insights *model.InsightsBundle, outPath string) error {
+	// Read findings
+	data, err := os.ReadFile(findingsPath)
+	if err != nil {
+		return err
+	}
+
+	var findings model.FindingsBundle
+	if err := json.Unmarshal(data, &findings); err != nil {
+		return err
+	}
+
+	// Generate report with insights
+	reportData, err := p.reporter.GenerateWithInsights(findings, insights)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(outPath, []byte(reportData), 0644)
 }
