@@ -38,11 +38,74 @@ This builds:
 make demo
 ```
 
-This will:
-1. Start a demo server with performance issues
-2. Generate load to create profiles
-3. Run the full triage pipeline
-4. Generate a report in `out/report.md`
+This will run the comprehensive demo script that showcases TriageProf's killer features:
+- 🎯 **Automatic Plugin Discovery**: Plugins are automatically discovered from manifests
+- 🚀 **Single Command Analysis**: Collect, analyze, and report in one command
+- 📊 **Professional Reports**: Markdown reports with executive summaries
+- 🤖 **LLM Ready**: Optional AI-powered insights (requires API key)
+
+The demo includes:
+- Enhanced demo server with realistic performance issues
+- Realistic load generation with concurrent requests
+- Complete pipeline execution
+- Verification and success metrics
+
+Results are saved in `demo-output/` directory.
+
+### Enhanced Demo Script
+
+For a more interactive experience, run the demo script directly:
+
+```bash
+chmod +x demo.sh
+./demo.sh
+```
+
+This provides a guided tour with "wow" moments highlighting TriageProf's unique capabilities.
+
+### Demo Server Features
+
+The enhanced demo server (`examples/demo-server/main.go`) demonstrates realistic performance issues:
+
+- **📊 JSON Serialization Overhead**: `/api/users` endpoint with large user data
+- **🔍 Database Contention**: `/api/search` with lock contention simulation
+- **📈 CPU-bound Analytics**: `/api/analytics` with expensive calculations
+- **💾 Memory Patterns**: `/api/export` with large data exports
+- **🔄 Mutex Contention**: `/api/process` with business logic bottlenecks
+- **⚡ Mixed Workloads**: Realistic combination of read/write operations
+
+### Load Generation
+
+The enhanced load script (`examples/load.sh`) generates realistic traffic:
+
+```bash
+# Customize duration and concurrency
+./examples/load.sh http://localhost:6060 30 10
+```
+
+- **Concurrent Workers**: Multiple simultaneous requests
+- **Random Endpoints**: Mixed traffic patterns
+- **Realistic Timing**: Random delays between requests
+- **Progress Tracking**: Live progress updates
+
+### Demo Output
+
+The demo produces comprehensive analysis in `demo-output/`:
+
+```
+demo-output/
+├── bundle.json          # Profile metadata and artifacts
+├── findings.json        # Performance findings
+├── report.md            # Professional markdown report
+├── cpu.pb.gz           # CPU profile
+├── heap.pb.gz          # Heap profile
+├── mutex.pb.gz         # Mutex profile
+├── block.pb.gz         # Block profile
+├── goroutine.txt       # Goroutine dump
+└── allocs.pb.gz        # Allocation profile
+```
+=======
+=======
 
 ### Manual Usage
 

@@ -20,25 +20,9 @@ test:
 	$(GO) test $(GOFLAGS) ./...
 
 demo: build
-	# Start demo server in background
-	cd examples/demo-server && $(GO) run main.go &
-	SERVER_PID=$$!
-	echo "Demo server started on PID $$SERVER_PID"
-	
-	# Wait for server to start
-	sleep 2
-	
-	# Generate load
-	./examples/load.sh
-	
-	# Run triageprof
-	mkdir -p out
-	bin/$(BIN) run --plugin $(GO_PLUGIN) --target-url http://localhost:6060 --duration 5 --outdir out
-	
-	# Cleanup
-	kill $$SERVER_PID || true
-	
-	echo "Demo completed. Results in out/ directory."
+	# Run the comprehensive demo script
+	chmod +x demo.sh
+	./demo.sh
 
 demo-python: build
 	# Start Python demo server in background
