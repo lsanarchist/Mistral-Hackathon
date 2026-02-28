@@ -353,6 +353,80 @@ Plugins are separate executables, discovered via manifests, and communicate with
 - Commit: `<to be filled after commit>`
 - Rollback: `git revert <commit-hash>`
 
+### Iter 20240228-1945 — UTC
+**Type:** Feature
+**Objective:** Enhance Python cProfile plugin with allocation profiling support
+
+**Acceptance criteria (feature only)**
+- [x] Python cProfile plugin supports both CPU and allocation profiling
+- [x] Allocation profiling uses Python's tracemalloc for memory tracking
+- [x] Plugin manifest updated to declare "allocs" capability
+- [x] JSON-RPC interface extended to handle profileType parameter
+- [x] Backward compatibility maintained for existing CPU profiling
+
+**Changes**
+- `plugins/manifests/python-cprofile.json`: Added "allocs" to profiles capability, updated description
+- `plugins/src/python-cprofile/main.py`: Enhanced collect() method to support profileType parameter, added _collect_allocs_profile() method using tracemalloc, updated version to 0.2.0
+- Added comprehensive error handling for both CPU and allocation profiling paths
+
+**Verification**
+- Tests: `go test ./...` - all passing
+- Python Plugin: Tested both CPU and allocation profiling with sample script
+- CPU Profiling: Generates .prof files with cProfile data
+- Allocation Profiling: Generates JSON files with tracemalloc statistics
+- Integration: Both profile types work with existing triageprof pipeline
+- Backward Compatibility: Existing CPU profiling workflows unchanged
+
+**Risk/Notes**
+- No breaking changes to existing functionality
+- Allocation profiling requires Python 3.4+ (tracemalloc availability)
+- Memory profiling provides top allocation sources for optimization
+- Feature completes Layer 3 goal: "Python cProfile plugin (full implementation)"
+- Plugin now has feature parity with Go pprof plugin for core profiling types
+
+**Git / Rollback**
+- Branch: `main`
+- Checkpoint tag: N/A (direct commit to main)
+- Commit: `<to be filled after commit>`
+- Rollback: `git revert <commit-hash>`
+
+### Iter 20240228-1945 — UTC
+**Type:** Feature
+**Objective:** Enhance Python cProfile plugin with allocation profiling support
+
+**Acceptance criteria (feature only)**
+- [x] Python cProfile plugin supports both CPU and allocation profiling
+- [x] Allocation profiling uses Python's tracemalloc for memory tracking
+- [x] Plugin manifest updated to declare "allocs" capability
+- [x] JSON-RPC interface extended to handle profileType parameter
+- [x] Backward compatibility maintained for existing CPU profiling
+
+**Changes**
+- `plugins/manifests/python-cprofile.json`: Added "allocs" to profiles capability, updated description
+- `plugins/src/python-cprofile/main.py`: Enhanced collect() method to support profileType parameter, added _collect_allocs_profile() method using tracemalloc, updated version to 0.2.0
+- Added comprehensive error handling for both CPU and allocation profiling paths
+
+**Verification**
+- Tests: `go test ./...` - all passing
+- Python Plugin: Tested both CPU and allocation profiling with sample script
+- CPU Profiling: Generates .prof files with cProfile data
+- Allocation Profiling: Generates JSON files with tracemalloc statistics
+- Integration: Both profile types work with existing triageprof pipeline
+- Backward Compatibility: Existing CPU profiling workflows unchanged
+
+**Risk/Notes**
+- No breaking changes to existing functionality
+- Allocation profiling requires Python 3.4+ (tracemalloc availability)
+- Memory profiling provides top allocation sources for optimization
+- Feature completes Layer 3 goal: "Python cProfile plugin (full implementation)"
+- Plugin now has feature parity with Go pprof plugin for core profiling types
+
+**Git / Rollback**
+- Branch: `main`
+- Checkpoint tag: N/A (direct commit to main)
+- Commit: `<to be filled after commit>`
+- Rollback: `git revert <commit-hash>`
+
 ### Iter 20240303-1000 — UTC
 **Type:** Feature
 **Objective:** Add allocs profile support to Go pprof plugin
@@ -611,3 +685,86 @@ Plugins are separate executables, discovered via manifests, and communicate with
 - Checkpoint tag: N/A (direct commit to main)
 - Commit: `e4f8090`
 - Rollback: `git revert e4f8090`
+
+### Iter 20240304-2200 — UTC
+**Type:** Feature
+**Objective:** Add allocation profile analysis with specialized scoring and hotspot detection
+
+**Acceptance criteria (feature)**
+- [x] Allocation-specific analysis function `analyzeAllocationPatterns()` implemented
+- [x] Specialized allocation scoring with `calculateAllocationScore()`
+- [x] Allocation severity determination with `determineAllocationSeverity()`
+- [x] Allocation analysis integrated into main analysis pipeline
+- [x] Markdown reports include allocation analysis section with hotspots table
+- [x] JSON reports include allocation analysis in structured format
+- [x] Comprehensive unit tests for allocation analysis functionality
+- [x] All existing tests still pass
+- [x] Backward compatibility maintained
+
+**Changes**
+- `internal/analyzer/analyzer.go`: Added `analyzeAllocationPatterns()`, `calculateAllocationScore()`, `determineAllocationSeverity()` functions
+- `internal/model/types.go`: Added `AllocationAnalysis` and `AllocationHotspot` types to `Finding` struct
+- `internal/model/report.go`: Added `AllocationAnalysis` field to `ReportFinding` struct
+- `internal/report/report.go`: Added allocation analysis section to markdown reports with hotspots table
+- `internal/report/report.go`: Updated `GenerateJSON()` to include allocation analysis in JSON reports
+- `internal/analyzer/analyzer_test.go`: Added comprehensive tests for allocation analysis
+- `internal/report/report_test.go`: Added tests for JSON report generation with allocation analysis
+
+**Verification**
+- Tests: `go test ./...` - all passing including new allocation tests
+- Build: `make build` - successful
+- Integration: Tested with real allocation profile data from demo server
+- Markdown Reports: Allocation analysis section appears with concentration metrics and hotspots table
+- JSON Reports: Allocation analysis included in structured format with all metrics
+- Backward Compatibility: Existing workflows unchanged, new features automatically applied to allocs profiles
+- End-to-End: Full pipeline works with enhanced allocation analysis enabled
+
+**Risk/Notes**
+- No breaking changes - all existing functionality preserved
+- Allocation analysis automatically applied to allocs profile type
+- Specialized scoring provides more accurate severity assessment for memory issues
+- Hotspot detection helps identify top allocation sources for optimization
+- Feature completes Layer 1 goal: "Analysis engine improvements" for allocation profiles
+- Analysis quality depends on profile data quality and sample representativeness
+
+**Git / Rollback**
+- Branch: `main`
+- Checkpoint tag: N/A (direct commit to main)
+- Commit: `<to be filled after commit>`
+- Rollback: `git revert <commit-hash>`
+### Iter 20240228-1945 — UTC
+**Type:** Feature
+**Objective:** Enhance Python cProfile plugin with allocation profiling support
+
+**Acceptance criteria (feature only)**
+- [x] Python cProfile plugin supports both CPU and allocation profiling
+- [x] Allocation profiling uses Python's tracemalloc for memory tracking
+- [x] Plugin manifest updated to declare "allocs" capability
+- [x] JSON-RPC interface extended to handle profileType parameter
+- [x] Backward compatibility maintained for existing CPU profiling
+
+**Changes**
+- `plugins/manifests/python-cprofile.json`: Added "allocs" to profiles capability, updated description
+- `plugins/src/python-cprofile/main.py`: Enhanced collect() method to support profileType parameter, added _collect_allocs_profile() method using tracemalloc, updated version to 0.2.0
+- Added comprehensive error handling for both CPU and allocation profiling paths
+
+**Verification**
+- Tests: `go test ./...` - all passing
+- Python Plugin: Tested both CPU and allocation profiling with sample script
+- CPU Profiling: Generates .prof files with cProfile data
+- Allocation Profiling: Generates JSON files with tracemalloc statistics
+- Integration: Both profile types work with existing triageprof pipeline
+- Backward Compatibility: Existing CPU profiling workflows unchanged
+
+**Risk/Notes**
+- No breaking changes to existing functionality
+- Allocation profiling requires Python 3.4+ (tracemalloc availability)
+- Memory profiling provides top allocation sources for optimization
+- Feature completes Layer 3 goal: "Python cProfile plugin (full implementation)"
+- Plugin now has feature parity with Go pprof plugin for core profiling types
+
+**Git / Rollback**
+- Branch: `main`
+- Checkpoint tag: N/A (direct commit to main)
+- Commit: `<to be filled after commit>`
+- Rollback: `git revert <commit-hash>`
