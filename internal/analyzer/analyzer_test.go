@@ -1,6 +1,9 @@
 package analyzer
 
 import (
+	"encoding/json"
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -180,10 +183,87 @@ func TestAnalyzeWithOptions(t *testing.T) {
 		}
 	})
 
-	// Test regression analysis - disabled for now due to path issues in tests
-	// t.Run("regression analysis", func(t *testing.T) {
-	//  ...
-	// })
+	// Test regression analysis
+	t.Run("regression analysis", func(t *testing.T) {
+		// Create a baseline bundle
+		baselineBundle := model.ProfileBundle{
+			Metadata: model.Metadata{
+				Timestamp:   time.Now(),
+				DurationSec: 10,
+				Service:     "test",
+				Scenario:    "baseline",
+				GitSha:      "baseline",
+			},
+			Target: model.Target{
+				Type:    "url",
+				BaseURL: "http://localhost:6060",
+			},
+			Plugin: model.PluginRef{
+				Name:    "test",
+				Version: "0.1.0",
+			},
+			Artifacts: []model.Artifact{
+				{
+					Kind:        "pprof",
+					ProfileType: "heap",
+					Path:        "../../out/heap.pb.gz",
+					ContentType: "application/octet-stream",
+				},
+			},
+		}
+
+		// Create a current bundle
+		currentBundle := model.ProfileBundle{
+			Metadata: model.Metadata{
+				Timestamp:   time.Now(),
+				DurationSec: 10,
+				Service:     "test",
+				Scenario:    "current",
+				GitSha:      "current",
+			},
+			Target: model.Target{
+				Type:    "url",
+				BaseURL: "http://localhost:6060",
+			},
+			Plugin: model.PluginRef{
+				Name:    "test",
+				Version: "0.1.0",
+			},
+			Artifacts: []model.Artifact{
+				{
+					Kind:        "pprof",
+					ProfileType: "heap",
+					Path:        "../../out/heap.pb.gz",
+					ContentType: "application/octet-stream",
+				},
+			},
+		}
+
+		// Save baseline bundle to temp file
+		baselineData, err := json.MarshalIndent(baselineBundle, "", "  ")
+		require.NoError(t, err)
+		baselinePath := filepath.Join(t.TempDir(), "baseline.json")
+		require.NoError(t, os.WriteFile(baselinePath, baselineData, 0644))
+
+		// Test regression analysis
+		findings, err := analyzer.AnalyzeWithOptions(currentBundle, 5, AnalyzeOptions{
+			EnableRegression:   true,
+			BaselineBundlePath: baselinePath,
+		})
+		require.NoError(t, err)
+		require.NotNil(t, findings)
+		
+		// Verify regression analysis results
+		if len(findings.Findings) > 0 {
+			finding := findings.Findings[0]
+			assert.NotNil(t, finding.Regression, "Regression analysis should be present")
+			assert.NotZero(t, finding.Regression.BaselineScore, "Baseline score should be calculated")
+			assert.NotZero(t, finding.Regression.CurrentScore, "Current score should be calculated")
+			assert.NotEmpty(t, finding.Regression.Severity, "Severity should be determined")
+			assert.GreaterOrEqual(t, finding.Regression.Confidence, 50, "Confidence should be at least 50")
+			assert.LessOrEqual(t, finding.Regression.Confidence, 100, "Confidence should be at most 100")
+		}
+	})
 }
 
 func TestCalculateProfileScore(t *testing.T) {

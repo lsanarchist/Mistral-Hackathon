@@ -353,6 +353,45 @@ Plugins are separate executables, discovered via manifests, and communicate with
 - Commit: `<to be filled after commit>`
 - Rollback: `git revert <commit-hash>`
 
+### Iter 20240305-1200 — UTC
+**Type:** Maintenance
+**Objective:** Verify and document regression analysis functionality
+
+**Acceptance criteria (maintenance)**
+- [x] Verify --regression flag works correctly with analyze command
+- [x] Verify --baseline parameter is required for regression analysis
+- [x] Verify regression analysis appears in markdown reports
+- [x] Verify JSON reports include regression data in structured format
+- [x] Add comprehensive unit tests for regression analysis
+- [x] Verify backward compatibility - existing workflows unchanged
+- [x] All existing tests pass
+
+**Changes**
+- `internal/analyzer/analyzer_test.go`: Added comprehensive regression analysis test
+- Fixed pipeline tests to copy profile files to temp directories
+- Verified end-to-end workflow with callgraph and regression analysis
+
+**Verification**
+- Tests: `go test ./internal/analyzer/... ./internal/report/...` - all passing
+- CLI Integration: `bin/triageprof analyze --callgraph --regression --baseline` works correctly
+- Regression Detection: Compares baseline vs current profiles with severity scoring
+- Report Integration: Regression sections appear in both markdown and JSON reports
+- Backward Compatibility: Existing workflows unchanged, new features optional
+- End-to-End: Full pipeline works with enhanced analysis enabled
+
+**Risk/Notes**
+- No breaking changes - all existing functionality preserved
+- Regression analysis is optional and disabled by default
+- Analysis quality depends on profile data quality and representativeness
+- Feature completes Layer 1 goal: "Analysis engine improvements: regression detection"
+- Regression analysis provides actionable insights for performance comparisons
+
+**Git / Rollback**
+- Branch: `main`
+- Checkpoint tag: N/A (direct commit to main)
+- Commit: `<to be filled after commit>`
+- Rollback: `git revert <commit-hash>`
+
 ### Iter 20240228-1945 — UTC
 **Type:** Feature
 **Objective:** Enhance Python cProfile plugin with allocation profiling support
