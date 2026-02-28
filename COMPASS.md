@@ -78,3 +78,43 @@ Plugins are separate executables, discovered via manifests, and communicate with
 - Checkpoint tag: N/A (direct commit to main)
 - Commit: `<to be filled after commit>`
 - Rollback: `git revert <commit-hash>`
+
+### Iter 20240301-1200 — UTC
+**Type:** Maintenance
+**Objective:** Add comprehensive error handling for plugin compatibility
+
+**Acceptance criteria (maintenance)**
+- [x] Clear error when plugin manifest is missing
+- [x] Clear error when plugin binary is missing
+- [x] Clear error when SDK version is incompatible
+- [x] Clear error when target type is unsupported
+- [x] Clear error when profile type is unsupported
+
+**Changes**
+- `internal/plugin/manifest.go`: Enhanced error messages for all validation scenarios
+- `internal/core/pipeline.go`: Integrated validation in Collect() method
+- `cmd/triageprof/main.go`: CLI properly displays validation errors to users
+- `internal/plugin/manifest_test.go`: Comprehensive tests for all error scenarios
+
+**Verification**
+- Tests: `go test ./internal/plugin/...` - all passing
+- Integration: Tested all error scenarios via CLI
+  - `bin/triageprof collect --plugin non-existent` → "plugin not found. Available plugins: ..."
+  - Missing binary → "manifest found but binary missing at ..."
+  - SDK mismatch → "plugin requires sdkVersion X, but core supports Y"
+  - Unsupported target → "target type not supported. Supported targets: ..."
+  - Unsupported profile → "profiles not supported. Supported profiles: ..."
+- Build: `make build` - successful
+- Demo: `make demo` - produces report.md successfully
+
+**Risk/Notes**
+- No breaking changes - all existing functionality preserved
+- Error handling is backward compatible
+- User experience improved with clear, actionable error messages
+- All validation happens before plugin execution
+
+**Git / Rollback**
+- Branch: `main`
+- Checkpoint tag: N/A (direct commit to main)
+- Commit: `<to be filled after commit>`
+- Rollback: `git revert <commit-hash>`
