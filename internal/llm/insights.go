@@ -12,9 +12,9 @@ import (
 
 // InsightsGenerator orchestrates LLM insight generation
 type InsightsGenerator struct {
-	Client          *MistralClient
-	DryRun          bool
-	MaxPromptChars  int
+	Client         *MistralClient
+	DryRun         bool
+	MaxPromptChars int
 }
 
 // NewInsightsGenerator creates a new insights generator
@@ -22,8 +22,8 @@ func NewInsightsGenerator(apiKey, model string, timeout int, maxResponse, maxPro
 	timeoutDur := time.Duration(timeout) * time.Second
 	return &InsightsGenerator{
 		Client:         NewMistralClient(apiKey, model, timeoutDur, maxResponse),
-		DryRun:          dryRun,
-		MaxPromptChars:  maxPromptChars,
+		DryRun:         dryRun,
+		MaxPromptChars: maxPromptChars,
 	}
 }
 
@@ -72,7 +72,7 @@ func (g *InsightsGenerator) GenerateInsights(ctx context.Context, bundle *model.
 }
 
 // GenerateInsightsFromFiles loads bundle and findings from files and generates insights
-func GenerateInsightsFromFiles(ctx context.Context, bundlePath, findingsPath, outputPath string, 
+func GenerateInsightsFromFiles(ctx context.Context, bundlePath, findingsPath, outputPath string,
 	apiKey, llmModel string, timeout, maxResponse, maxPromptChars int, dryRun bool) error {
 
 	// Load bundle

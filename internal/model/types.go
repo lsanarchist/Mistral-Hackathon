@@ -8,15 +8,15 @@ type Target struct {
 }
 
 type PluginInfo struct {
-	Name        string      `json:"name"`
-	Version     string      `json:"version"`
-	SDKVersion  string      `json:"sdkVersion"`
+	Name         string       `json:"name"`
+	Version      string       `json:"version"`
+	SDKVersion   string       `json:"sdkVersion"`
 	Capabilities Capabilities `json:"capabilities"`
 }
 
 type Capabilities struct {
-	Targets   []string `json:"targets"`
-	Profiles  []string `json:"profiles"`
+	Targets  []string `json:"targets"`
+	Profiles []string `json:"profiles"`
 }
 
 type Artifact struct {
@@ -27,8 +27,8 @@ type Artifact struct {
 }
 
 type ArtifactBundle struct {
-	Metadata  Metadata  `json:"metadata"`
-	Target    Target    `json:"target"`
+	Metadata  Metadata   `json:"metadata"`
+	Target    Target     `json:"target"`
 	Artifacts []Artifact `json:"artifacts"`
 }
 
@@ -41,9 +41,9 @@ type Metadata struct {
 }
 
 type ProfileBundle struct {
-	Metadata  Metadata  `json:"metadata"`
-	Target    Target    `json:"target"`
-	Plugin    PluginRef `json:"plugin"`
+	Metadata  Metadata   `json:"metadata"`
+	Target    Target     `json:"target"`
+	Plugin    PluginRef  `json:"plugin"`
 	Artifacts []Artifact `json:"artifacts"`
 }
 
@@ -53,23 +53,23 @@ type PluginRef struct {
 }
 
 type Finding struct {
-	Category  string      `json:"category"`
-	Title     string      `json:"title"`
-	Severity  string      `json:"severity"`
-	Score     int         `json:"score"`
-	Top       []StackFrame `json:"top"`
-	Callgraph []CallgraphNode `json:"callgraph,omitempty"`
+	Category   string              `json:"category"`
+	Title      string              `json:"title"`
+	Severity   string              `json:"severity"`
+	Score      int                 `json:"score"`
+	Top        []StackFrame        `json:"top"`
+	Callgraph  []CallgraphNode     `json:"callgraph,omitempty"`
 	Regression *RegressionAnalysis `json:"regression,omitempty"`
-	Evidence  Evidence    `json:"evidence"`
+	Evidence   Evidence            `json:"evidence"`
 }
 
 type CallgraphNode struct {
-	Function string  `json:"function"`
-	File     string  `json:"file"`
-	Line     int     `json:"line"`
-	Depth    int     `json:"depth"`
-	Cum      float64 `json:"cum"`
-	Flat     float64 `json:"flat"`
+	Function string          `json:"function"`
+	File     string          `json:"file"`
+	Line     int             `json:"line"`
+	Depth    int             `json:"depth"`
+	Cum      float64         `json:"cum"`
+	Flat     float64         `json:"flat"`
 	Children []CallgraphNode `json:"children,omitempty"`
 }
 
@@ -97,20 +97,20 @@ type Evidence struct {
 }
 
 type FindingsBundle struct {
-	Summary   Summary    `json:"summary"`
-	Findings  []Finding  `json:"findings"`
+	Summary  Summary   `json:"summary"`
+	Findings []Finding `json:"findings"`
 }
 
 type Summary struct {
 	TopIssueTags []string `json:"topIssueTags"`
 	OverallScore int      `json:"overallScore"`
-	Notes       []string `json:"notes"`
+	Notes        []string `json:"notes"`
 }
 
 type CollectRequest struct {
-	Target     Target            `json:"target"`
+	Target      Target            `json:"target"`
 	DurationSec int               `json:"durationSec"`
-	Profiles   []string           `json:"profiles"`
-	OutDir     string            `json:"outDir"`
-	Metadata   map[string]string  `json:"metadata"`
+	Profiles    []string          `json:"profiles"`
+	OutDir      string            `json:"outDir"`
+	Metadata    map[string]string `json:"metadata"`
 }

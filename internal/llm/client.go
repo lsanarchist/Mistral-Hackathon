@@ -24,10 +24,10 @@ type MistralClient struct {
 
 // MistralRequest represents a chat completion request
 type MistralRequest struct {
-	Model       string      `json:"model"`
-	Messages    []Message  `json:"messages"`
-	Temperature float64     `json:"temperature,omitempty"`
-	MaxTokens   int         `json:"max_tokens,omitempty"`
+	Model       string    `json:"model"`
+	Messages    []Message `json:"messages"`
+	Temperature float64   `json:"temperature,omitempty"`
+	MaxTokens   int       `json:"max_tokens,omitempty"`
 }
 
 // Message represents a chat message
@@ -103,7 +103,7 @@ func (c *MistralClient) GenerateInsights(ctx context.Context, prompt string) (*m
 			},
 			{
 				Role:    "user",
-				Content:  prompt,
+				Content: prompt,
 			},
 		},
 		Temperature: 0.2, // More deterministic

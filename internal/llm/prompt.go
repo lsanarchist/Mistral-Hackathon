@@ -21,9 +21,9 @@ var (
 
 // BuildPrompt creates a structured prompt from bundle and findings with redaction
 type PromptBuilder struct {
-	Bundle    *model.ProfileBundle
-	Findings  *model.FindingsBundle
-	MaxSize   int
+	Bundle   *model.ProfileBundle
+	Findings *model.FindingsBundle
+	MaxSize  int
 }
 
 func NewPromptBuilder(bundle *model.ProfileBundle, findings *model.FindingsBundle) *PromptBuilder {
@@ -55,7 +55,7 @@ INSTRUCTIONS:
 3. Suggest top 3 actions with priority/effort estimates
 4. For each finding, provide narrative, likely root causes, suggestions, and next measurements
 5. Include caveats about limitations and confidence levels
-6. Output JSON ONLY, no markdown or explanations`, 
+6. Output JSON ONLY, no markdown or explanations`,
 		metadata, findingsSummary)
 
 	// Check size limit
@@ -78,8 +78,8 @@ func (p *PromptBuilder) buildMetadata() string {
 	// Build artifact summary
 	var artifacts []string
 	for _, artifact := range p.Bundle.Artifacts {
-		artifacts = append(artifacts, fmt.Sprintf("- %s (%s)", 
-			p.redactPath(artifact.ProfileType), 
+		artifacts = append(artifacts, fmt.Sprintf("- %s (%s)",
+			p.redactPath(artifact.ProfileType),
 			p.redactPath(artifact.Kind)))
 	}
 
@@ -172,7 +172,7 @@ func (p *PromptBuilder) redactPath(path string) string {
 func (p *PromptBuilder) redactStackFrame(frame model.StackFrame) string {
 	function := p.redactSensitiveInfo(frame.Function)
 	_ = p.redactSensitiveInfo(frame.File)
-	
+
 	// Limit line number to reasonable range
 	line := frame.Line
 	if line < 0 {

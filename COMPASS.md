@@ -441,5 +441,50 @@ Plugins are separate executables, discovered via manifests, and communicate with
 **Git / Rollback**
 - Branch: `main`
 - Checkpoint tag: N/A (direct commit to main)
+- Commit: `be48271`
+- Rollback: `git revert be48271`
+
+### Iter 20240304-1930 — UTC
+**Type:** Maintenance
+**Objective:** Verify and document CLI flags for analysis options (callgraph and regression analysis)
+
+**Acceptance criteria (maintenance)**
+- [x] Verify --callgraph flag works correctly with analyze command
+- [x] Verify --regression flag works correctly with analyze command
+- [x] Verify --baseline parameter is required for regression analysis
+- [x] Verify callgraph visualization appears in markdown reports
+- [x] Verify regression analysis appears in markdown reports
+- [x] Verify JSON reports include callgraph and regression data
+- [x] Verify backward compatibility - existing workflows unchanged
+- [x] Apply consistent code formatting across entire codebase
+- [x] All existing tests still pass
+- [x] Build and demo workflows work correctly
+
+**Changes**
+- Applied `gofmt -w .` to ensure consistent code formatting
+- Verified CLI flags work as documented
+- Tested end-to-end workflow with callgraph and regression analysis
+- Generated sample reports showing new analysis sections
+- Updated COMPASS.md with verification results
+
+**Verification**
+- Tests: `go test ./...` - all passing
+- Format: `gofmt -d .` - no formatting issues
+- Build: `make build` - successful
+- CLI: `bin/triageprof analyze --callgraph --regression --baseline` - works correctly
+- Reports: Callgraph and regression sections appear in both markdown and JSON outputs
+- Backward compatibility: Default analysis (no flags) works identically to before
+- Demo: `make demo` produces valid output with new analysis capabilities
+
+**Risk/Notes**
+- No breaking changes - purely formatting and verification work
+- All existing functionality preserved and enhanced
+- Feature was already implemented in previous iteration
+- This iteration provides documentation and verification
+- Codebase now has consistent formatting throughout
+
+**Git / Rollback**
+- Branch: `main`
+- Checkpoint tag: N/A (direct commit to main)
 - Commit: `<to be filled after commit>`
 - Rollback: `git revert <commit-hash>`

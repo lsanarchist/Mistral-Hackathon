@@ -13,24 +13,24 @@ type JSONReport struct {
 
 // ReportSummary provides high-level overview
 type ReportSummary struct {
-	OverallScore  int      `json:"overall_score"`
-	TopIssueTags  []string `json:"top_issue_tags"`
-	KeyThemes     []string `json:"key_themes,omitempty"`
-	Notes         []string `json:"notes,omitempty"`
-	Severity      string   `json:"severity"`
+	OverallScore int      `json:"overall_score"`
+	TopIssueTags []string `json:"top_issue_tags"`
+	KeyThemes    []string `json:"key_themes,omitempty"`
+	Notes        []string `json:"notes,omitempty"`
+	Severity     string   `json:"severity"`
 }
 
 // ReportFinding represents a single finding in JSON format
 type ReportFinding struct {
-	ID          string       `json:"id"`
-	Category    string       `json:"category"`
-	Title       string       `json:"title"`
-	Severity    string       `json:"severity"`
-	Score       int          `json:"score"`
-	TopHotspots []StackFrame `json:"top_hotspots"`
-	Callgraph   []CallgraphNode `json:"callgraph,omitempty"`
+	ID          string              `json:"id"`
+	Category    string              `json:"category"`
+	Title       string              `json:"title"`
+	Severity    string              `json:"severity"`
+	Score       int                 `json:"score"`
+	TopHotspots []StackFrame        `json:"top_hotspots"`
+	Callgraph   []CallgraphNode     `json:"callgraph,omitempty"`
 	Regression  *RegressionAnalysis `json:"regression,omitempty"`
-	Evidence    Evidence     `json:"evidence"`
+	Evidence    Evidence            `json:"evidence"`
 }
 
 // JSONReportOptions configure JSON report generation

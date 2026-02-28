@@ -12,12 +12,12 @@ import (
 
 // Manifest represents a plugin manifest file
 type Manifest struct {
-	Name        string      `json:"name"`
-	Version     string      `json:"version"`
-	SDKVersion  string      `json:"sdkVersion"`
+	Name         string       `json:"name"`
+	Version      string       `json:"version"`
+	SDKVersion   string       `json:"sdkVersion"`
 	Capabilities Capabilities `json:"capabilities"`
-	Description string      `json:"description,omitempty"`
-	Author      string      `json:"author,omitempty"`
+	Description  string       `json:"description,omitempty"`
+	Author       string       `json:"author,omitempty"`
 }
 
 // Capabilities defines what a plugin can handle
@@ -124,7 +124,7 @@ func ResolvePlugin(manifestsDir, binDir, name string) (*Manifest, string, error)
 
 	// Check SDK compatibility
 	if manifest.SDKVersion != SDKVersionCompatibility {
-		return nil, "", fmt.Errorf("plugin %s requires sdkVersion %s, but core supports %s", 
+		return nil, "", fmt.Errorf("plugin %s requires sdkVersion %s, but core supports %s",
 			manifest.Name, manifest.SDKVersion, SDKVersionCompatibility)
 	}
 
@@ -147,7 +147,7 @@ func (m *Manifest) ValidateTarget(targetType string) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("target type %q not supported by plugin %s. Supported targets: %s", 
+	return fmt.Errorf("target type %q not supported by plugin %s. Supported targets: %s",
 		targetType, m.Name, strings.Join(m.Capabilities.Targets, ", "))
 }
 
@@ -166,7 +166,7 @@ func (m *Manifest) ValidateProfiles(requested []string) error {
 	}
 
 	if len(unsupported) > 0 {
-		return fmt.Errorf("profiles %s not supported by plugin %s. Supported profiles: %s", 
+		return fmt.Errorf("profiles %s not supported by plugin %s. Supported profiles: %s",
 			strings.Join(unsupported, ", "), m.Name, strings.Join(m.Capabilities.Profiles, ", "))
 	}
 

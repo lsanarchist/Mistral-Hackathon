@@ -142,11 +142,11 @@ func runAnalyzeCommand(pipeline *core.Pipeline) {
 
 	ctx := context.Background()
 	options := core.CoreAnalyzeOptions{
-		EnableCallgraph: *callgraph,
-		EnableRegression: *regression,
+		EnableCallgraph:    *callgraph,
+		EnableRegression:   *regression,
 		BaselineBundlePath: *baseline,
 	}
-	
+
 	_, err := pipeline.AnalyzeWithOptions(ctx, *inPath, *topN, *outPath, options)
 	if err != nil {
 		fmt.Printf("Analyze failed: %v\n", err)
@@ -182,7 +182,7 @@ func runLLMCommand() {
 	ctx := context.Background()
 	apiKey := os.Getenv("MISTRAL_API_KEY")
 
-	err := llm.GenerateInsightsFromFiles(ctx, *bundlePath, *findingsPath, *outPath, 
+	err := llm.GenerateInsightsFromFiles(ctx, *bundlePath, *findingsPath, *outPath,
 		apiKey, *model, *timeout, *maxResponse, *maxPromptChars, *dryRun)
 	if err != nil {
 		fmt.Printf("LLM insights generation failed: %v\n", err)
@@ -207,7 +207,7 @@ func runReportCommand(pipeline *core.Pipeline) {
 	}
 
 	ctx := context.Background()
-	
+
 	// Load insights if provided
 	var insights *model.InsightsBundle
 	if *insightsPath != "" {

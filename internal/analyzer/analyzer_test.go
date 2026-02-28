@@ -173,8 +173,6 @@ func TestCalculateProfileScore(t *testing.T) {
 	assert.Greater(t, score, 50, "Expected high score for concentrated profile")
 }
 
-
-
 func TestMaxFunction(t *testing.T) {
 	assert.Equal(t, 5, max(3, 5))
 	assert.Equal(t, 5, max(5, 3))

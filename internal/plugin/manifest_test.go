@@ -182,7 +182,7 @@ func TestResolvePlugin(t *testing.T) {
 		tmpDir := t.TempDir()
 		manifestsDir := filepath.Join(tmpDir, "manifests")
 		binDir := filepath.Join(tmpDir, "bin")
-		
+
 		if err := os.MkdirAll(manifestsDir, 0755); err != nil {
 			t.Fatalf("Failed to create manifests dir: %v", err)
 		}
@@ -217,7 +217,7 @@ func TestResolvePlugin(t *testing.T) {
 		tmpDir := t.TempDir()
 		manifestsDir := filepath.Join(tmpDir, "manifests")
 		binDir := filepath.Join(tmpDir, "bin")
-		
+
 		if err := os.MkdirAll(manifestsDir, 0755); err != nil {
 			t.Fatalf("Failed to create manifests dir: %v", err)
 		}
@@ -263,7 +263,7 @@ func TestResolvePlugin(t *testing.T) {
 		tmpDir := t.TempDir()
 		manifestsDir := filepath.Join(tmpDir, "manifests")
 		binDir := filepath.Join(tmpDir, "bin")
-		
+
 		if err := os.MkdirAll(manifestsDir, 0755); err != nil {
 			t.Fatalf("Failed to create manifests dir: %v", err)
 		}

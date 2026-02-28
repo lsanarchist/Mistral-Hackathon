@@ -17,15 +17,15 @@ func TestGenerateJSON(t *testing.T) {
 	findings := model.FindingsBundle{
 		Summary: model.Summary{
 			OverallScore: 75,
-			TopIssueTags:  []string{"performance", "memory"},
-			Notes:         []string{"test analysis"},
+			TopIssueTags: []string{"performance", "memory"},
+			Notes:        []string{"test analysis"},
 		},
 		Findings: []model.Finding{
 			{
-				Category:  "cpu",
-				Title:     "Top CPU hotspots",
-				Severity:  "medium",
-				Score:     80,
+				Category: "cpu",
+				Title:    "Top CPU hotspots",
+				Severity: "medium",
+				Score:    80,
 				Top: []model.StackFrame{
 					{
 						Function: "runtime.allocm",
@@ -77,8 +77,8 @@ func TestGenerateJSON(t *testing.T) {
 
 func TestDetermineSeverity(t *testing.T) {
 	tests := []struct {
-		score     int
-		expected  string
+		score    int
+		expected string
 	}{
 		{90, "critical"},
 		{70, "high"},

@@ -20,8 +20,8 @@ func NewAnalyzer() *Analyzer {
 
 // AnalyzeOptions configure analysis behavior
 type AnalyzeOptions struct {
-	EnableCallgraph bool
-	EnableRegression bool
+	EnableCallgraph    bool
+	EnableRegression   bool
 	BaselineBundlePath string
 }
 
@@ -78,13 +78,13 @@ func (a *Analyzer) AnalyzeWithOptions(bundle model.ProfileBundle, topN int, opti
 
 		// Create finding
 		finding := model.Finding{
-			Category:    artifact.ProfileType,
-			Title:       fmt.Sprintf("Top %s hotspots", artifact.ProfileType),
-			Severity:    determineSeverity(topFuncs),
-			Score:       calculateScore(topFuncs),
-			Top:         topFuncs,
-			Callgraph:   callgraph,
-			Regression:  regression,
+			Category:   artifact.ProfileType,
+			Title:      fmt.Sprintf("Top %s hotspots", artifact.ProfileType),
+			Severity:   determineSeverity(topFuncs),
+			Score:      calculateScore(topFuncs),
+			Top:        topFuncs,
+			Callgraph:  callgraph,
+			Regression: regression,
 			Evidence: model.Evidence{
 				ArtifactPath: artifact.Path,
 				ProfileType:  artifact.ProfileType,
@@ -99,7 +99,7 @@ func (a *Analyzer) AnalyzeWithOptions(bundle model.ProfileBundle, topN int, opti
 	summary := model.Summary{
 		TopIssueTags: []string{"performance"},
 		OverallScore: 75,
-		Notes:       []string{"Analysis completed successfully"},
+		Notes:        []string{"Analysis completed successfully"},
 	}
 
 	// Add analysis notes
@@ -244,9 +244,9 @@ func buildCallgraphNode(sample *profile.Sample, depth, maxDepth int) model.Callg
 		for _, childLoc := range sample.Location[1:] {
 			if len(childLoc.Line) > 0 {
 				childSample := &profile.Sample{
-				Value: []int64{sample.Value[0]},
-				Location: []*profile.Location{childLoc},
-			}
+					Value:    []int64{sample.Value[0]},
+					Location: []*profile.Location{childLoc},
+				}
 				childNode := buildCallgraphNode(childSample, depth+1, maxDepth)
 				if childNode.Function != "" {
 					node.Children = append(node.Children, childNode)
@@ -370,7 +370,7 @@ func calculateProfileScore(prof *profile.Profile) int {
 	}
 
 	concentration := topTotal / total
-	
+
 	// Score based on concentration (higher = worse)
 	if concentration > 0.8 {
 		return 95

@@ -5,15 +5,15 @@ import "time"
 // InsightsBundle contains LLM-generated insights about performance findings
 // Schema is versioned for stability and backward compatibility
 type InsightsBundle struct {
-	SchemaVersion  string        `json:"schema_version"`
-	GeneratedAt    time.Time     `json:"generated_at"`
-	Model          string        `json:"model,omitempty"`
-	RequestID      string        `json:"request_id,omitempty"`
-	DisabledReason string        `json:"disabled_reason,omitempty"`
+	SchemaVersion    string           `json:"schema_version"`
+	GeneratedAt      time.Time        `json:"generated_at"`
+	Model            string           `json:"model,omitempty"`
+	RequestID        string           `json:"request_id,omitempty"`
+	DisabledReason   string           `json:"disabled_reason,omitempty"`
 	ExecutiveSummary ExecutiveSummary `json:"executive_summary"`
-	TopRisks        []RiskItem    `json:"top_risks,omitempty"`
-	TopActions      []ActionItem  `json:"top_actions,omitempty"`
-	PerFinding      []FindingInsight `json:"per_finding,omitempty"`
+	TopRisks         []RiskItem       `json:"top_risks,omitempty"`
+	TopActions       []ActionItem     `json:"top_actions,omitempty"`
+	PerFinding       []FindingInsight `json:"per_finding,omitempty"`
 }
 
 // ExecutiveSummary provides a high-level overview of performance issues
@@ -29,14 +29,14 @@ type RiskItem struct {
 	Description string `json:"description"`
 	Severity    string `json:"severity"` // low, medium, high
 	Impact      string `json:"impact"`
-	Likelihood   string `json:"likelihood"` // low, medium, high
+	Likelihood  string `json:"likelihood"` // low, medium, high
 }
 
 // ActionItem represents a recommended action
 type ActionItem struct {
 	Description     string   `json:"description"`
-	Priority        string   `json:"priority"` // low, medium, high
-	EstimatedEffort string   `json:"estimated_effort"` // low, medium, high
+	Priority        string   `json:"priority"`             // low, medium, high
+	EstimatedEffort string   `json:"estimated_effort"`     // low, medium, high
 	Categories      []string `json:"categories,omitempty"` // e.g., ["code", "configuration"]
 }
 
@@ -46,7 +46,7 @@ type FindingInsight struct {
 	Narrative        string   `json:"narrative"`
 	LikelyRootCauses []string `json:"likely_root_causes,omitempty"`
 	Suggestions      []string `json:"suggestions,omitempty"`
-	NextMeasurements  []string `json:"next_measurements,omitempty"`
+	NextMeasurements []string `json:"next_measurements,omitempty"`
 	Caveats          []string `json:"caveats,omitempty"`
 	Confidence       int      `json:"confidence"` // 0-100
 }

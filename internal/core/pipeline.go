@@ -81,10 +81,10 @@ func (p *Pipeline) Collect(ctx context.Context, pluginName, targetURL string, du
 
 	// Prepare collect request
 	req := model.CollectRequest{
-		Target:     target,
+		Target:      target,
 		DurationSec: durationSec,
-		Profiles:   []string{"cpu", "heap", "mutex", "block", "goroutine", "allocs"},
-		OutDir:     outDir,
+		Profiles:    []string{"cpu", "heap", "mutex", "block", "goroutine", "allocs"},
+		OutDir:      outDir,
 		Metadata: map[string]string{
 			"service":  "demo",
 			"scenario": "default",
@@ -131,8 +131,8 @@ func (p *Pipeline) Collect(ctx context.Context, pluginName, targetURL string, du
 
 // CoreAnalyzeOptions configure analysis behavior
 type CoreAnalyzeOptions struct {
-	EnableCallgraph bool
-	EnableRegression bool
+	EnableCallgraph    bool
+	EnableRegression   bool
 	BaselineBundlePath string
 }
 
@@ -154,8 +154,8 @@ func (p *Pipeline) AnalyzeWithOptions(ctx context.Context, bundlePath string, to
 
 	// Analyze with options
 	analyzerOptions := analyzer.AnalyzeOptions{
-		EnableCallgraph: options.EnableCallgraph,
-		EnableRegression: options.EnableRegression,
+		EnableCallgraph:    options.EnableCallgraph,
+		EnableRegression:   options.EnableRegression,
 		BaselineBundlePath: options.BaselineBundlePath,
 	}
 	findings, err := p.analyzer.AnalyzeWithOptions(profileBundle, topN, analyzerOptions)

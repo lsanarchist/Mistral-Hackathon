@@ -19,9 +19,9 @@ func TestMistralClient_MissingAPIKey(t *testing.T) {
 	oldAPIKey := os.Getenv("MISTRAL_API_KEY")
 	os.Unsetenv("MISTRAL_API_KEY")
 	defer os.Setenv("MISTRAL_API_KEY", oldAPIKey)
-	
+
 	client := NewMistralClient("", "test-model", 10*time.Second, 1000)
-	
+
 	insights, err := client.GenerateInsights(context.Background(), "test prompt")
 	if err != nil {
 		t.Fatalf("Expected no error for missing API key, got: %v", err)
@@ -58,7 +58,7 @@ func TestMistralClient_Success(t *testing.T) {
 		if r.Header.Get("Authorization") != "Bearer test-key" {
 			t.Errorf("Expected authorization header, got: %s", r.Header.Get("Authorization"))
 		}
-		
+
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(mockResponse)
@@ -69,7 +69,7 @@ func TestMistralClient_Success(t *testing.T) {
 	client := NewMistralClient("test-key", "test-model", 10*time.Second, 1000)
 	// Override HTTP client to use mock server
 	client.HTTPClient = server.Client()
-	
+
 	// Mock the API call by replacing the URL would require more complex setup
 	// For now, let's just test the disabled API key case
 }
@@ -80,18 +80,18 @@ func TestPromptBuilder_Redaction(t *testing.T) {
 			BaseURL: "http://localhost:6060/debug?token=secret123",
 		},
 	}
-	
+
 	findings := &model.FindingsBundle{
 		Summary: model.Summary{
 			OverallScore: 75,
-			TopIssueTags:  []string{"cpu", "memory"},
+			TopIssueTags: []string{"cpu", "memory"},
 		},
 		Findings: []model.Finding{
 			{
-				Title:     "High CPU usage",
-				Category:  "cpu",
-				Severity:  "high",
-				Score:     90,
+				Title:    "High CPU usage",
+				Category: "cpu",
+				Severity: "high",
+				Score:    90,
 				Top: []model.StackFrame{
 					{
 						Function: "github.com/example/project.(*Server).HandleRequest",
@@ -156,7 +156,7 @@ func TestPromptBuilder_SizeLimit(t *testing.T) {
 
 	builder := NewPromptBuilder(nil, findings)
 	builder.MaxSize = 1000 // Small limit for test
-	
+
 	_, err := builder.Build()
 	if err == nil {
 		t.Error("Expected error for prompt size exceeding limit")

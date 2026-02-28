@@ -44,7 +44,7 @@ func (r *Reporter) GenerateWithInsights(findings model.FindingsBundle, insights 
 	if insights != nil && insights.ExecutiveSummary.Overview != "" {
 		sb.WriteString("\n### LLM Insights\n\n")
 		sb.WriteString(fmt.Sprintf("**Overview**: %s\n", insights.ExecutiveSummary.Overview))
-		sb.WriteString(fmt.Sprintf("**Overall Severity**: %s (Confidence: %d%%)\n", 
+		sb.WriteString(fmt.Sprintf("**Overall Severity**: %s (Confidence: %d%%)\n",
 			insights.ExecutiveSummary.OverallSeverity, insights.ExecutiveSummary.Confidence))
 		if len(insights.ExecutiveSummary.KeyThemes) > 0 {
 			sb.WriteString("**Key Themes**: ")
