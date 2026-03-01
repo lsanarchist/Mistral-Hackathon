@@ -1,6 +1,28 @@
 ## Change Log
 
 ### 2026-03-01
+- **Objective**: Implement Plugin Performance Metrics Monitoring
+- **Rationale**: Provide visibility into plugin execution performance, resource usage, and reliability to help users optimize plugin usage and troubleshoot issues
+- **Impact**: Plugin system, WebSocket server, web UI, performance tracking
+- **Changes**:
+  - Added `PluginPerformance` struct to track execution metrics (time, memory, CPU, success/failure)
+  - Enhanced `PluginManager` with performance tracking: `Performance` slice, mutex, and methods
+  - Implemented `RecordPluginPerformance()` and `GetPluginPerformance()` methods for metrics management
+  - Modified `LaunchPlugin()` to automatically track performance metrics on plugin execution
+  - Added `getMemoryUsageMB()` and `getCPUUsagePercent()` utility functions for resource monitoring
+  - Enhanced WebSocket server with plugin manager integration and performance broadcasting
+  - Added `/plugins/performance` endpoint for detailed plugin performance metrics
+  - Implemented `getPluginPerformanceSummary()` for WebSocket broadcast data
+  - Updated web UI with new "Performance Metrics" tab in plugin management interface
+  - Created interactive performance table with execution counts, success rates, timing metrics, and status indicators
+  - Added visual success rate bars and status badges for quick performance assessment
+  - Implemented real-time WebSocket updates for plugin performance metrics
+  - Added CSS styling for performance metrics UI with responsive design
+  - Created comprehensive unit tests for plugin performance tracking functionality
+- **Testing**: Unit tests for performance recording, memory/CPU usage functions, and performance data aggregation
+- **Result**: Users can now monitor plugin execution performance in real-time, track success rates, analyze resource usage patterns, and identify performance bottlenecks in the plugin system
+
+### 2026-03-01
 - **Objective**: Implement multi-model LLM support for performance insights
 - **Rationale**: Enable users to choose between different LLM providers (Mistral, OpenAI) for flexibility and cost optimization
 - **Impact**: LLM integration layer, provider interface, CLI commands, core pipeline

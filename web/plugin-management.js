@@ -17,6 +17,7 @@ function initPluginManagement() {
             <button class="tab-btn active" data-tab="plugins-list">Plugin List</button>
             <button class="tab-btn" data-tab="capabilities-matrix">Capabilities Matrix</button>
             <button class="tab-btn" data-tab="health-monitoring">Health Monitoring</button>
+            <button class="tab-btn" data-tab="plugin-performance">Performance Metrics</button>
             <button class="tab-btn" data-tab="plugin-marketplace">Marketplace</button>
         </div>
         
@@ -55,6 +56,23 @@ function initPluginManagement() {
                     </div>
                 </div>
                 <div class="health-monitoring" id="healthMonitoring"></div>
+            </div>
+            
+            <!-- Plugin Performance Tab -->
+            <div id="plugin-performance" class="plugin-tab-content">
+                <div class="performance-header">
+                    <h3><i class="fas fa-tachometer-alt"></i> Plugin Performance Metrics</h3>
+                    <div class="performance-controls">
+                        <button id="refreshPerformanceBtn" class="btn info">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                        <div class="performance-stats">
+                            <span id="totalExecutions">0 Executions</span> |
+                            <span id="avgSuccessRate">100% Success</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="performance-metrics" id="pluginPerformanceMetrics"></div>
             </div>
             
             <!-- Plugin Marketplace Tab -->
@@ -102,6 +120,8 @@ function initPluginManagement() {
                 loadCapabilitiesMatrix();
             } else if (tabName === 'health-monitoring') {
                 loadHealthMonitoring();
+            } else if (tabName === 'plugin-performance') {
+                loadPluginPerformance();
             } else if (tabName === 'plugin-marketplace') {
                 loadPluginMarketplace();
             }
@@ -125,6 +145,12 @@ function initPluginManagement() {
     
     document.getElementById('updateAllBtn').addEventListener('click', () => {
         updateAllPlugins();
+    });
+    
+    // Set up performance refresh button
+    document.getElementById('refreshPerformanceBtn').addEventListener('click', () => {
+        loadPluginPerformance();
+        showNotification('Performance metrics refreshed!', 'success');
     });
     
     // Set up search functionality
@@ -569,6 +595,207 @@ function displayHealthMonitoring(healthData) {
     // Update health stats
     document.getElementById('healthyCount').textContent = `${healthyCount} Healthy`;
     document.getElementById('unhealthyCount').textContent = `${unhealthyCount} Unhealthy`;
+}
+
+// Load plugin performance metrics
+function loadPluginPerformance() {
+    const performanceElement = document.getElementById('pluginPerformanceMetrics');
+    performanceElement.innerHTML = '<div class="loading-performance"><i class="fas fa-spinner fa-spin"></i> Loading performance metrics...</div>';
+    
+    fetch('/plugins/performance')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to load performance metrics');
+            }
+            return response.json();
+        })
+        .then(data => {
+            displayPluginPerformance(data);
+        })
+        .catch(error => {
+            console.error('Error loading performance metrics:', error);
+            performanceElement.innerHTML = '<div class="error-message">Failed to load performance metrics: ' + error.message + '</div>';
+        });
+}
+
+// Display plugin performance metrics
+function displayPluginPerformance(data) {
+    const performanceElement = document.getElementById('pluginPerformanceMetrics');
+    performanceElement.innerHTML = '';
+    
+    if (!data.plugins || data.plugins.length === 0) {
+        performanceElement.innerHTML = '<div class="no-performance-data">No performance data available. Plugins have not been executed yet.</div>';
+        return;
+    }
+    
+    // Update summary stats
+    let totalExecutions = 0;
+    let totalSuccess = 0;
+    
+    data.plugins.forEach(plugin => {
+        totalExecutions += plugin.executionCount;
+        totalSuccess += plugin.successCount;
+    });
+    
+    const avgSuccessRate = totalExecutions > 0 ? Math.round((totalSuccess / totalExecutions) * 100) : 100;
+    document.getElementById('totalExecutions').textContent = `${totalExecutions} Executions`;
+    document.getElementById('avgSuccessRate').textContent = `${avgSuccessRate}% Success`;
+    
+    // Create performance table
+    const table = document.createElement('table');
+    table.className = 'performance-table';
+    
+    // Create header row
+    const headerRow = document.createElement('tr');
+    headerRow.innerHTML = `
+        <th>Plugin</th>
+        <th>Executions</th>
+        <th>Success Rate</th>
+        <th>Avg Time (ms)</th>
+        <th>Latest Time (ms)</th>
+        <th>Status</th>
+    `;
+    table.appendChild(headerRow);
+    
+    // Create data rows
+    data.plugins.forEach(plugin => {
+        const row = document.createElement('tr');
+        
+        const successRate = plugin.successRate || 100;
+        const statusClass = successRate >= 90 ? 'status-good' : successRate >= 70 ? 'status-warning' : 'status-bad';
+        const statusText = successRate >= 90 ? 'Healthy' : successRate >= 70 ? 'Warning' : 'Critical';
+        
+        row.innerHTML = `
+            <td><strong>${plugin.pluginName}</strong></td>
+            <td>${plugin.executionCount}</td>
+            <td>
+                <div class="success-rate">
+                    <div class="success-bar" style="width: ${successRate}%"></div>
+                    <span>${successRate}%</span>
+                </div>
+            </td>
+            <td>${plugin.avgExecutionTimeMs ? plugin.avgExecutionTimeMs.toFixed(2) : 'N/A'}</td>
+            <td>${plugin.latestExecutionTimeMs ? plugin.latestExecutionTimeMs.toFixed(2) : 'N/A'}</td>
+            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+        `;
+        
+        table.appendChild(row);
+    });
+    
+    performanceElement.appendChild(table);
+    
+    // Add CSS for performance metrics
+    addPerformanceMetricsCSS();
+}
+
+// Add CSS for performance metrics
+function addPerformanceMetricsCSS() {
+    const style = document.createElement('style');
+    style.textContent = `
+        .performance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .performance-table th,
+        .performance-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .performance-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .performance-table tr:hover {
+            background-color: #f1f3f5;
+        }
+        
+        .success-rate {
+            position: relative;
+            width: 100%;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .success-bar {
+            height: 20px;
+            background-color: #28a745;
+            transition: width 0.3s ease;
+        }
+        
+        .success-rate span {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #212529;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-good {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-bad {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .performance-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .performance-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .performance-stats {
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
+        .loading-performance,
+        .no-performance-data,
+        .error-message {
+            padding: 20px;
+            text-align: center;
+            color: #6c757d;
+        }
+        
+        .error-message {
+            color: #dc3545;
+        }
+    `;
+    document.head.appendChild(style);
 }
 
 // Load plugin marketplace

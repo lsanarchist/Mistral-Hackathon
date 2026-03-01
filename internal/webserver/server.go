@@ -34,6 +34,7 @@ type WebSocketServer struct {
 	pluginDir       string
 	pluginManifests []*plugin.Manifest
 	pluginHealth    map[string]PluginHealth
+	pluginManager   *plugin.PluginManager
 	authEnabled     bool
 	jwtSecretKey    string
 	compressionEnabled bool
@@ -98,6 +99,7 @@ func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth b
 		dataDir:         dataDir,
 		pluginDir:       pluginDir,
 		pluginHealth:    make(map[string]PluginHealth),
+		pluginManager:   plugin.NewPluginManager(pluginDir),
 		lastUpdate:      time.Now(),
 		authEnabled:     enableAuth,
 		jwtSecretKey:    jwtSecretKey,
@@ -119,6 +121,7 @@ func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth b
 	mux.HandleFunc("/plugins/uninstall", s.handleUninstallPlugin)
 	mux.HandleFunc("/performance/history", s.handlePerformanceHistory)
 	mux.HandleFunc("/performance/analysis", s.handlePerformanceAnalysis)
+	mux.HandleFunc("/plugins/performance", s.handlePluginPerformance)
 	
 	// Add auth endpoints if enabled
 	if enableAuth {
@@ -215,6 +218,7 @@ func (s *WebSocketServer) BroadcastData() {
 			"auth_enabled":        s.authEnabled,
 		},
 		"history": s.getPerformanceHistory(),
+		"pluginPerformance": s.getPluginPerformanceSummary(),
 	}
 
 	// Send to all clients
@@ -247,6 +251,74 @@ func (s *WebSocketServer) getPerformanceHistory() []PerformanceSnapshot {
 	historyCopy := make([]PerformanceSnapshot, len(s.performanceHistory))
 	copy(historyCopy, s.performanceHistory)
 	return historyCopy
+}
+
+// getPluginPerformanceSummary returns a summary of plugin performance for broadcasting
+func (s *WebSocketServer) getPluginPerformanceSummary() map[string]interface{} {
+	// Get plugin performance data
+	performanceData := s.pluginManager.GetPluginPerformance()
+	
+	if len(performanceData) == 0 {
+		return map[string]interface{}{
+			"plugins": []map[string]interface{}{},
+			"count":   0,
+		}
+	}
+	
+	// Group performance data by plugin
+	pluginPerformanceMap := make(map[string][]plugin.PluginPerformance)
+	for _, perf := range performanceData {
+		pluginPerformanceMap[perf.PluginName] = append(pluginPerformanceMap[perf.PluginName], perf)
+	}
+	
+	// Calculate summary statistics for each plugin
+	pluginSummaries := make([]map[string]interface{}, 0)
+	for pluginName, performances := range pluginPerformanceMap {
+		if len(performances) == 0 {
+			continue
+		}
+		
+		// Sort by timestamp (newest first)
+		sort.Slice(performances, func(i, j int) bool {
+			return performances[i].Timestamp.After(performances[j].Timestamp)
+		})
+		
+		// Calculate statistics
+		var totalExecTime time.Duration
+		successCount := 0
+		
+		for _, perf := range performances {
+			totalExecTime += perf.ExecutionTime
+			if perf.Success {
+				successCount++
+			}
+		}
+		
+		avgExecTime := float64(totalExecTime.Nanoseconds()) / float64(len(performances)) / 1e6 // Convert to ms
+		successRate := float64(successCount) / float64(len(performances)) * 100
+		
+		// Get latest performance
+		latest := performances[0]
+		
+		pluginSummaries = append(pluginSummaries, map[string]interface{}{
+			"pluginName":          pluginName,
+			"executionCount":      len(performances),
+			"successRate":         successRate,
+			"avgExecutionTimeMs":  avgExecTime,
+			"latestExecutionTimeMs": float64(latest.ExecutionTime.Nanoseconds()) / 1e6,
+			"latestSuccess":        latest.Success,
+		})
+	}
+	
+	// Sort plugins by execution count (most used first)
+	sort.Slice(pluginSummaries, func(i, j int) bool {
+		return pluginSummaries[i]["executionCount"].(int) > pluginSummaries[j]["executionCount"].(int)
+	})
+	
+	return map[string]interface{}{
+		"plugins": pluginSummaries,
+		"count":   len(pluginSummaries),
+	}
 }
 
 // StartAutoRefresh enables periodic data broadcasting
@@ -849,6 +921,83 @@ func (s *WebSocketServer) handleUninstallPlugin(w http.ResponseWriter, r *http.R
 		"success": true,
 		"message": fmt.Sprintf("Plugin %s uninstalled successfully", request.PluginName),
 		"pluginName": request.PluginName,
+	})
+}
+
+// handlePluginPerformance handles plugin performance metrics requests
+func (s *WebSocketServer) handlePluginPerformance(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	
+	// Get plugin performance data
+	performanceData := s.pluginManager.GetPluginPerformance()
+	
+	// Group performance data by plugin
+	pluginPerformanceMap := make(map[string][]plugin.PluginPerformance)
+	for _, perf := range performanceData {
+		pluginPerformanceMap[perf.PluginName] = append(pluginPerformanceMap[perf.PluginName], perf)
+	}
+	
+	// Calculate statistics for each plugin
+	pluginStats := make([]map[string]interface{}, 0)
+	for pluginName, performances := range pluginPerformanceMap {
+		if len(performances) == 0 {
+			continue
+		}
+		
+		// Sort by timestamp (newest first)
+		sort.Slice(performances, func(i, j int) bool {
+			return performances[i].Timestamp.After(performances[j].Timestamp)
+		})
+		
+		// Calculate statistics
+		var totalExecTime time.Duration
+		var totalMemory, totalCPU float64
+		successCount := 0
+		
+		for _, perf := range performances {
+			totalExecTime += perf.ExecutionTime
+			totalMemory += perf.MemoryUsageMB
+			totalCPU += perf.CPUUsagePercent
+			if perf.Success {
+				successCount++
+			}
+		}
+		
+		avgExecTime := float64(totalExecTime.Nanoseconds()) / float64(len(performances)) / 1e6 // Convert to ms
+		avgMemory := totalMemory / float64(len(performances))
+		avgCPU := totalCPU / float64(len(performances))
+		successRate := float64(successCount) / float64(len(performances)) * 100
+		
+		// Get latest performance
+		latest := performances[0]
+		
+		pluginStats = append(pluginStats, map[string]interface{}{
+			"pluginName":          pluginName,
+			"executionCount":      len(performances),
+			"successCount":        successCount,
+			"failureCount":        len(performances) - successCount,
+			"successRate":         successRate,
+			"avgExecutionTimeMs":  avgExecTime,
+			"avgMemoryUsageMB":    avgMemory,
+			"avgCPUUsagePercent":  avgCPU,
+			"latestExecutionTimeMs": float64(latest.ExecutionTime.Nanoseconds()) / 1e6,
+			"latestMemoryUsageMB":   latest.MemoryUsageMB,
+			"latestCPUUsagePercent": latest.CPUUsagePercent,
+			"latestTimestamp":      latest.Timestamp.Format(time.RFC3339),
+			"latestSuccess":        latest.Success,
+			"latestError":          latest.Error,
+		})
+	}
+	
+	// Sort plugins by execution count (most used first)
+	sort.Slice(pluginStats, func(i, j int) bool {
+		return pluginStats[i]["executionCount"].(int) > pluginStats[j]["executionCount"].(int)
+	})
+	
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"plugins": pluginStats,
+		"count":  len(pluginStats),
+		"timestamp": time.Now().Unix(),
 	})
 }
 

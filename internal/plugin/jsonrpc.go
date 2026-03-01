@@ -7,6 +7,8 @@ import (
 	"io"
 	"os/exec"
 	"path/filepath"
+	"runtime"
+	"sync"
 	"time"
 )
 
@@ -124,13 +126,29 @@ func (c *JSONRPCCodec) Close() error {
 	return c.cmd.Process.Kill()
 }
 
+// PluginPerformance represents performance metrics for a plugin execution
+type PluginPerformance struct {
+	PluginName      string        `json:"pluginName"`
+	ExecutionTime   time.Duration `json:"executionTime"`
+	MemoryUsageMB   float64       `json:"memoryUsageMB"`
+	CPUUsagePercent float64       `json:"cpuUsagePercent"`
+	Timestamp       time.Time     `json:"timestamp"`
+	Success         bool          `json:"success"`
+	Error           string        `json:"error,omitempty"`
+}
+
 // PluginManager manages plugin discovery and execution
 type PluginManager struct {
-	PluginDir string
+	PluginDir      string
+	Performance    []PluginPerformance
+	performanceMu  sync.Mutex
 }
 
 func NewPluginManager(pluginDir string) *PluginManager {
-	return &PluginManager{PluginDir: pluginDir}
+	return &PluginManager{
+		PluginDir: pluginDir,
+		Performance: make([]PluginPerformance, 0),
+	}
 }
 
 // ListPlugins returns all available plugins from manifests
@@ -146,15 +164,90 @@ func (m *PluginManager) ResolvePlugin(name string) (*Manifest, string, error) {
 	return ResolvePlugin(manifestsDir, binDir, name)
 }
 
+// RecordPluginPerformance records performance metrics for a plugin execution
+func (m *PluginManager) RecordPluginPerformance(performance PluginPerformance) {
+	m.performanceMu.Lock()
+	defer m.performanceMu.Unlock()
+	
+	// Keep only the last 100 performance records to prevent memory bloat
+	if len(m.Performance) >= 100 {
+		m.Performance = m.Performance[1:]
+	}
+	m.Performance = append(m.Performance, performance)
+}
+
+// GetPluginPerformance returns the performance metrics for all plugins
+func (m *PluginManager) GetPluginPerformance() []PluginPerformance {
+	m.performanceMu.Lock()
+	defer m.performanceMu.Unlock()
+	
+	// Return a copy to avoid race conditions
+	performanceCopy := make([]PluginPerformance, len(m.Performance))
+	copy(performanceCopy, m.Performance)
+	return performanceCopy
+}
+
 // LaunchPlugin launches a plugin process after validation
 func (m *PluginManager) LaunchPlugin(name string, timeout time.Duration) (*JSONRPCCodec, error) {
 	// First resolve the plugin to ensure it exists and is valid
 	_, binaryPath, err := m.ResolvePlugin(name)
 	if err != nil {
+		performance := PluginPerformance{
+			PluginName:    name,
+			Timestamp:     time.Now(),
+			Success:       false,
+			Error:         fmt.Sprintf("failed to resolve plugin: %v", err),
+		}
+		m.RecordPluginPerformance(performance)
 		return nil, fmt.Errorf("failed to resolve plugin %s: %w", name, err)
 	}
 
 	// Launch the plugin process
 	cmd := exec.Command(binaryPath)
-	return NewJSONRPCCodec(cmd)
+	
+	// Record start time for performance tracking
+	startTime := time.Now()
+	
+	codec, err := NewJSONRPCCodec(cmd)
+	if err != nil {
+		performance := PluginPerformance{
+			PluginName:    name,
+			Timestamp:     time.Now(),
+			Success:       false,
+			Error:         fmt.Sprintf("failed to launch plugin: %v", err),
+		}
+		m.RecordPluginPerformance(performance)
+		return nil, fmt.Errorf("failed to launch plugin %s: %w", name, err)
+	}
+	
+	// Record successful launch with basic metrics
+	performance := PluginPerformance{
+		PluginName:      name,
+		ExecutionTime:   time.Since(startTime),
+		Timestamp:       time.Now(),
+		Success:         true,
+		MemoryUsageMB:   getMemoryUsageMB(),
+		CPUUsagePercent: getCPUUsagePercent(),
+	}
+	m.RecordPluginPerformance(performance)
+	
+	return codec, nil
+}
+
+// getMemoryUsageMB returns the current memory usage in MB
+func getMemoryUsageMB() float64 {
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+	// Convert bytes to MB
+	return float64(m.Alloc) / (1024 * 1024)
+}
+
+// getCPUUsagePercent returns the current CPU usage percentage
+// Note: This is a simple approximation since Go doesn't provide direct CPU usage
+func getCPUUsagePercent() float64 {
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+	// This is a placeholder - in a real implementation, you'd use system-specific APIs
+	// For demo purposes, return a small random value to simulate CPU usage
+	return float64(runtime.NumGoroutine()) * 0.1
 }

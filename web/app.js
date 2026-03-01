@@ -454,6 +454,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         updatePerformanceHistory(data.history);
                     }
                     
+                    // Process plugin performance if available
+                    if (data.pluginPerformance && data.pluginPerformance.plugins && data.pluginPerformance.plugins.length > 0) {
+                        updatePluginPerformance(data.pluginPerformance);
+                    }
+                    
                     // Show notification for live updates
                     showLiveUpdateNotification();
                 }
@@ -477,6 +482,44 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Update score breakdown
         updateScoreBreakdown(history);
+    }
+    
+    // Update plugin performance metrics
+    function updatePluginPerformance(performanceData) {
+        if (!performanceData || !performanceData.plugins || performanceData.plugins.length === 0) {
+            return;
+        }
+        
+        // Check if plugin management UI is loaded
+        const pluginManagementSection = document.getElementById('pluginManagementSection');
+        if (!pluginManagementSection) {
+            return;
+        }
+        
+        // Check if performance tab is active
+        const performanceTab = document.getElementById('plugin-performance');
+        if (performanceTab && performanceTab.classList.contains('active')) {
+            // If performance tab is active, update it immediately
+            displayPluginPerformance(performanceData);
+        }
+        
+        // Update summary stats in the header if performance tab exists
+        const totalExecutionsElement = document.getElementById('totalExecutions');
+        const avgSuccessRateElement = document.getElementById('avgSuccessRate');
+        
+        if (totalExecutionsElement && avgSuccessRateElement) {
+            let totalExecutions = 0;
+            let totalSuccess = 0;
+            
+            performanceData.plugins.forEach(plugin => {
+                totalExecutions += plugin.executionCount;
+                totalSuccess += plugin.successCount;
+            });
+            
+            const avgSuccessRate = totalExecutions > 0 ? Math.round((totalSuccess / totalExecutions) * 100) : 100;
+            totalExecutionsElement.textContent = `${totalExecutions} Executions`;
+            avgSuccessRateElement.textContent = `${avgSuccessRate}% Success`;
+        }
     }
     
     // Update performance metrics dashboard
