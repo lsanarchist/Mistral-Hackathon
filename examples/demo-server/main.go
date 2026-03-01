@@ -73,17 +73,17 @@ func main() {
 	fmt.Println("  - GET  /health       - Health check endpoint")
 	fmt.Println("  - GET  /debug/pprof/  - Performance profiling endpoints")
 	fmt.Println("\n🎯 Performance Issues Demonstrated:")
-	fmt.Println("  ✅ JSON serialization overhead")
-	fmt.Println("  ✅ Database lock contention")
-	fmt.Println("  ✅ CPU-bound analytics")
-	fmt.Println("  ✅ Memory allocation patterns")
-	fmt.Println("  ✅ Mutex contention in business logic")
-	fmt.Println("  ✅ I/O bottlenecks")
-	fmt.Println("  ✅ Inefficient string operations")
-	fmt.Println("  ✅ Lack of result caching")
-	fmt.Println("  ✅ Memory leaks")
-	fmt.Println("  ✅ Blocking I/O operations")
-	fmt.Println("  ✅ Goroutine leaks")
+	fmt.Println("  🔥 JSON serialization overhead (/api/users)")
+	fmt.Println("  🔥 Database lock contention (/api/search)")
+	fmt.Println("  🔥 CPU-bound analytics (/api/analytics)")
+	fmt.Println("  🔥 Memory allocation patterns (/api/export)")
+	fmt.Println("  🔥 Mutex contention in business logic (/api/process)")
+	fmt.Println("  🔥 I/O bottlenecks (/api/iobound)")
+	fmt.Println("  🔥 Inefficient string operations (/api/strings)")
+	fmt.Println("  🔥 Lack of result caching (/api/nocache)")
+	fmt.Println("  🔥 Memory leaks (/api/leak) - ~400MB leaked!")
+	fmt.Println("  🔥 Blocking I/O operations (/api/blocking)")
+	fmt.Println("  🔥 Goroutine leaks (/api/goroutine) - 200 leaking goroutines!")
 
 	log.Fatal(http.ListenAndServe(":6060", nil))
 }
@@ -283,9 +283,15 @@ func exportHandler(w http.ResponseWriter, r *http.Request) {
 		
 		exportData = append(exportData, userCopy)
 		
-		// Simulate memory pressure - allocate 2MB per user
-		largeBuffer := make([]byte, 2*1024*1024)
+		// Simulate memory pressure - allocate 3MB per user (increased from 2MB)
+		largeBuffer := make([]byte, 3*1024*1024)
 		_ = largeBuffer
+		
+		// Add additional memory allocation patterns
+		for i := 0; i < 5; i++ {
+			tempSlice := make([]int, 100000)  // Additional 800KB allocation
+			_ = tempSlice
+		}
 	}
 	
 	w.Header().Set("Content-Type", "application/json")
@@ -433,16 +439,16 @@ func memoryLeakHandler(w http.ResponseWriter, r *http.Request) {
 	// Simulate memory leak - growing slice that's never released
 	var leakySlice [][]byte
 	
-	for i := 0; i < 100; i++ {
-		// Allocate 1MB chunks and keep references
-		chunk := make([]byte, 1024*1024)
+	for i := 0; i < 200; i++ {  // Increased from 100 to 200 for more pronounced leak
+		// Allocate 2MB chunks and keep references (increased from 1MB)
+		chunk := make([]byte, 2*1024*1024)
 		for j := range chunk {
 			chunk[j] = byte(i % 256)
 		}
 		leakySlice = append(leakySlice, chunk)
 		
 		// Simulate some processing
-		time.Sleep(5 * time.Millisecond)
+		time.Sleep(2 * time.Millisecond)  // Reduced delay for faster leak
 	}
 	
 	// leakySlice is never released - this creates a memory leak
@@ -463,13 +469,13 @@ func blockingIOHandler(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 	
 	// Simulate blocking I/O operations that tie up goroutines
-	for i := 0; i < 50; i++ {
-		// Simulate slow I/O with random delays
-		delay := time.Duration(rand.Intn(50)+10) * time.Millisecond
+	for i := 0; i < 100; i++ {  // Increased from 50 to 100 for more blocking
+		// Simulate slow I/O with longer random delays
+		delay := time.Duration(rand.Intn(100)+20) * time.Millisecond  // Increased delay range
 		time.Sleep(delay)
 		
-		// Simulate some processing after I/O
-		for j := 0; j < 1000; j++ {
+		// Simulate more processing after I/O
+		for j := 0; j < 2000; j++ {  // Increased computation
 			_ = j * j * rand.Intn(10)
 		}
 	}
@@ -489,18 +495,22 @@ func goroutineLeakHandler(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 	
 	// Simulate goroutine leak - starting goroutines without waiting
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 200; i++ {  // Increased from 100 to 200 for more pronounced leak
 		go func(id int) {
 			// Simulate work that never completes
 			for {
 				// Busy wait - this goroutine will never exit
-				time.Sleep(100 * time.Millisecond)
+				time.Sleep(50 * time.Millisecond)  // Reduced sleep for more activity
 				_ = id * rand.Intn(1000)
+				// Add some computation to make it more visible in CPU profiles
+				for j := 0; j < 100; j++ {
+					_ = j * j * id
+				}
 			}
 		}(i)
 		
 		// Small delay to make the leak more visible
-		time.Sleep(2 * time.Millisecond)
+		time.Sleep(1 * time.Millisecond)  // Reduced delay for faster leak
 	}
 	
 	w.Header().Set("Content-Type", "application/json")

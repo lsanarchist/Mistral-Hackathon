@@ -4,8 +4,8 @@
 # Generates realistic traffic patterns to demonstrate performance issues
 
 SERVER_URL=${1:-http://localhost:6060}
-DURATION=${2:-30}  # Duration in seconds
-CONCURRENCY=${3:-10} # Concurrent requests
+DURATION=${2:-60}  # Duration in seconds (increased from 30 to 60)
+CONCURRENCY=${3:-15} # Concurrent requests (increased from 10 to 15)
 
 echo "🚀 Starting enhanced load generation on $SERVER_URL"
 echo "⏱  Duration: ${DURATION}s | 👥 Concurrency: ${CONCURRENCY}"
@@ -40,8 +40,8 @@ make_request() {
         CURRENT_COUNT=$(cat "$REQUEST_COUNT_FILE")
         echo $((CURRENT_COUNT + 1)) > "$REQUEST_COUNT_FILE"
         
-        # Random delay between requests (50-500ms)
-        sleep $(echo "scale=3; $RANDOM / 32768 * 0.45 + 0.05" | bc)
+        # Random delay between requests (20-300ms for faster pace)
+        sleep $(echo "scale=3; $RANDOM / 32768 * 0.28 + 0.02" | bc)
     done
 }
 
@@ -75,9 +75,9 @@ echo "  • Memory allocation patterns in /api/export"
 echo "  • Mutex contention in /api/process"
 echo "  • Inefficient string operations in /api/strings"
 echo "  • Lack of caching in /api/nocache"
-echo "  • I/O bottlenecks in /api/iobound
-  • Memory leaks in /api/leak
-  • Blocking I/O operations in /api/blocking
-  • Goroutine leaks in /api/goroutine"
+echo "  • I/O bottlenecks in /api/iobound"
+echo "  • Memory leaks in /api/leak"
+echo "  • Blocking I/O operations in /api/blocking"
+echo "  • Goroutine leaks in /api/goroutine"
 echo ""
 echo "🚀 Ready for TriageProf analysis!"

@@ -1,6 +1,23 @@
 ## Change Log
 
 ### 2026-03-01
+- **Objective**: Enhance demo experience with more pronounced performance issues and improved load generation
+- **Rationale**: Create even more compelling demo showcasing advanced performance issues and improved AI-powered analysis by making performance problems more visible and generating richer profiling data
+- **Impact**: Demo server, load generation, LLM insights quality, user experience
+- **Changes**:
+  - Enhanced memory leak simulation: increased from 100MB to 400MB leak with faster allocation
+  - Enhanced blocking I/O operations: increased from 50 to 100 operations with longer delays
+  - Enhanced goroutine leak simulation: increased from 100 to 200 leaking goroutines with more CPU activity
+  - Enhanced memory allocation patterns: increased export endpoint memory usage from 2MB to 3.8MB per user
+  - Fixed load script syntax error in performance issues list
+  - Increased load generation duration from 30s to 60s and concurrency from 10 to 15 workers
+  - Improved load script pacing with faster request generation (20-300ms delays)
+  - Enhanced server output with specific endpoint references and leak sizes
+  - Updated performance issues list to show all 11 distinct problems being demonstrated
+- **Testing**: Manual testing of server compilation; verified load script syntax; confirmed build process works; validated enhanced performance characteristics
+- **Result**: Demo now generates significantly richer profiling data with more pronounced performance issues, creating a more compelling and professional "wow" factor demonstration that better highlights TriageProf's AI-powered analysis capabilities
+
+### 2026-03-01
 - **Objective**: Enhance LLM client with robust error handling, retry logic, and better error messages
 - **Rationale**: Improve reliability and user experience of LLM insights generation by adding automatic retry with exponential backoff for transient failures, better error messages for debugging, and configurable retry parameters
 - **Impact**: LLM client reliability, error handling, user experience, debugging capabilities
