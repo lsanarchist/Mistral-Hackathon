@@ -53,11 +53,14 @@ func TestPromptBuilder_Build(t *testing.T) {
 						Flat:     256.0,
 					},
 				},
-				Evidence: model.Evidence{
-					ArtifactPath: "cpu.pb.gz",
-					ProfileType:  "cpu",
-					ExtractedAt:  time.Now(),
-				},
+                Evidence: []model.EvidenceItem{
+                    {
+                        Type:        "profile",
+                        Description: "Profile evidence",
+                        Value:       "profile.pb.gz",
+                        Weight:      1.0,
+                    },
+                },
 			},
 		},
 	}
@@ -227,7 +230,9 @@ func TestInsightsGenerator_GenerateInsights_DryRun(t *testing.T) {
 	}
 
 	// Test dry-run mode
-	generator := NewInsightsGenerator("test-key", "test-model", 10, 1000, 12000, true)
+	generator, err := NewInsightsGenerator("test-key", "test-model", 10, 1000, 12000, true)
+	require.NoError(t, err)
+	require.NoError(t, err)
 	
 	insights, err := generator.GenerateInsights(context.Background(), bundle, findings)
 	require.NoError(t, err)
@@ -271,7 +276,9 @@ func TestInsightsGenerator_GenerateInsights_NoAPIKey(t *testing.T) {
 	}
 
 	// Test with no API key
-	generator := NewInsightsGenerator("", "test-model", 10, 1000, 12000, false)
+	generator, err := NewInsightsGenerator("", "test-model", 10, 1000, 12000, false)
+	require.NoError(t, err)
+	require.NoError(t, err)
 	
 	insights, err := generator.GenerateInsights(context.Background(), bundle, findings)
 	require.NoError(t, err)
@@ -312,7 +319,9 @@ func TestInsightsGenerator_GenerateInsights_PromptTooLarge(t *testing.T) {
 	}
 
 	// Test with small size limit
-	generator := NewInsightsGenerator("test-key", "test-model", 10, 1000, 100, false)
+	generator, err := NewInsightsGenerator("test-key", "test-model", 10, 1000, 100, false)
+	require.NoError(t, err)
+	require.NoError(t, err)
 	
 	insights, err := generator.GenerateInsights(context.Background(), bundle, &findings)
 	require.NoError(t, err)
@@ -394,31 +403,37 @@ func TestInsightsBundle_Serialization(t *testing.T) {
 
 func TestInsightsGenerator_WithLLM(t *testing.T) {
 	// Test that insights generator can be configured
-	generator := NewInsightsGenerator("test-key", "test-model", 10, 1000, 12000, false)
+	generator, err := NewInsightsGenerator("test-key", "test-model", 10, 1000, 12000, false)
+	require.NoError(t, err)
+	require.NoError(t, err)
 	
 	// Verify configuration
 	assert.NotNil(t, generator)
-	assert.Equal(t, "test-model", generator.Client.Model)
-	assert.Equal(t, time.Duration(10)*time.Second, generator.Client.Timeout)
-	assert.Equal(t, 1000, generator.Client.MaxResponse)
+	assert.Equal(t, "test-model", generator.Provider.(*MistralProvider).modelName)
+	assert.Equal(t, time.Duration(10)*time.Second, generator.Provider.(*MistralProvider).Timeout)
+	assert.Equal(t, 1000, generator.Provider.(*MistralProvider).MaxResponse)
 	assert.Equal(t, 12000, generator.MaxPromptChars)
-	assert.False(t, generator.DryRun)
+	assert.False(t, generator.Provider.(*MistralProvider).DryRun)
 }
 
 func TestInsightsGenerator_WithLLM_DryRun(t *testing.T) {
 	// Test dry-run mode
-	generator := NewInsightsGenerator("test-key", "test-model", 10, 1000, 12000, true)
+	generator, err := NewInsightsGenerator("test-key", "test-model", 10, 1000, 12000, true)
+	require.NoError(t, err)
+	require.NoError(t, err)
 	
 	assert.NotNil(t, generator)
-	assert.True(t, generator.DryRun)
+	assert.True(t, generator.Provider.(*MistralProvider).DryRun)
 }
 
 func TestInsightsGenerator_WithLLM_NoAPIKey(t *testing.T) {
 	// Test with empty API key
-	generator := NewInsightsGenerator("", "test-model", 10, 1000, 12000, false)
+	generator, err := NewInsightsGenerator("", "test-model", 10, 1000, 12000, false)
+	require.NoError(t, err)
+	require.NoError(t, err)
 	
 	assert.NotNil(t, generator)
-	assert.Equal(t, "", generator.Client.APIKey)
+	assert.Equal(t, "", generator.Provider.(*MistralProvider).APIKey)
 }
 
 func TestMistralClient_WithRetries(t *testing.T) {
@@ -436,21 +451,23 @@ func TestMistralClient_WithRetries(t *testing.T) {
 
 func TestInsightsGenerator_WithRetries(t *testing.T) {
 	// Test insights generator with retry configuration
-	generator := NewInsightsGeneratorWithRetries("test-key", "test-model", 10, 1000, 12000, 3, 1, false)
+	generator, err := NewInsightsGenerator("test-key", "test-model", 10, 1000, 12000, false)
+	require.NoError(t, err)
 	
 	assert.NotNil(t, generator)
 	assert.Equal(t, "test-key", generator.Client.APIKey)
 	assert.Equal(t, 3, generator.Client.MaxRetries)
 	assert.Equal(t, 1, int(generator.Client.RetryDelay.Seconds()))
-	assert.False(t, generator.DryRun)
+	assert.False(t, generator.Provider.(*MistralProvider).config.DryRun)
 }
 
 func TestInsightsGenerator_WithRetries_DryRun(t *testing.T) {
 	// Test insights generator with retries in dry-run mode
-	generator := NewInsightsGeneratorWithRetries("test-key", "test-model", 10, 1000, 12000, 3, 1, true)
+	generator, err := NewInsightsGenerator("test-key", "test-model", 10, 1000, 12000, true)
+	require.NoError(t, err)
 	
 	assert.NotNil(t, generator)
-	assert.True(t, generator.DryRun)
+	assert.True(t, generator.Provider.(*MistralProvider).config.DryRun)
 	assert.Equal(t, 3, generator.Client.MaxRetries)
 }
 
@@ -538,11 +555,14 @@ func TestEnhancedPromptBuilder(t *testing.T) {
 					Severity:      "medium",
 					Confidence:    85,
 				},
-				Evidence: model.Evidence{
-					ArtifactPath: "cpu.pb.gz",
-					ProfileType:  "cpu",
-					ExtractedAt:  time.Now(),
-				},
+                Evidence: []model.EvidenceItem{
+                    {
+                        Type:        "profile",
+                        Description: "Profile evidence",
+                        Value:       "profile.pb.gz",
+                        Weight:      1.0,
+                    },
+                },
 			},
 		},
 	}

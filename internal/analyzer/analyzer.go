@@ -343,26 +343,40 @@ func analyzeRegression(baseline, current *model.ProfileBundle, profileType strin
 		percentage = float64(delta) / float64(baselineScore) * 100
 	}
 
-	// Determine severity
+	// Determine severity with more granular thresholds
 	severity := "none"
-	if delta > 20 {
+	if delta > 30 {
 		severity = "critical"
-	} else if delta > 10 {
+	} else if delta > 15 {
 		severity = "high"
-	} else if delta > 5 {
+	} else if delta > 8 {
 		severity = "medium"
+	} else if delta > 3 {
+		severity = "low"
 	} else if delta < -10 {
 		severity = "improved"
 	}
 
-	// Confidence based on sample count
+	// Confidence based on sample count and consistency
 	baselineSamples := len(baselineProf.Sample)
 	currentSamples := len(currentProf.Sample)
 	confidence := 50
 	if baselineSamples > 100 && currentSamples > 100 {
-		confidence = 80
+		confidence = 90
 	} else if baselineSamples > 50 && currentSamples > 50 {
+		confidence = 75
+	} else if baselineSamples > 20 && currentSamples > 20 {
 		confidence = 60
+	}
+
+	// Add metadata for better context
+	baselineRef := ""
+	currentRef := ""
+	if baseline.Metadata.GitSha != "" {
+		baselineRef = baseline.Metadata.GitSha
+	}
+	if current.Metadata.GitSha != "" {
+		currentRef = current.Metadata.GitSha
 	}
 
 	return &model.RegressionAnalysis{
@@ -372,7 +386,196 @@ func analyzeRegression(baseline, current *model.ProfileBundle, profileType strin
 		Percentage:    percentage,
 		Severity:      severity,
 		Confidence:    confidence,
+		BaselineRef:   baselineRef,
+		CurrentRef:    currentRef,
+		Timestamp:     time.Now(),
 	}
+}
+
+// AnalyzeWithBaselineComparison performs comparative analysis against a baseline
+func (a *Analyzer) AnalyzeWithBaselineComparison(bundle model.ProfileBundle, topN int, baselineComparison model.BaselineComparison) (*model.FindingsBundle, error) {
+	// Load baseline bundle
+	baselineData, err := os.ReadFile(baselineComparison.BaselinePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read baseline bundle: %w", err)
+	}
+
+	var baselineBundle model.ProfileBundle
+	if err := json.Unmarshal(baselineData, &baselineBundle); err != nil {
+		return nil, fmt.Errorf("failed to parse baseline bundle: %w", err)
+	}
+
+	// Set threshold or use default
+	threshold := baselineComparison.Threshold
+	if threshold <= 0 {
+		threshold = 10.0 // default 10% threshold
+	}
+
+	// Analyze with regression enabled
+	options := AnalyzeOptions{
+		EnableCallgraph:    true,
+		CallgraphDepth:     3,
+		EnableRegression:   true,
+		BaselineBundlePath: baselineComparison.BaselinePath,
+	}
+
+	findingsBundle, err := a.AnalyzeWithOptions(bundle, topN, options)
+	if err != nil {
+		return nil, err
+	}
+
+	// Add performance trends for each finding
+	for i, finding := range findingsBundle.Findings {
+		if finding.Regression != nil {
+			// Convert regression to performance trend
+			trend := model.PerformanceTrend{
+				Metric:     finding.Category + "_score",
+				Baseline:   float64(finding.Regression.BaselineScore),
+				Current:    float64(finding.Regression.CurrentScore),
+				Delta:      float64(finding.Regression.Delta),
+				Percentage: finding.Regression.Percentage,
+				Severity:   finding.Regression.Severity,
+				Confidence: finding.Regression.Confidence,
+			}
+			
+			// Add timestamps if available
+			if !finding.Regression.Timestamp.IsZero() {
+				trend.Timestamps = []time.Time{finding.Regression.Timestamp}
+			}
+			
+			// Add trend to finding evidence
+			findingsBundle.Findings[i].Evidence = append(findingsBundle.Findings[i].Evidence, model.EvidenceItem{
+				Type:        "performance_trend",
+				Description: "Performance trend analysis",
+				Value:       fmt.Sprintf("%s: %.1f%% change", finding.Category, trend.Percentage),
+				Weight:      0.9,
+			})
+			
+			// Add regression tag if significant regression detected
+			if finding.Regression.Severity == "critical" || finding.Regression.Severity == "high" {
+				findingsBundle.Findings[i].Tags = append(findingsBundle.Findings[i].Tags, "regression")
+				findingsBundle.Findings[i].Tags = append(findingsBundle.Findings[i].Tags, "performance_regression")
+			}
+		}
+	}
+
+	// Update summary with regression information
+	if len(findingsBundle.Findings) > 0 {
+		hasRegressions := false
+		for _, finding := range findingsBundle.Findings {
+			if finding.Regression != nil && (finding.Regression.Severity == "critical" || finding.Regression.Severity == "high") {
+				hasRegressions = true
+				break
+			}
+		}
+		
+		if hasRegressions {
+			findingsBundle.Summary.Notes = append(findingsBundle.Summary.Notes, "Performance regressions detected - check findings with 'regression' tag")
+			findingsBundle.Summary.TopIssueTags = append(findingsBundle.Summary.TopIssueTags, "regression")
+		}
+	}
+
+	return findingsBundle, nil
+}
+
+// AnalyzePerformanceTrends analyzes trends across multiple profile types
+func (a *Analyzer) AnalyzePerformanceTrends(bundle model.ProfileBundle, baselineBundle model.ProfileBundle) ([]model.PerformanceTrend, error) {
+	trendResults := make([]model.PerformanceTrend, 0)
+	
+	// Analyze each profile type
+	profileTypes := make(map[string]bool)
+	for _, artifact := range bundle.Artifacts {
+		if artifact.Kind == "pprof" {
+			profileTypes[artifact.ProfileType] = true
+		}
+	}
+	
+	for profileType := range profileTypes {
+		// Find matching artifacts
+		var baselineArtifact, currentArtifact *model.Artifact
+		for _, artifact := range baselineBundle.Artifacts {
+			if artifact.ProfileType == profileType {
+				baselineArtifact = &artifact
+				break
+			}
+		}
+		for _, artifact := range bundle.Artifacts {
+			if artifact.ProfileType == profileType {
+				currentArtifact = &artifact
+				break
+			}
+		}
+		
+		if baselineArtifact == nil || currentArtifact == nil {
+			continue
+		}
+		
+		// Read and parse profiles
+		baselineData, err := os.ReadFile(baselineArtifact.Path)
+		if err != nil {
+			continue
+		}
+		currentData, err := os.ReadFile(currentArtifact.Path)
+		if err != nil {
+			continue
+		}
+		
+		baselineProf, err := profile.ParseData(baselineData)
+		if err != nil {
+			continue
+		}
+		currentProf, err := profile.ParseData(currentData)
+		if err != nil {
+			continue
+		}
+		
+		// Calculate metrics
+		baselineScore := calculateProfileScore(baselineProf)
+		currentScore := calculateProfileScore(currentProf)
+		delta := currentScore - baselineScore
+		percentage := 0.0
+		if baselineScore > 0 {
+			percentage = float64(delta) / float64(baselineScore) * 100
+		}
+		
+		// Determine severity
+		severity := "none"
+		if delta > 30 {
+			severity = "critical"
+		} else if delta > 15 {
+			severity = "high"
+		} else if delta > 8 {
+			severity = "medium"
+		} else if delta > 3 {
+			severity = "low"
+		} else if delta < -10 {
+			severity = "improved"
+		}
+		
+		// Confidence based on sample count
+		baselineSamples := len(baselineProf.Sample)
+		currentSamples := len(currentProf.Sample)
+		confidence := 50
+		if baselineSamples > 100 && currentSamples > 100 {
+			confidence = 90
+		} else if baselineSamples > 50 && currentSamples > 50 {
+			confidence = 75
+		}
+		
+		trend := model.PerformanceTrend{
+			Metric:       profileType + "_score",
+			Baseline:     float64(baselineScore),
+			Current:      float64(currentScore),
+			Delta:        float64(delta),
+			Percentage:   percentage,
+			Severity:     severity,
+			Confidence:   confidence,
+		}
+		
+		trendResults = append(trendResults, trend)
+	}
+	
+	return trendResults, nil
 }
 
 // calculateProfileScore calculates a score for a profile based on hotspot concentration

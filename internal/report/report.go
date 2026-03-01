@@ -182,6 +182,18 @@ func (r *Reporter) GenerateWithInsights(findings model.FindingsBundle, insights 
 			sb.WriteString(fmt.Sprintf("- **Delta**: %d (%.1f%%)\n", finding.Regression.Delta, finding.Regression.Percentage))
 			sb.WriteString(fmt.Sprintf("- **Severity**: %s\n", strings.Title(finding.Regression.Severity)))
 			sb.WriteString(fmt.Sprintf("- **Confidence**: %d%%\n", finding.Regression.Confidence))
+			
+			// Add baseline and current references if available
+			if finding.Regression.BaselineRef != "" || finding.Regression.CurrentRef != "" {
+				sb.WriteString("- **References**:\n")
+				if finding.Regression.BaselineRef != "" {
+					sb.WriteString(fmt.Sprintf("  - Baseline: %s\n", finding.Regression.BaselineRef))
+				}
+				if finding.Regression.CurrentRef != "" {
+					sb.WriteString(fmt.Sprintf("  - Current: %s\n", finding.Regression.CurrentRef))
+				}
+			}
+			
 			sb.WriteString("\n")
 
 			if finding.Regression.Severity == "improved" {
@@ -190,6 +202,15 @@ func (r *Reporter) GenerateWithInsights(findings model.FindingsBundle, insights 
 			} else if finding.Regression.Severity != "none" && finding.Regression.Severity != "low" {
 				sb.WriteString("⚠️ **Potential Regression Detected**\n")
 				sb.WriteString(fmt.Sprintf("This profile shows %s regression over the baseline.\n", finding.Regression.Severity))
+				
+				// Add severity-specific recommendations
+				if finding.Regression.Severity == "critical" {
+					sb.WriteString("🔴 **CRITICAL**: Immediate attention required. This represents a significant performance degradation.\n")
+				} else if finding.Regression.Severity == "high" {
+					sb.WriteString("🟠 **HIGH**: Significant regression detected. Should be investigated promptly.\n")
+				} else if finding.Regression.Severity == "medium" {
+					sb.WriteString("🟡 **MEDIUM**: Moderate regression detected. Consider investigating during next performance review.\n")
+				}
 			}
 			sb.WriteString("\n")
 		}

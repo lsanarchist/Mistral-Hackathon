@@ -55,11 +55,14 @@ func TestInsightsCache(t *testing.T) {
 					Severity: "High",
 					Score:    85,
 					Top:      []model.StackFrame{},
-					Evidence: model.Evidence{
-						ArtifactPath: "test.pb.gz",
-						ProfileType:  "cpu",
-						ExtractedAt:  time.Now(),
-					},
+                Evidence: []model.EvidenceItem{
+                    {
+                        Type:        "profile",
+                        Description: "Profile evidence",
+                        Value:       "profile.pb.gz",
+                        Weight:      1.0,
+                    },
+                },
 				},
 			},
 		}

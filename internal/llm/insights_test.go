@@ -186,22 +186,6 @@ func TestInsightsValidation(t *testing.T) {
 }
 
 func TestInsightsGuardrails(t *testing.T) {
-	findings := &model.FindingsBundle{
-		Findings: []model.Finding{
-			{
-				ID:       "test-finding",
-				Title:    "Test finding",
-				Category: "cpu",
-			},
-		},
-	}
-
-	bundle := &model.ProfileBundle{
-		Metadata: model.Metadata{
-			Service:  "test-service",
-			Scenario: "test-scenario",
-		},
-	}
 
 	t.Run("Guardrails truncate long fields", func(t *testing.T) {
 		insights := &model.InsightsBundle{

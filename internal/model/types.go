@@ -194,6 +194,30 @@ type RegressionAnalysis struct {
 	Percentage    float64 `json:"percentage"`
 	Severity      string  `json:"severity"`
 	Confidence    int     `json:"confidence"`
+	BaselineRef   string  `json:"baseline_ref,omitempty"`
+	CurrentRef    string  `json:"current_ref,omitempty"`
+	Timestamp     time.Time `json:"timestamp,omitempty"`
+}
+
+// BaselineComparison represents a performance baseline for comparative analysis
+type BaselineComparison struct {
+	BaselinePath string `json:"baselinePath"`
+	CurrentPath  string `json:"currentPath"`
+	BaselineRef   string `json:"baselineRef,omitempty"`
+	CurrentRef    string `json:"currentRef,omitempty"`
+	Threshold     float64 `json:"threshold,omitempty"` // Percentage threshold for regression detection (default: 10%)
+}
+
+// PerformanceTrend represents performance changes over time
+type PerformanceTrend struct {
+	Metric       string    `json:"metric"`
+	Baseline     float64   `json:"baseline"`
+	Current      float64   `json:"current"`
+	Delta        float64   `json:"delta"`
+	Percentage   float64   `json:"percentage"`
+	Severity     string    `json:"severity"`
+	Confidence   int       `json:"confidence"`
+	Timestamps   []time.Time `json:"timestamps,omitempty"`
 }
 
 type StackFrame struct {

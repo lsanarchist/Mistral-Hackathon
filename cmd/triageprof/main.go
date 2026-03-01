@@ -49,7 +49,7 @@ func main() {
 		fmt.Println("Commands:")
 		fmt.Println("  plugins list")
 		fmt.Println("  collect --plugin <name> --target-url <url> --duration <sec> --out <path>")
-		fmt.Println("  analyze --in <bundle.json> --out <findings.json> --top <N> [--callgraph --callgraph-depth <depth>] [--regression --baseline <path>]")
+		fmt.Println("  analyze --in <bundle.json> --out <findings.json> --top <N> [--callgraph --callgraph-depth <depth>] [--regression --baseline <path> --baseline-ref <ref> --current-ref <ref>] [--trend-analysis --baseline <path> --trend-output <path>]")
 		fmt.Println("  report --in <findings.json> --out <report.md|json> --output markdown|json")
 		fmt.Println("  llm --bundle <bundle.json> --findings <findings.json> --out <insights.json> [--provider <provider>] [--model <model>] [--timeout <sec>] [--dry-run]")
 		fmt.Println("  run --plugin <name> --target-url <url> --duration <sec> --outdir <dir> [--websocket-port <port>] [--websocket-auth] [--websocket-compression] [--websocket-batching] [--websocket-batch-interval <ms>]")
@@ -197,6 +197,10 @@ func runAnalyzeCommand(pipeline *core.Pipeline) {
 	callgraphDepth := flagSet.Int("callgraph-depth", 3, "Callgraph maximum depth (default: 3)")
 	regression := flagSet.Bool("regression", false, "Enable regression analysis")
 	baseline := flagSet.String("baseline", "", "Baseline bundle path for regression analysis")
+	baselineRef := flagSet.String("baseline-ref", "", "Baseline reference (commit/branch/tag)")
+	currentRef := flagSet.String("current-ref", "", "Current reference (commit/branch/tag)")
+	trendAnalysis := flagSet.Bool("trend-analysis", false, "Enable performance trend analysis")
+	trendOutput := flagSet.String("trend-output", "", "Output path for trend analysis results")
 	flagSet.Parse(os.Args[2:])
 
 	if *inPath == "" || *outPath == "" {
@@ -209,26 +213,108 @@ func runAnalyzeCommand(pipeline *core.Pipeline) {
 		os.Exit(1)
 	}
 
-	ctx := context.Background()
-	options := core.CoreAnalyzeOptions{
-		EnableCallgraph:    *callgraph,
-		CallgraphDepth:     *callgraphDepth,
-		EnableRegression:   *regression,
-		BaselineBundlePath: *baseline,
-	}
-
-	_, err := pipeline.AnalyzeWithOptions(ctx, *inPath, *topN, *outPath, options)
-	if err != nil {
-		fmt.Printf("Analyze failed: %v\n", err)
+	if *trendAnalysis && (*baseline == "" || *trendOutput == "") {
+		fmt.Println("Trend analysis requires --baseline and --trend-output flags")
 		os.Exit(1)
 	}
 
-	fmt.Printf("Findings saved to: %s\n", *outPath)
-	if *callgraph {
-		fmt.Printf("✓ Callgraph analysis completed (depth %d)\n", *callgraphDepth)
+	ctx := context.Background()
+	
+	// Handle trend analysis first if requested
+	if *trendAnalysis {
+		trends, err := pipeline.AnalyzePerformanceTrends(ctx, *inPath, *baseline, *trendOutput)
+		if err != nil {
+			fmt.Printf("Trend analysis failed: %v\n", err)
+			os.Exit(1)
+		}
+		
+		fmt.Printf("✓ Performance trend analysis completed\n")
+		fmt.Printf("📊 Found %d performance trends\n", len(trends))
+		fmt.Printf("📈 Trend analysis saved to: %s\n", *trendOutput)
+		
+		// Print summary of trends
+		criticalCount := 0
+		highCount := 0
+		improvedCount := 0
+		
+		for _, trend := range trends {
+			switch trend.Severity {
+			case "critical":
+				criticalCount++
+			case "high":
+				highCount++
+			case "improved":
+				improvedCount++
+			}
+		}
+		
+		if criticalCount > 0 {
+			fmt.Printf("🔴 %d critical regressions detected\n", criticalCount)
+		}
+		if highCount > 0 {
+			fmt.Printf("🟠 %d high severity regressions detected\n", highCount)
+		}
+		if improvedCount > 0 {
+			fmt.Printf("📈 %d performance improvements detected\n", improvedCount)
+		}
 	}
+
+	// Handle regular analysis with baseline comparison
 	if *regression {
-		fmt.Println("✓ Regression analysis completed")
+		// Create baseline comparison configuration
+		baselineComparison := model.BaselineComparison{
+			BaselinePath: *baseline,
+			CurrentPath:  *inPath,
+			BaselineRef:   *baselineRef,
+			CurrentRef:    *currentRef,
+			Threshold:     10.0, // default 10% threshold
+		}
+		
+		findings, err := pipeline.AnalyzeWithBaselineComparison(ctx, *inPath, *topN, *outPath, baselineComparison)
+		if err != nil {
+			fmt.Printf("Baseline comparison failed: %v\n", err)
+			os.Exit(1)
+		}
+		
+		fmt.Printf("Findings saved to: %s\n", *outPath)
+		fmt.Println("✓ Baseline comparison analysis completed")
+		
+		// Count regression findings
+		regressionCount := 0
+		for _, finding := range findings.Findings {
+			if finding.Regression != nil && finding.Regression.Severity != "none" && finding.Regression.Severity != "low" && finding.Regression.Severity != "improved" {
+				regressionCount++
+			}
+		}
+		
+		if regressionCount > 0 {
+			fmt.Printf("🔴 %d findings with potential regressions detected\n", regressionCount)
+		} else {
+			fmt.Println("📈 No significant regressions detected")
+		}
+		
+		if *callgraph {
+			fmt.Printf("✓ Callgraph analysis completed (depth %d)\n", *callgraphDepth)
+		}
+	} else {
+		// Regular analysis without regression
+		options := core.CoreAnalyzeOptions{
+			EnableCallgraph:    *callgraph,
+			CallgraphDepth:     *callgraphDepth,
+			EnableRegression:   false,
+			BaselineBundlePath: "",
+		}
+
+		_, err := pipeline.AnalyzeWithOptions(ctx, *inPath, *topN, *outPath, options)
+		if err != nil {
+			fmt.Printf("Analyze failed: %v\n", err)
+			os.Exit(1)
+		}
+
+		fmt.Printf("Findings saved to: %s\n", *outPath)
+		if *callgraph {
+			fmt.Printf("✓ Callgraph analysis completed (depth %d)\n", *callgraphDepth)
+		}
 	}
 }
 

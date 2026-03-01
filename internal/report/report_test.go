@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/mistral-hackathon/triageprof/internal/model"
 	"github.com/stretchr/testify/assert"
@@ -35,11 +34,14 @@ func TestGenerateJSON(t *testing.T) {
 						Flat:     256.0,
 					},
 				},
-				Evidence: model.Evidence{
-					ArtifactPath: "cpu.pb.gz",
-					ProfileType:  "cpu",
-					ExtractedAt:  time.Now(),
-				},
+                Evidence: []model.EvidenceItem{
+                    {
+                        Type:        "profile",
+                        Description: "Profile evidence",
+                        Value:       "profile.pb.gz",
+                        Weight:      1.0,
+                    },
+                },
 			},
 		},
 	}
@@ -133,11 +135,14 @@ func TestJSONReportWithAllocationAnalysis(t *testing.T) {
 						},
 					},
 				},
-				Evidence: model.Evidence{
-					ArtifactPath: "allocs.pb.gz",
-					ProfileType:  "allocs",
-					ExtractedAt:  time.Now(),
-				},
+                Evidence: []model.EvidenceItem{
+                    {
+                        Type:        "profile",
+                        Description: "Profile evidence",
+                        Value:       "profile.pb.gz",
+                        Weight:      1.0,
+                    },
+                },
 			},
 		},
 	}
@@ -220,11 +225,14 @@ func TestCallgraphStatistics(t *testing.T) {
 				Severity:  "medium",
 				Score:     80,
 				Callgraph: callgraph,
-				Evidence: model.Evidence{
-					ArtifactPath: "cpu.pb.gz",
-					ProfileType:  "cpu",
-					ExtractedAt:  time.Now(),
-				},
+                Evidence: []model.EvidenceItem{
+                    {
+                        Type:        "profile",
+                        Description: "Profile evidence",
+                        Value:       "profile.pb.gz",
+                        Weight:      1.0,
+                    },
+                },
 			},
 		},
 	}

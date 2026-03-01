@@ -397,6 +397,81 @@ func (p *Pipeline) AnalyzeWithDeterministicRulesAndOptions(ctx context.Context, 
 	return findings, nil
 }
 
+// AnalyzeWithBaselineComparison performs comparative analysis against a baseline
+func (p *Pipeline) AnalyzeWithBaselineComparison(ctx context.Context, bundlePath string, topN int, outPath string, baselineComparison model.BaselineComparison) (*model.FindingsBundle, error) {
+	// Read bundle
+	data, err := os.ReadFile(bundlePath)
+	if err != nil {
+		return nil, err
+	}
+
+	var profileBundle model.ProfileBundle
+	if err := json.Unmarshal(data, &profileBundle); err != nil {
+		return nil, err
+	}
+
+	// Perform baseline comparison analysis
+	findings, err := p.analyzer.AnalyzeWithBaselineComparison(profileBundle, topN, baselineComparison)
+	if err != nil {
+		return nil, err
+	}
+
+	// Save findings
+	findingsData, err := json.MarshalIndent(findings, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+
+	if err := os.WriteFile(outPath, findingsData, 0644); err != nil {
+		return nil, err
+	}
+
+	return findings, nil
+}
+
+// AnalyzePerformanceTrends analyzes performance trends across multiple runs
+func (p *Pipeline) AnalyzePerformanceTrends(ctx context.Context, currentBundlePath, baselineBundlePath, outPath string) ([]model.PerformanceTrend, error) {
+	// Read current bundle
+	currentData, err := os.ReadFile(currentBundlePath)
+	if err != nil {
+		return nil, err
+	}
+
+	var currentBundle model.ProfileBundle
+	if err := json.Unmarshal(currentData, &currentBundle); err != nil {
+		return nil, err
+	}
+
+	// Read baseline bundle
+	baselineData, err := os.ReadFile(baselineBundlePath)
+	if err != nil {
+		return nil, err
+	}
+
+	var baselineBundle model.ProfileBundle
+	if err := json.Unmarshal(baselineData, &baselineBundle); err != nil {
+		return nil, err
+	}
+
+	// Analyze performance trends
+	trends, err := p.analyzer.AnalyzePerformanceTrends(currentBundle, baselineBundle)
+	if err != nil {
+		return nil, err
+	}
+
+	// Save trends
+	trendsData, err := json.MarshalIndent(trends, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+
+	if err := os.WriteFile(outPath, trendsData, 0644); err != nil {
+		return nil, err
+	}
+
+	return trends, nil
+}
+
 func (p *Pipeline) AnalyzeWithOptions(ctx context.Context, bundlePath string, topN int, outPath string, options CoreAnalyzeOptions) (*model.FindingsBundle, error) {
 	// Read bundle
 	data, err := os.ReadFile(bundlePath)
