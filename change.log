@@ -1,6 +1,28 @@
 ## Change Log
 
 ### 2026-03-01
+- **Objective**: Implement WebSocket Message Batching for efficient real-time data streaming
+- **Rationale**: Optimize high-frequency WebSocket updates by batching messages, reducing network overhead while maintaining real-time capabilities for performance monitoring
+- **Impact**: WebSocket server, real-time monitoring, network performance, CLI interface
+- **Changes**:
+  - Enhanced `WebSocketServer` struct with batching configuration fields: `batchingEnabled`, `batchInterval`, `messageQueue`, `queueMu`, `batchTimer`
+  - Updated `NewWebSocketServer()` constructor with batching parameters
+  - Implemented `startBatching()` method to initialize batching timer
+  - Added `flushMessageQueue()` method to send batched messages
+  - Implemented `sendBatchedMessage()` method for batch transmission
+  - Added `queueMessage()` method for message queuing
+  - Enhanced `Stop()` method to clean up batching resources
+  - Updated `BroadcastData()` to use batching when enabled
+  - Added `GetBatchingInfo()` method for batching configuration information
+  - Added `/batching/info` HTTP endpoint for batching status
+  - Updated core pipeline integration with batching parameters
+  - Added CLI flags `--websocket-batching` and `--websocket-batch-interval`
+  - Enhanced WebSocket server output to show batching status
+  - Added comprehensive batching tests including concurrency tests
+- **Testing**: Unit tests for batching functionality, integration tests, and concurrency tests
+- **Result**: WebSocket message batching with configurable intervals, reducing message frequency for high-volume scenarios while maintaining real-time capabilities
+
+### 2026-03-01
 - **Objective**: Implement Performance Dashboard Enhancements with custom time ranges, export functionality, alerts, and multi-application comparison
 - **Rationale**: Enhance performance monitoring capabilities to provide better insights, historical analysis, and cross-application comparison for improved decision making
 - **Impact**: WebSocket server, web UI, performance tracking, data analysis, CLI interface
