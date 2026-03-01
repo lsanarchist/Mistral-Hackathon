@@ -15,7 +15,7 @@ import (
 )
 
 func TestPerformanceAlerts(t *testing.T) {
-	server := NewWebSocketServer(8080, "./testdata", "./testdata", false, false, false, 0, nil)
+	server := NewWebSocketServer(8080, "./testdata", "./testdata", false, false, false, 0, false, nil)
 	defer server.Stop()
 
 	// Test GET empty alerts
@@ -76,7 +76,7 @@ func TestPerformanceAlerts(t *testing.T) {
 }
 
 func TestPerformanceAnnotations(t *testing.T) {
-	server := NewWebSocketServer(8080, "./testdata", "./testdata", false, false, false, 0, nil)
+	server := NewWebSocketServer(8080, "./testdata", "./testdata", false, false, false, 0, false, nil)
 	defer server.Stop()
 
 	// Test GET empty annotations
@@ -136,7 +136,7 @@ func TestPerformanceAnnotations(t *testing.T) {
 }
 
 func TestPerformanceExport(t *testing.T) {
-	server := NewWebSocketServer(8080, "./testdata", "./testdata", false, false, false, 0, nil)
+	server := NewWebSocketServer(8080, "./testdata", "./testdata", false, false, false, 0, false, nil)
 	defer server.Stop()
 
 	// Load some test data
@@ -170,7 +170,7 @@ func TestPerformanceExport(t *testing.T) {
 }
 
 func TestPerformanceCompare(t *testing.T) {
-	server := NewWebSocketServer(8080, "./testdata", "./testdata", false, false, false, 0, nil)
+	server := NewWebSocketServer(8080, "./testdata", "./testdata", false, false, false, 0, false, nil)
 	defer server.Stop()
 
 	compareRequest := map[string]interface{}{
@@ -272,7 +272,7 @@ func TestAlertTriggering(t *testing.T) {
 		},
 	}
 
-	server := NewWebSocketServer(8080, "./testdata", "./testdata", false, false, false, 0, alerts)
+	server := NewWebSocketServer(8080, "./testdata", "./testdata", false, false, false, 0, false, alerts)
 	defer server.Stop()
 
 	// Load findings that should trigger the alert
@@ -296,4 +296,19 @@ func TestAlertTriggering(t *testing.T) {
 	
 	assert.Len(t, server.performanceAlerts, 1)
 	assert.NotNil(t, server.performanceAlerts[0].LastTriggered)
+}
+
+// Test WebSocket connection quality monitoring
+func TestWebSocketConnectionQualityMonitoring(t *testing.T) {
+	server := NewWebSocketServer(8080, "./testdata", "./testdata", false, false, false, 0, true, nil)
+	defer server.Stop()
+
+	// Test that connection quality is enabled
+	assert.True(t, server.connectionQualityEnabled)
+	assert.Equal(t, 10*time.Second, server.pingInterval)
+
+	// Test connection quality info
+	info := server.GetConnectionQualityInfo()
+	assert.True(t, info["connection_quality_enabled"].(bool))
+	assert.Equal(t, int64(10000), info["ping_interval_ms"])
 }

@@ -282,6 +282,7 @@ func runRunCommand(pipeline *core.Pipeline) {
 	websocketCompression := flagSet.Bool("websocket-compression", false, "Enable WebSocket message compression")
 	websocketBatching := flagSet.Bool("websocket-batching", false, "Enable WebSocket message batching")
 	websocketBatchInterval := flagSet.Int("websocket-batch-interval", 100, "WebSocket batch interval in milliseconds")
+	websocketConnectionQuality := flagSet.Bool("websocket-connection-quality", false, "Enable WebSocket connection quality monitoring")
 	performanceAlerts := flagSet.String("performance-alerts", "", "Performance alert configuration file (JSON)")
 	flagSet.Parse(os.Args[2:])
 
@@ -350,6 +351,7 @@ func runRunCommand(pipeline *core.Pipeline) {
 	if *websocketPort > 0 {
 		batchInterval := time.Duration(*websocketBatchInterval) * time.Millisecond
 		pipeline.WithWebSocketServer(*websocketPort, *outDir, *websocketAuth, *websocketCompression, *websocketBatching, batchInterval)
+		pipeline.WithWebSocketConnectionQuality(*websocketConnectionQuality)
 		if *performanceAlerts != "" {
 			pipeline.WithPerformanceAlerts(*performanceAlerts)
 		}
@@ -368,6 +370,11 @@ func runRunCommand(pipeline *core.Pipeline) {
 			fmt.Printf("WebSocket batching: ENABLED (interval: %dms)\n", *websocketBatchInterval)
 		} else {
 			fmt.Println("WebSocket batching: DISABLED")
+		}
+		if *websocketConnectionQuality {
+			fmt.Println("WebSocket connection quality monitoring: ENABLED")
+		} else {
+			fmt.Println("WebSocket connection quality monitoring: DISABLED")
 		}
 	}
 

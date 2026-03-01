@@ -55,6 +55,10 @@ type WebSocketServer struct {
 	alertsMu        sync.Mutex
 	performanceAnnotations []PerformanceAnnotation
 	annotationsMu   sync.Mutex
+	connectionStats map[*websocket.Conn]*WebSocketConnectionStats
+	statsMu         sync.Mutex
+	pingInterval    time.Duration
+	connectionQualityEnabled bool
 }
 
 // PerformanceSnapshot represents a historical performance data point
@@ -90,6 +94,21 @@ type PerformanceAnnotation struct {
 	Type      string    `json:"type"` // deployment, incident, note
 }
 
+// WebSocketConnectionStats represents connection quality metrics
+type WebSocketConnectionStats struct {
+	ClientID          string        `json:"client_id"`
+	ConnectionTime    time.Time     `json:"connection_time"`
+	LastPingTime      time.Time     `json:"last_ping_time"`
+	LastPongTime      time.Time     `json:"last_pong_time"`
+	Latency           time.Duration `json:"latency"`
+	PacketLoss        float64       `json:"packet_loss"`
+	MessagesSent      int           `json:"messages_sent"`
+	MessagesReceived  int           `json:"messages_received"`
+	BytesSent         int64         `json:"bytes_sent"`
+	BytesReceived     int64         `json:"bytes_received"`
+	ConnectionQuality  string        `json:"connection_quality"` // excellent, good, fair, poor
+}
+
 // JWTClaims represents the JWT token claims
 type JWTClaims struct {
 	Username string `json:"username"`
@@ -105,7 +124,7 @@ type PluginHealth struct {
 }
 
 // NewWebSocketServer creates a new WebSocket server instance
-func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth bool, enableCompression bool, enableBatching bool, batchInterval time.Duration, alertsConfig []PerformanceAlert) *WebSocketServer {
+func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth bool, enableCompression bool, enableBatching bool, batchInterval time.Duration, enableConnectionQuality bool, alertsConfig []PerformanceAlert) *WebSocketServer {
 	mux := http.NewServeMux()
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
@@ -119,6 +138,12 @@ func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth b
 			return true // Allow all origins for demo purposes
 		},
 		EnableCompression: enableCompression,
+	}
+
+	// Set default ping interval for connection quality monitoring
+	pingInterval := 30 * time.Second
+	if enableConnectionQuality {
+		pingInterval = 10 * time.Second // More frequent pings for quality monitoring
 	}
 
 	// Configure compression settings if enabled
@@ -157,6 +182,9 @@ func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth b
 		messageQueue:    make([]interface{}, 0),
 		performanceAlerts: alertsConfig,
 		performanceAnnotations: make([]PerformanceAnnotation, 0),
+		connectionStats: make(map[*websocket.Conn]*WebSocketConnectionStats),
+		pingInterval:    pingInterval,
+		connectionQualityEnabled: enableConnectionQuality,
 	}
 
 	// Initialize batching if enabled
@@ -184,6 +212,7 @@ func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth b
 	mux.HandleFunc("/plugins/performance", s.handlePluginPerformance)
 	mux.HandleFunc("/compression/info", s.handleCompressionInfo)
 	mux.HandleFunc("/batching/info", s.handleBatchingInfo)
+	mux.HandleFunc("/connection/quality", s.handleConnectionQuality)
 	
 	// Add auth endpoints if enabled
 	if enableAuth {
@@ -366,6 +395,7 @@ func (s *WebSocketServer) BroadcastData() {
 			"auth_enabled":        s.authEnabled,
 			"compression":         s.GetCompressionInfo(),
 			"batching_enabled":    s.batchingEnabled,
+			"connection_quality":  s.GetConnectionQualityInfo(),
 		},
 		"history": s.getPerformanceHistory(),
 		"pluginPerformance": s.getPluginPerformanceSummary(),
@@ -657,6 +687,117 @@ func (s *WebSocketServer) GetBatchingInfo() map[string]interface{} {
 	}
 }
 
+// calculateConnectionQuality determines connection quality based on latency and packet loss
+func (s *WebSocketServer) calculateConnectionQuality(latency time.Duration, packetLoss float64) string {
+	if packetLoss > 20 || latency > 1000*time.Millisecond {
+		return "poor"
+	} else if packetLoss > 10 || latency > 500*time.Millisecond {
+		return "fair"
+	} else if packetLoss > 5 || latency > 200*time.Millisecond {
+		return "good"
+	}
+	return "excellent"
+}
+
+// updateConnectionStats updates connection statistics for a client
+func (s *WebSocketServer) updateConnectionStats(conn *websocket.Conn, bytesSent int, bytesReceived int) {
+	s.statsMu.Lock()
+	defer s.statsMu.Unlock()
+
+	stats, exists := s.connectionStats[conn]
+	if !exists {
+		stats = &WebSocketConnectionStats{
+			ClientID:       generateClientID(),
+			ConnectionTime: time.Now(),
+			LastPingTime:   time.Now(),
+		}
+		s.connectionStats[conn] = stats
+	}
+
+	stats.MessagesSent++
+	stats.BytesSent += int64(bytesSent)
+	stats.MessagesReceived++
+	stats.BytesReceived += int64(bytesReceived)
+
+	// Calculate latency if we have pong response
+	if !stats.LastPongTime.IsZero() {
+		stats.Latency = stats.LastPongTime.Sub(stats.LastPingTime) / 2
+	}
+
+	// Update connection quality
+	stats.ConnectionQuality = s.calculateConnectionQuality(stats.Latency, stats.PacketLoss)
+}
+
+// getConnectionStats returns connection statistics for all clients
+func (s *WebSocketServer) getConnectionStats() []*WebSocketConnectionStats {
+	s.statsMu.Lock()
+	defer s.statsMu.Unlock()
+
+	stats := make([]*WebSocketConnectionStats, 0, len(s.connectionStats))
+	for _, stat := range s.connectionStats {
+		stats = append(stats, stat)
+	}
+	return stats
+}
+
+// GetConnectionQualityInfo returns connection quality monitoring information
+func (s *WebSocketServer) GetConnectionQualityInfo() map[string]interface{} {
+	stats := s.getConnectionStats()
+	
+	excellent := 0
+	good := 0
+	fair := 0
+	poor := 0
+	
+	for _, stat := range stats {
+		switch stat.ConnectionQuality {
+		case "excellent":
+			excellent++
+		case "good":
+			good++
+		case "fair":
+			fair++
+		case "poor":
+			poor++
+		}
+	}
+
+	return map[string]interface{}{
+		"connection_quality_enabled": s.connectionQualityEnabled,
+		"ping_interval_ms":           s.pingInterval.Milliseconds(),
+		"active_connections":        len(stats),
+		"quality_distribution": map[string]int{
+			"excellent": excellent,
+			"good":     good,
+			"fair":     fair,
+			"poor":     poor,
+		},
+		"average_latency_ms": s.calculateAverageLatency(stats),
+	}
+}
+
+// calculateAverageLatency calculates average latency across all connections
+func (s *WebSocketServer) calculateAverageLatency(stats []*WebSocketConnectionStats) float64 {
+	if len(stats) == 0 {
+		return 0
+	}
+
+	var totalLatency time.Duration
+	count := 0
+	for _, stat := range stats {
+		if stat.Latency > 0 {
+			totalLatency += stat.Latency
+			count++
+		}
+	}
+
+	if count == 0 {
+		return 0
+	}
+
+	return float64(totalLatency.Milliseconds()) / float64(count)
+}
+
 // handleWebSocket handles WebSocket connections
 func (s *WebSocketServer) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 	// Validate JWT token if auth is enabled
@@ -691,14 +832,61 @@ func (s *WebSocketServer) handleWebSocket(w http.ResponseWriter, r *http.Request
 		s.clientsMu.Lock()
 		delete(s.clients, conn)
 		s.clientsMu.Unlock()
+		
+		// Clean up connection stats on disconnect
+		s.statsMu.Lock()
+		delete(s.connectionStats, conn)
+		s.statsMu.Unlock()
 	}()
 
 	log.Printf("New WebSocket client connected: %s", conn.RemoteAddr())
 	defer log.Printf("WebSocket client disconnected: %s", conn.RemoteAddr())
 
+	// Initialize connection stats
+	s.updateConnectionStats(conn, 0, 0)
+
 	// Send initial data
 	if s.findings != nil {
 		s.BroadcastData()
+	}
+
+	// Set up ping/pong handlers for connection quality monitoring
+	if s.connectionQualityEnabled {
+		conn.SetPingHandler(func(appData string) error {
+			s.statsMu.Lock()
+			if stats, exists := s.connectionStats[conn]; exists {
+				stats.LastPingTime = time.Now()
+			}
+			s.statsMu.Unlock()
+			return conn.WriteControl(websocket.PongMessage, []byte(appData), time.Now().Add(time.Second))
+		})
+
+		conn.SetPongHandler(func(appData string) error {
+			s.statsMu.Lock()
+			if stats, exists := s.connectionStats[conn]; exists {
+				stats.LastPongTime = time.Now()
+				// Calculate round-trip time
+				if !stats.LastPingTime.IsZero() {
+					stats.Latency = time.Since(stats.LastPingTime) / 2
+				}
+			}
+			s.statsMu.Unlock()
+			return nil
+		})
+
+		// Start ping timer
+		pingTicker := time.NewTicker(s.pingInterval)
+		defer pingTicker.Stop()
+
+		go func() {
+			for range pingTicker.C {
+				err := conn.WriteControl(websocket.PingMessage, []byte("ping"), time.Now().Add(time.Second))
+				if err != nil {
+					log.Printf("Failed to send ping to client %s: %v", conn.RemoteAddr(), err)
+					break
+				}
+			}
+		}()
 	}
 
 	// Keep connection alive
@@ -721,6 +909,15 @@ func generateJWTSecretKey() string {
 		return fmt.Sprintf("triageprof-jwt-secret-%d", time.Now().UnixNano())
 	}
 	return base64.URLEncoding.EncodeToString(bytes)
+}
+
+func generateClientID() string {
+	key := make([]byte, 8)
+	if _, err := rand.Read(key); err != nil {
+		log.Printf("Failed to generate client ID, using timestamp fallback: %v", err)
+		return fmt.Sprintf("client-%d", time.Now().UnixNano())
+	}
+	return "client-" + base64.URLEncoding.EncodeToString(key)
 }
 
 // GenerateJWTToken creates a new JWT token
@@ -1287,6 +1484,18 @@ func (s *WebSocketServer) handleBatchingInfo(w http.ResponseWriter, r *http.Requ
 	batchingInfo := s.GetBatchingInfo()
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(batchingInfo)
+}
+
+// handleConnectionQuality handles connection quality information requests
+func (s *WebSocketServer) handleConnectionQuality(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	connectionQualityInfo := s.GetConnectionQualityInfo()
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(connectionQualityInfo)
 }
 
 // handlePerformanceHistory handles performance history requests

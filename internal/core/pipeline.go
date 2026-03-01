@@ -35,6 +35,7 @@ type Pipeline struct {
 	llmGenerator  *llm.InsightsGenerator
 	wsServer      *webserver.WebSocketServer
 	alertsConfigFile string
+	connectionQualityEnabled bool
 }
 
 func NewPipeline(pluginDir string) *Pipeline {
@@ -103,7 +104,7 @@ func (p *Pipeline) WithWebSocketServer(port int, dataDir string, enableAuth bool
 		log.Printf("Warning: Failed to load performance alerts: %v", err)
 	}
 	
-	p.wsServer = webserver.NewWebSocketServer(port, dataDir, pluginDir, enableAuth, enableCompression, enableBatching, batchInterval, alertsConfig)
+	p.wsServer = webserver.NewWebSocketServer(port, dataDir, pluginDir, enableAuth, enableCompression, enableBatching, batchInterval, p.connectionQualityEnabled, alertsConfig)
 }
 
 // WithWebSocketAutoRefresh configures auto-refresh interval for WebSocket server
@@ -111,6 +112,11 @@ func (p *Pipeline) WithWebSocketAutoRefresh(interval time.Duration) {
 	if p.wsServer != nil {
 		p.wsServer.StartAutoRefresh(interval)
 	}
+}
+
+// WithWebSocketConnectionQuality enables WebSocket connection quality monitoring
+func (p *Pipeline) WithWebSocketConnectionQuality(enabled bool) {
+	p.connectionQualityEnabled = enabled
 }
 
 // StartWebSocketServer starts the WebSocket server
