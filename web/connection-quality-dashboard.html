@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TriageProf - WebSocket Connection Quality Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .connection-quality-dashboard {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .quality-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .quality-metric-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .quality-metric-card.excellent {
+            border-top: 4px solid #28a745;
+        }
+        
+        .quality-metric-card.good {
+            border-top: 4px solid #17a2b8;
+        }
+        
+        .quality-metric-card.fair {
+            border-top: 4px solid #ffc107;
+        }
+        
+        .quality-metric-card.poor {
+            border-top: 4px solid #dc3545;
+        }
+        
+        .quality-metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .quality-metric-label {
+            font-size: 0.9rem;
+            color: #666;
+            text-transform: uppercase;
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+        }
+        
+        .chart-container h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .connection-stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .connection-stats-table th,
+        .connection-stats-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .connection-stats-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        .connection-stats-table tr:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .quality-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .quality-indicator.excellent {
+            background-color: #28a745;
+        }
+        
+        .quality-indicator.good {
+            background-color: #17a2b8;
+        }
+        
+        .quality-indicator.fair {
+            background-color: #ffc107;
+        }
+        
+        .quality-indicator.poor {
+            background-color: #dc3545;
+        }
+        
+        .alert-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        
+        .alert-badge.active {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .alert-badge.inactive {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .real-time-controls {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .control-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .control-group label {
+            font-weight: 600;
+            min-width: 150px;
+        }
+        
+        .control-group input,
+        .control-group select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            flex: 1;
+        }
+        
+        .control-group button {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .control-group button:hover {
+            background-color: #0056b3;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        
+        .status-indicator.connected {
+            background-color: #28a745;
+        }
+        
+        .status-indicator.disconnected {
+            background-color: #dc3545;
+        }
+        
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .quality-summary {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-wifi"></i> WebSocket Connection Quality Dashboard</h1>
+            <p class="subtitle">Real-time monitoring of WebSocket connection health and performance</p>
+        </header>
+        
+        <div class="real-time-controls">
+            <div class="control-group">
+                <label for="wsUrlInput">WebSocket URL:</label>
+                <input type="text" id="wsUrlInput" placeholder="ws://localhost:8080/ws" value="ws://localhost:8080/ws">
+                <button id="connectWsBtn"><i class="fas fa-plug"></i> Connect</button>
+                <button id="disconnectWsBtn" style="display: none;"><i class="fas fa-unlink"></i> Disconnect</button>
+                <span id="wsStatus" class="status-text">
+                    <span class="status-indicator disconnected"></span>
+                    Disconnected
+                </span>
+            </div>
+            
+            <div class="control-group">
+                <label for="autoRefreshCheckbox">Auto-refresh:</label>
+                <input type="checkbox" id="autoRefreshCheckbox" checked>
+                <select id="refreshInterval">
+                    <option value="5">5 seconds</option>
+                    <option value="10" selected>10 seconds</option>
+                    <option value="30">30 seconds</option>
+                    <option value="60">1 minute</option>
+                </select>
+                <button id="refreshNowBtn"><i class="fas fa-sync-alt"></i> Refresh Now</button>
+            </div>
+        </div>
+        
+        <div class="connection-quality-dashboard">
+            <div class="quality-summary">
+                <div class="quality-metric-card excellent">
+                    <div class="quality-metric-label">Excellent Connections</div>
+                    <div class="quality-metric-value" id="excellentConnections">0</div>
+                </div>
+                
+                <div class="quality-metric-card good">
+                    <div class="quality-metric-label">Good Connections</div>
+                    <div class="quality-metric-value" id="goodConnections">0</div>
+                </div>
+                
+                <div class="quality-metric-card fair">
+                    <div class="quality-metric-label">Fair Connections</div>
+                    <div class="quality-metric-value" id="fairConnections">0</div>
+                </div>
+                
+                <div class="quality-metric-card poor">
+                    <div class="quality-metric-label">Poor Connections</div>
+                    <div class="quality-metric-value" id="poorConnections">0</div>
+                </div>
+                
+                <div class="quality-metric-card">
+                    <div class="quality-metric-label">Total Clients</div>
+                    <div class="quality-metric-value" id="totalClients">0</div>
+                </div>
+                
+                <div class="quality-metric-card">
+                    <div class="quality-metric-label">Avg Latency</div>
+                    <div class="quality-metric-value" id="avgLatency">0 ms</div>
+                </div>
+            </div>
+            
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <h3><i class="fas fa-chart-line"></i> Connection Quality Over Time</h3>
+                    <canvas id="qualityTrendChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h3><i class="fas fa-chart-pie"></i> Quality Distribution</h3>
+                    <canvas id="qualityDistributionChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <h3><i class="fas fa-tachometer-alt"></i> Latency Trends</h3>
+                    <canvas id="latencyTrendChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h3><i class="fas fa-network-wired"></i> Packet Loss Trends</h3>
+                    <canvas id="packetLossTrendChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <h3><i class="fas fa-bell"></i> Connection Quality Alerts</h3>
+                <table class="connection-stats-table" id="alertsTable">
+                    <thead>
+                        <tr>
+                            <th>Alert Name</th>
+                            <th>Condition</th>
+                            <th>Status</th>
+                            <th>Last Triggered</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="alertsTableBody">
+                        <!-- Alerts will be populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="chart-container">
+                <h3><i class="fas fa-table"></i> Detailed Connection Statistics</h3>
+                <table class="connection-stats-table" id="connectionStatsTable">
+                    <thead>
+                        <tr>
+                            <th>Client ID</th>
+                            <th>Quality</th>
+                            <th>Latency</th>
+                            <th>Packet Loss</th>
+                            <th>Messages Sent</th>
+                            <th>Messages Received</th>
+                            <th>Connected Since</th>
+                        </tr>
+                    </thead>
+                    <tbody id="connectionStatsTableBody">
+                        <!-- Connection stats will be populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // WebSocket Connection Management
+        let wsConnection = null;
+        let qualityCharts = {};
+        let connectionStats = [];
+        let connectionQualityAlerts = [];
+        let autoRefreshInterval = null;
+        
+        // DOM Elements
+        const connectWsBtn = document.getElementById('connectWsBtn');
+        const disconnectWsBtn = document.getElementById('disconnectWsBtn');
+        const wsUrlInput = document.getElementById('wsUrlInput');
+        const wsStatus = document.getElementById('wsStatus');
+        const refreshNowBtn = document.getElementById('refreshNowBtn');
+        const autoRefreshCheckbox = document.getElementById('autoRefreshCheckbox');
+        const refreshIntervalSelect = document.getElementById('refreshInterval');
+        
+        // Initialize Charts
+        function initializeCharts() {
+            const qualityTrendCtx = document.getElementById('qualityTrendChart').getContext('2d');
+            qualityCharts.qualityTrend = new Chart(qualityTrendCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Excellent',
+                            data: [],
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Good',
+                            data: [],
+                            borderColor: '#17a2b8',
+                            backgroundColor: 'rgba(23, 162, 184, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Fair',
+                            data: [],
+                            borderColor: '#ffc107',
+                            backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Poor',
+                            data: [],
+                            borderColor: '#dc3545',
+                            backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Connections'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            const qualityDistributionCtx = document.getElementById('qualityDistributionChart').getContext('2d');
+            qualityCharts.qualityDistribution = new Chart(qualityDistributionCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Excellent', 'Good', 'Fair', 'Poor'],
+                    datasets: [{
+                        data: [0, 0, 0, 0],
+                        backgroundColor: ['#28a745', '#17a2b8', '#ffc107', '#dc3545'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            
+            const latencyTrendCtx = document.getElementById('latencyTrendChart').getContext('2d');
+            qualityCharts.latencyTrend = new Chart(latencyTrendCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Average Latency (ms)',
+                        data: [],
+                        borderColor: '#007bff',
+                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Latency (ms)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            const packetLossTrendCtx = document.getElementById('packetLossTrendChart').getContext('2d');
+            qualityCharts.packetLossTrend = new Chart(packetLossTrendCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Average Packet Loss (%)',
+                        data: [],
+                        borderColor: '#fd7e14',
+                        backgroundColor: 'rgba(253, 126, 20, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Packet Loss (%)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Connect to WebSocket
+        function connectWebSocket() {
+            const url = wsUrlInput.value;
+            
+            if (wsConnection && wsConnection.readyState === WebSocket.OPEN) {
+                return;
+            }
+            
+            wsConnection = new WebSocket(url);
+            
+            wsConnection.onopen = function() {
+                updateStatus('connected');
+                console.log('WebSocket connected');
+                
+                // Request connection quality data
+                if (wsConnection.readyState === WebSocket.OPEN) {
+                    wsConnection.send(JSON.stringify({
+                        type: 'subscribe',
+                        topic: 'connection_quality'
+                    }));
+                }
+            };
+            
+            wsConnection.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    
+                    if (data.type === 'connection_quality_update') {
+                        updateConnectionQualityData(data);
+                    } else if (data.type === 'connection_quality_alerts') {
+                        updateConnectionQualityAlerts(data.alerts);
+                    } else if (data.type === 'connection_stats') {
+                        updateConnectionStats(data.stats);
+                    }
+                } catch (error) {
+                    console.error('Error parsing WebSocket message:', error);
+                }
+            };
+            
+            wsConnection.onclose = function() {
+                updateStatus('disconnected');
+                console.log('WebSocket disconnected');
+            };
+            
+            wsConnection.onerror = function(error) {
+                console.error('WebSocket error:', error);
+                updateStatus('disconnected');
+            };
+        }
+        
+        // Disconnect WebSocket
+        function disconnectWebSocket() {
+            if (wsConnection) {
+                wsConnection.close();
+                wsConnection = null;
+            }
+        }
+        
+        // Update connection status
+        function updateStatus(status) {
+            const statusIndicator = wsStatus.querySelector('.status-indicator');
+            const statusText = wsStatus.querySelector('.status-text');
+            
+            if (status === 'connected') {
+                statusIndicator.className = 'status-indicator connected';
+                wsStatus.innerHTML = '<span class="status-indicator connected"></span> Connected';
+                connectWsBtn.style.display = 'none';
+                disconnectWsBtn.style.display = 'inline-block';
+            } else {
+                statusIndicator.className = 'status-indicator disconnected';
+                wsStatus.innerHTML = '<span class="status-indicator disconnected"></span> Disconnected';
+                connectWsBtn.style.display = 'inline-block';
+                disconnectWsBtn.style.display = 'none';
+            }
+        }
+        
+        // Update connection quality data
+        function updateConnectionQualityData(data) {
+            // Update summary metrics
+            document.getElementById('excellentConnections').textContent = data.quality_counts.excellent || 0;
+            document.getElementById('goodConnections').textContent = data.quality_counts.good || 0;
+            document.getElementById('fairConnections').textContent = data.quality_counts.fair || 0;
+            document.getElementById('poorConnections').textContent = data.quality_counts.poor || 0;
+            document.getElementById('totalClients').textContent = data.total_clients || 0;
+            document.getElementById('avgLatency').textContent = data.avg_latency ? data.avg_latency.toFixed(2) + ' ms' : '0 ms';
+            
+            // Update charts
+            updateQualityTrendChart(data);
+            updateQualityDistributionChart(data);
+            updateLatencyTrendChart(data);
+            updatePacketLossTrendChart(data);
+            
+            // Update connection stats table
+            updateConnectionStatsTable(data.connection_stats || []);
+        }
+        
+        // Update quality trend chart
+        function updateQualityTrendChart(data) {
+            const now = new Date();
+            const timeLabel = now.toLocaleTimeString();
+            
+            // Add new data point
+            qualityCharts.qualityTrend.data.labels.push(timeLabel);
+            qualityCharts.qualityTrend.data.datasets[0].data.push(data.quality_counts.excellent || 0);
+            qualityCharts.qualityTrend.data.datasets[1].data.push(data.quality_counts.good || 0);
+            qualityCharts.qualityTrend.data.datasets[2].data.push(data.quality_counts.fair || 0);
+            qualityCharts.qualityTrend.data.datasets[3].data.push(data.quality_counts.poor || 0);
+            
+            // Keep only the last 20 data points
+            if (qualityCharts.qualityTrend.data.labels.length > 20) {
+                qualityCharts.qualityTrend.data.labels.shift();
+                qualityCharts.qualityTrend.data.datasets.forEach(dataset => dataset.data.shift());
+            }
+            
+            qualityCharts.qualityTrend.update();
+        }
+        
+        // Update quality distribution chart
+        function updateQualityDistributionChart(data) {
+            qualityCharts.qualityDistribution.data.datasets[0].data = [
+                data.quality_counts.excellent || 0,
+                data.quality_counts.good || 0,
+                data.quality_counts.fair || 0,
+                data.quality_counts.poor || 0
+            ];
+            qualityCharts.qualityDistribution.update();
+        }
+        
+        // Update latency trend chart
+        function updateLatencyTrendChart(data) {
+            const now = new Date();
+            const timeLabel = now.toLocaleTimeString();
+            
+            qualityCharts.latencyTrend.data.labels.push(timeLabel);
+            qualityCharts.latencyTrend.data.datasets[0].data.push(data.avg_latency || 0);
+            
+            // Keep only the last 20 data points
+            if (qualityCharts.latencyTrend.data.labels.length > 20) {
+                qualityCharts.latencyTrend.data.labels.shift();
+                qualityCharts.latencyTrend.data.datasets[0].data.shift();
+            }
+            
+            qualityCharts.latencyTrend.update();
+        }
+        
+        // Update packet loss trend chart
+        function updatePacketLossTrendChart(data) {
+            const now = new Date();
+            const timeLabel = now.toLocaleTimeString();
+            
+            qualityCharts.packetLossTrend.data.labels.push(timeLabel);
+            qualityCharts.packetLossTrend.data.datasets[0].data.push(data.avg_packet_loss || 0);
+            
+            // Keep only the last 20 data points
+            if (qualityCharts.packetLossTrend.data.labels.length > 20) {
+                qualityCharts.packetLossTrend.data.labels.shift();
+                qualityCharts.packetLossTrend.data.datasets[0].data.shift();
+            }
+            
+            qualityCharts.packetLossTrend.update();
+        }
+        
+        // Update connection stats table
+        function updateConnectionStatsTable(stats) {
+            const tbody = document.getElementById('connectionStatsTableBody');
+            tbody.innerHTML = '';
+            
+            stats.forEach(stat => {
+                const row = document.createElement('tr');
+                
+                const qualityClass = getQualityClass(stat.connection_quality);
+                
+                row.innerHTML = `
+                    <td>${stat.client_id || 'N/A'}</td>
+                    <td>
+                        <span class="quality-indicator ${qualityClass}"></span>
+                        ${stat.connection_quality || 'Unknown'}
+                    </td>
+                    <td>${stat.latency ? stat.latency.toFixed(2) + ' ms' : 'N/A'}</td>
+                    <td>${stat.packet_loss ? stat.packet_loss.toFixed(2) + '%' : 'N/A'}</td>
+                    <td>${stat.messages_sent || 0}</td>
+                    <td>${stat.messages_received || 0}</td>
+                    <td>${stat.connection_time ? new Date(stat.connection_time).toLocaleString() : 'N/A'}</td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+        
+        // Update connection quality alerts
+        function updateConnectionQualityAlerts(alerts) {
+            connectionQualityAlerts = alerts;
+            const tbody = document.getElementById('alertsTableBody');
+            tbody.innerHTML = '';
+            
+            alerts.forEach(alert => {
+                const row = document.createElement('tr');
+                
+                const conditionParts = [];
+                if (alert.quality_threshold) {
+                    conditionParts.push(`Quality ≤ ${alert.quality_threshold}`);
+                }
+                if (alert.latency_threshold) {
+                    conditionParts.push(`Latency ≥ ${alert.latency_threshold}ms`);
+                }
+                if (alert.packet_loss_threshold) {
+                    conditionParts.push(`Packet Loss ≥ ${alert.packet_loss_threshold}%`);
+                }
+                
+                const lastTriggered = alert.last_triggered ? new Date(alert.last_triggered).toLocaleString() : 'Never';
+                const statusClass = alert.active ? 'active' : 'inactive';
+                
+                row.innerHTML = `
+                    <td>${alert.name || 'Unnamed Alert'}</td>
+                    <td>${conditionParts.join(' or ') || 'N/A'}</td>
+                    <td><span class="alert-badge ${statusClass}">${alert.active ? 'Active' : 'Inactive'}</span></td>
+                    <td>${lastTriggered}</td>
+                    <td>
+                        <button class="acknowledge-btn" data-alert-id="${alert.id}">Acknowledge</button>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+            
+            // Add event listeners for acknowledge buttons
+            document.querySelectorAll('.acknowledge-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const alertId = this.getAttribute('data-alert-id');
+                    acknowledgeAlert(alertId);
+                });
+            });
+        }
+        
+        // Acknowledge alert
+        function acknowledgeAlert(alertId) {
+            if (wsConnection && wsConnection.readyState === WebSocket.OPEN) {
+                wsConnection.send(JSON.stringify({
+                    type: 'acknowledge_alert',
+                    alert_id: alertId
+                }));
+            }
+        }
+        
+        // Get quality class for styling
+        function getQualityClass(quality) {
+            switch(quality && quality.toLowerCase()) {
+                case 'excellent': return 'excellent';
+                case 'good': return 'good';
+                case 'fair': return 'fair';
+                case 'poor': return 'poor';
+                default: return '';
+            }
+        }
+        
+        // Start auto-refresh
+        function startAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+            }
+            
+            const interval = parseInt(refreshIntervalSelect.value) * 1000;
+            autoRefreshInterval = setInterval(() => {
+                if (wsConnection && wsConnection.readyState === WebSocket.OPEN) {
+                    wsConnection.send(JSON.stringify({
+                        type: 'request_update',
+                        topic: 'connection_quality'
+                    }));
+                }
+            }, interval);
+        }
+        
+        // Stop auto-refresh
+        function stopAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+                autoRefreshInterval = null;
+            }
+        }
+        
+        // Event Listeners
+        connectWsBtn.addEventListener('click', connectWebSocket);
+        disconnectWsBtn.addEventListener('click', disconnectWebSocket);
+        refreshNowBtn.addEventListener('click', () => {
+            if (wsConnection && wsConnection.readyState === WebSocket.OPEN) {
+                wsConnection.send(JSON.stringify({
+                    type: 'request_update',
+                    topic: 'connection_quality'
+                }));
+            }
+        });
+        
+        autoRefreshCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                startAutoRefresh();
+            } else {
+                stopAutoRefresh();
+            }
+        });
+        
+        refreshIntervalSelect.addEventListener('change', function() {
+            if (autoRefreshCheckbox.checked) {
+                startAutoRefresh();
+            }
+        });
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            
+            // Start with auto-refresh enabled
+            if (autoRefreshCheckbox.checked) {
+                startAutoRefresh();
+            }
+        });
+        
+        // Clean up on page unload
+        window.addEventListener('beforeunload', function() {
+            disconnectWebSocket();
+            stopAutoRefresh();
+        });
+    </script>
+</body>
+</html>

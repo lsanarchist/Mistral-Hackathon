@@ -1144,14 +1144,22 @@ func (s *WebSocketServer) handleWebSocket(w http.ResponseWriter, r *http.Request
 		}()
 	}
 
-	// Keep connection alive
+	// Keep connection alive and handle incoming messages
 	for {
-		_, _, err := conn.ReadMessage()
+		_, message, err := conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
 				log.Printf("WebSocket read error: %v", err)
 			}
 			break
+		}
+		
+		// Process incoming message
+		if len(message) > 0 {
+			var msg map[string]interface{}
+			if err := json.Unmarshal(message, &msg); err == nil {
+				s.handleWebSocketMessage(conn, msg)
+			}
 		}
 	}
 }
@@ -2400,6 +2408,209 @@ func generateUUID() string {
 		return fmt.Sprintf("%d", time.Now().UnixNano())
 	}
 	return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:16])
+}
+
+// BroadcastConnectionQualityData sends connection quality data to subscribed clients
+func (s *WebSocketServer) BroadcastConnectionQualityData() {
+	s.statsMu.Lock()
+	defer s.statsMu.Unlock()
+	
+	if len(s.clients) == 0 {
+		return
+	}
+	
+	// Calculate quality distribution
+	qualityCounts := map[string]int{
+		"excellent": 0,
+		"good": 0,
+		"fair": 0,
+		"poor": 0,
+	}
+	
+	var totalClients int
+	var totalLatency float64
+	var totalPacketLoss float64
+	var connectionStatsList []map[string]interface{}
+	
+	// Aggregate connection statistics
+	for _, stats := range s.connectionStats {
+		qualityCounts[strings.ToLower(stats.ConnectionQuality)]++
+		totalClients++
+		totalLatency += float64(stats.Latency.Milliseconds())
+		totalPacketLoss += stats.PacketLoss
+		
+		// Add to detailed stats list
+		connectionStatsList = append(connectionStatsList, map[string]interface{}{
+			"client_id":            stats.ClientID,
+			"connection_quality":   stats.ConnectionQuality,
+			"latency":             float64(stats.Latency.Milliseconds()),
+			"packet_loss":         stats.PacketLoss,
+			"messages_sent":       stats.MessagesSent,
+			"messages_received":   stats.MessagesReceived,
+			"connection_time":     stats.ConnectionTime.Format(time.RFC3339),
+		})
+	}
+	
+	// Calculate averages
+	var avgLatency float64
+	var avgPacketLoss float64
+	if totalClients > 0 {
+		avgLatency = totalLatency / float64(totalClients)
+		avgPacketLoss = totalPacketLoss / float64(totalClients)
+	}
+	
+	// Prepare connection quality payload
+	payload := map[string]interface{}{
+		"type": "connection_quality_update",
+		"timestamp": time.Now().Unix(),
+		"quality_counts": qualityCounts,
+		"total_clients": totalClients,
+		"avg_latency": avgLatency,
+		"avg_packet_loss": avgPacketLoss,
+		"connection_stats": connectionStatsList,
+	}
+	
+	// Send to all clients
+	for client := range s.clients {
+		if err := client.WriteJSON(payload); err != nil {
+			log.Printf("Error sending connection quality data to client: %v", err)
+			client.Close()
+			delete(s.clients, client)
+		}
+	}
+}
+
+// BroadcastConnectionQualityAlerts sends connection quality alerts to subscribed clients
+func (s *WebSocketServer) BroadcastConnectionQualityAlerts() {
+	s.qualityAlertsMu.Lock()
+	defer s.qualityAlertsMu.Unlock()
+	
+	if len(s.clients) == 0 {
+		return
+	}
+	
+	// Prepare alerts payload
+	alertsPayload := make([]map[string]interface{}, len(s.connectionQualityAlerts))
+	for i, alert := range s.connectionQualityAlerts {
+		alertsPayload[i] = map[string]interface{}{
+			"id":                alert.ID,
+			"name":              alert.Name,
+			"quality_threshold": alert.QualityThreshold,
+			"latency_threshold": alert.LatencyThreshold,
+			"packet_loss_threshold": alert.PacketLossThreshold,
+			"active":            alert.Active,
+			"last_triggered":    alert.LastTriggered,
+		}
+	}
+	
+	payload := map[string]interface{}{
+		"type": "connection_quality_alerts",
+		"timestamp": time.Now().Unix(),
+		"alerts": alertsPayload,
+	}
+	
+	// Send to all clients
+	for client := range s.clients {
+		if err := client.WriteJSON(payload); err != nil {
+			log.Printf("Error sending connection quality alerts to client: %v", err)
+			client.Close()
+			delete(s.clients, client)
+		}
+	}
+}
+
+// handleWebSocketMessage processes incoming WebSocket messages
+func (s *WebSocketServer) handleWebSocketMessage(conn *websocket.Conn, msg map[string]interface{}) {
+	msgType, ok := msg["type"].(string)
+	if !ok {
+		log.Printf("Invalid WebSocket message format: missing type field")
+		return
+	}
+	
+	switch msgType {
+	case "subscribe":
+		topic, ok := msg["topic"].(string)
+		if !ok {
+			log.Printf("Invalid subscribe message: missing topic field")
+			return
+		}
+		
+		switch topic {
+		case "connection_quality":
+			// Send initial connection quality data
+			s.BroadcastConnectionQualityData()
+			s.BroadcastConnectionQualityAlerts()
+			
+			// Send periodic updates
+			go func() {
+				updateTicker := time.NewTicker(5 * time.Second)
+				defer updateTicker.Stop()
+				
+				for range updateTicker.C {
+					s.statsMu.Lock()
+					if _, exists := s.clients[conn]; exists {
+						s.BroadcastConnectionQualityData()
+						s.BroadcastConnectionQualityAlerts()
+					}
+					s.statsMu.Unlock()
+				}
+			}()
+			
+		case "performance":
+			// Handle performance data subscription
+			if s.findings != nil {
+				s.BroadcastData()
+			}
+			
+		default:
+			log.Printf("Unknown subscription topic: %s", topic)
+		}
+		
+	case "acknowledge_alert":
+		alertID, ok := msg["alert_id"].(string)
+		if !ok {
+			log.Printf("Invalid acknowledge_alert message: missing alert_id field")
+			return
+		}
+		
+		// Acknowledge the alert (deactivate it)
+		s.qualityAlertsMu.Lock()
+		for i, alert := range s.connectionQualityAlerts {
+			if alert.ID == alertID {
+				s.connectionQualityAlerts[i].Active = false
+				s.connectionQualityAlerts[i].LastTriggered = nil
+				break
+			}
+		}
+		s.qualityAlertsMu.Unlock()
+		
+		// Broadcast updated alerts
+		s.BroadcastConnectionQualityAlerts()
+		
+	case "request_update":
+		topic, ok := msg["topic"].(string)
+		if !ok {
+			log.Printf("Invalid request_update message: missing topic field")
+			return
+		}
+		
+		switch topic {
+		case "connection_quality":
+			s.BroadcastConnectionQualityData()
+			s.BroadcastConnectionQualityAlerts()
+			
+		case "performance":
+			if s.findings != nil {
+				s.BroadcastData()
+			}
+			
+		default:
+			log.Printf("Unknown update topic: %s", topic)
+		}
+		
+	default:
+		log.Printf("Unknown WebSocket message type: %s", msgType)
+	}
 }
 
 // LoadPerformanceAlertsFromFile loads performance alerts from a JSON file

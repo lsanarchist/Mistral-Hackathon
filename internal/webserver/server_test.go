@@ -1084,3 +1084,191 @@ func TestGetConnectionQualityInfoEnhanced(t *testing.T) {
 	assert.True(t, info["bandwidth_throttling_enabled"].(bool))
 	assert.Equal(t, 1, info["active_quality_alerts"])
 }
+
+// Test WebSocket Connection Quality Data Broadcasting
+func TestWebSocketConnectionQualityBroadcasting(t *testing.T) {
+	// Create WebSocket server with connection quality enabled
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, true, nil, nil, ConnectionQualityConfig{})
+	defer server.Stop()
+
+	// Create a test WebSocket connection
+	testServer := httptest.NewServer(http.HandlerFunc(server.handleWebSocket))
+	defer testServer.Close()
+
+	// Convert http:// to ws://
+	wsURL := "ws" + strings.TrimPrefix(testServer.URL, "http")
+
+	// Connect WebSocket client
+	ws, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+	if err != nil {
+		t.Fatalf("Failed to connect to WebSocket: %v", err)
+	}
+	defer ws.Close()
+
+	// Subscribe to connection quality data
+	subscribeMsg := map[string]interface{}{
+		"type":  "subscribe",
+		"topic": "connection_quality",
+	}
+	
+	if err := ws.WriteJSON(subscribeMsg); err != nil {
+		t.Fatalf("Failed to send subscribe message: %v", err)
+	}
+
+	// Read response (should be connection quality data)
+	_, message, err := ws.ReadMessage()
+	if err != nil {
+		t.Fatalf("Failed to read WebSocket message: %v", err)
+	}
+
+	var data map[string]interface{}
+	if err := json.Unmarshal(message, &data); err != nil {
+		t.Fatalf("Failed to parse WebSocket message: %v", err)
+	}
+
+	// Verify message type
+	assert.Equal(t, "connection_quality_update", data["type"])
+	assert.Contains(t, data, "quality_counts")
+	assert.Contains(t, data, "total_clients")
+	assert.Contains(t, data, "avg_latency")
+	assert.Contains(t, data, "avg_packet_loss")
+	assert.Contains(t, data, "connection_stats")
+}
+
+// Test WebSocket Connection Quality Alerts Broadcasting
+func TestWebSocketConnectionQualityAlertsBroadcasting(t *testing.T) {
+	// Create WebSocket server with connection quality alerts
+	qualityAlerts := []ConnectionQualityAlert{
+		{
+			ID:               "test-alert-1",
+			Name:             "High Latency Alert",
+			QualityThreshold: "poor",
+			LatencyThreshold: 500,
+			Active:           true,
+		},
+		{
+			ID:               "test-alert-2",
+			Name:             "Packet Loss Alert",
+			PacketLossThreshold: 10.0,
+			Active:           false,
+		},
+	}
+
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, true, nil, qualityAlerts, ConnectionQualityConfig{})
+	defer server.Stop()
+
+	// Create a test WebSocket connection
+	testServer := httptest.NewServer(http.HandlerFunc(server.handleWebSocket))
+	defer testServer.Close()
+
+	// Convert http:// to ws://
+	wsURL := "ws" + strings.TrimPrefix(testServer.URL, "http")
+
+	// Connect WebSocket client
+	ws, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+	if err != nil {
+		t.Fatalf("Failed to connect to WebSocket: %v", err)
+	}
+	defer ws.Close()
+
+	// Subscribe to connection quality data
+	subscribeMsg := map[string]interface{}{
+		"type":  "subscribe",
+		"topic": "connection_quality",
+	}
+	
+	if err := ws.WriteJSON(subscribeMsg); err != nil {
+		t.Fatalf("Failed to send subscribe message: %v", err)
+	}
+
+	// Read alerts message
+	_, message, err := ws.ReadMessage()
+	if err != nil {
+		t.Fatalf("Failed to read WebSocket message: %v", err)
+	}
+
+	var data map[string]interface{}
+	if err := json.Unmarshal(message, &data); err != nil {
+		t.Fatalf("Failed to parse WebSocket message: %v", err)
+	}
+
+	// The first message might be quality data, so we might need to read another message
+	if data["type"] == "connection_quality_update" {
+		// Read next message for alerts
+		_, message, err = ws.ReadMessage()
+		if err != nil {
+			t.Fatalf("Failed to read alerts WebSocket message: %v", err)
+		}
+		
+		if err := json.Unmarshal(message, &data); err != nil {
+			t.Fatalf("Failed to parse alerts WebSocket message: %v", err)
+		}
+	}
+
+	// Verify message type
+	assert.Equal(t, "connection_quality_alerts", data["type"])
+	assert.Contains(t, data, "alerts")
+	
+	alerts := data["alerts"].([]interface{})
+	assert.Equal(t, 2, len(alerts))
+	
+	// Verify first alert
+	firstAlert := alerts[0].(map[string]interface{})
+	assert.Equal(t, "test-alert-1", firstAlert["id"])
+	assert.Equal(t, "High Latency Alert", firstAlert["name"])
+	assert.Equal(t, "poor", firstAlert["quality_threshold"])
+	assert.Equal(t, true, firstAlert["active"])
+}
+
+// Test WebSocket Message Handling
+func TestWebSocketMessageHandling(t *testing.T) {
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, true, nil, nil, ConnectionQualityConfig{})
+	defer server.Stop()
+
+	// Create a test WebSocket connection
+	testServer := httptest.NewServer(http.HandlerFunc(server.handleWebSocket))
+	defer testServer.Close()
+
+	// Convert http:// to ws://
+	wsURL := "ws" + strings.TrimPrefix(testServer.URL, "http")
+
+	// Connect WebSocket client
+	ws, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+	if err != nil {
+		t.Fatalf("Failed to connect to WebSocket: %v", err)
+	}
+	defer ws.Close()
+
+	// Test unknown message type
+	unknownMsg := map[string]interface{}{
+		"type": "unknown_type",
+	}
+	
+	if err := ws.WriteJSON(unknownMsg); err != nil {
+		t.Fatalf("Failed to send unknown message: %v", err)
+	}
+
+	// Test request update message
+	requestUpdateMsg := map[string]interface{}{
+		"type":  "request_update",
+		"topic": "connection_quality",
+	}
+	
+	if err := ws.WriteJSON(requestUpdateMsg); err != nil {
+		t.Fatalf("Failed to send request update message: %v", err)
+	}
+
+	// Read response
+	_, message, err := ws.ReadMessage()
+	if err != nil {
+		t.Fatalf("Failed to read WebSocket message: %v", err)
+	}
+
+	var data map[string]interface{}
+	if err := json.Unmarshal(message, &data); err != nil {
+		t.Fatalf("Failed to parse WebSocket message: %v", err)
+	}
+
+	// Verify message type
+	assert.Equal(t, "connection_quality_update", data["type"])
+}
