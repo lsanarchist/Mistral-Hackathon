@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Reconnect Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+        .test-container {
+            background-color: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .log {
+            background-color: #1e1e1e;
+            padding: 15px;
+            border-radius: 5px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 14px;
+            margin-top: 15px;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+        }
+        .log-info {
+            color: #4da6ff;
+        }
+        .log-success {
+            color: #4caf50;
+        }
+        .log-error {
+            color: #f44336;
+        }
+        .log-warning {
+            color: #ff9800;
+        }
+        button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        button:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+        }
+        input {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #444;
+            background-color: #333;
+            color: #e0e0e0;
+            margin-right: 10px;
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+        .status {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        .ws-connected {
+            color: #4caf50;
+        }
+        .ws-disconnected {
+            color: #f44336;
+        }
+        .ws-reconnecting {
+            color: #ff9800;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <h1>WebSocket Reconnect Test</h1>
+    <p>This test page simulates WebSocket reconnection behavior with exponential backoff.</p>
+    
+    <div class="test-container">
+        <div class="status" id="status">WebSocket: Disconnected</div>
+        
+        <div class="controls">
+            <input type="text" id="wsUrl" placeholder="ws://localhost:8080/ws" value="ws://localhost:8080/ws">
+            <button id="connectBtn">Connect</button>
+            <button id="disconnectBtn" disabled>Disconnect</button>
+            <button id="cancelBtn" disabled>Cancel Reconnect</button>
+            <button id="simulateErrorBtn">Simulate Error</button>
+            <button id="simulateCloseBtn">Simulate Close</button>
+            <label>
+                <input type="checkbox" id="autoReconnect" checked> Auto-reconnect
+            </label>
+        </div>
+        
+        <div class="log" id="log"></div>
+    </div>
+    
+    <script>
+        // WebSocket state
+        let socket = null;
+        let isConnected = false;
+        let reconnectAttempts = 0;
+        let maxReconnectAttempts = 5;
+        let reconnectTimeout = null;
+        let isReconnecting = false;
+        let autoReconnectEnabled = true;
+        
+        // DOM elements
+        const statusEl = document.getElementById('status');
+        const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const simulateErrorBtn = document.getElementById('simulateErrorBtn');
+        const simulateCloseBtn = document.getElementById('simulateCloseBtn');
+        const autoReconnectCheckbox = document.getElementById('autoReconnect');
+        const logEl = document.getElementById('log');
+        
+        // Event listeners
+        connectBtn.addEventListener('click', connectWebSocket);
+        disconnectBtn.addEventListener('click', disconnectWebSocket);
+        cancelBtn.addEventListener('click', cancelReconnection);
+        simulateErrorBtn.addEventListener('click', simulateError);
+        simulateCloseBtn.addEventListener('click', simulateClose);
+        autoReconnectCheckbox.addEventListener('change', function() {
+            autoReconnectEnabled = this.checked;
+            logMessage('Auto-reconnect ' + (autoReconnectEnabled ? 'enabled' : 'disabled'), 'info');
+        });
+        
+        function logMessage(message, type = 'info') {
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry log-' + type;
+            logEntry.textContent = new Date().toLocaleTimeString() + ' - ' + message;
+            logEl.appendChild(logEntry);
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+        
+        function connectWebSocket() {
+            const url = document.getElementById('wsUrl').value;
+            
+            if (isConnected) {
+                logMessage('Already connected', 'warning');
+                return;
+            }
+            
+            // Reset reconnection state
+            if (reconnectTimeout) {
+                clearTimeout(reconnectTimeout);
+                reconnectTimeout = null;
+            }
+            reconnectAttempts = 0;
+            isReconnecting = false;
+            
+            logMessage('Attempting to connect to ' + url, 'info');
+            attemptConnection(url);
+        }
+        
+        function attemptConnection(url) {
+            try {
+                socket = new WebSocket(url);
+                
+                socket.onopen = function() {
+                    isConnected = true;
+                    isReconnecting = false;
+                    reconnectAttempts = 0;
+                    
+                    statusEl.textContent = 'WebSocket: Connected';
+                    statusEl.className = 'ws-connected';
+                    
+                    connectBtn.disabled = true;
+                    disconnectBtn.disabled = false;
+                    cancelBtn.disabled = true;
+                    
+                    logMessage('Connected successfully!', 'success');
+                };
+                
+                socket.onmessage = function(event) {
+                    logMessage('Message received: ' + event.data, 'info');
+                };
+                
+                socket.onclose = function() {
+                    isConnected = false;
+                    statusEl.textContent = 'WebSocket: Disconnected';
+                    statusEl.className = 'ws-disconnected';
+                    
+                    connectBtn.disabled = false;
+                    disconnectBtn.disabled = true;
+                    cancelBtn.disabled = true;
+                    
+                    logMessage('Connection closed', 'warning');
+                    
+                    // Attempt reconnection if enabled
+                    if (autoReconnectEnabled && !isReconnecting && reconnectAttempts < maxReconnectAttempts) {
+                        attemptReconnection(url);
+                    }
+                };
+                
+                socket.onerror = function(error) {
+                    logMessage('Connection error: ' + error.message, 'error');
+                    
+                    // Attempt reconnection if enabled
+                    if (autoReconnectEnabled && !isReconnecting && reconnectAttempts < maxReconnectAttempts) {
+                        attemptReconnection(url);
+                    }
+                };
+                
+            } catch (err) {
+                logMessage('Connection failed: ' + err.message, 'error');
+                
+                // Attempt reconnection if enabled
+                if (autoReconnectEnabled && !isReconnecting && reconnectAttempts < maxReconnectAttempts) {
+                    attemptReconnection(url);
+                }
+            }
+        }
+        
+        function attemptReconnection(url) {
+            if (isReconnecting) return;
+            
+            isReconnecting = true;
+            reconnectAttempts++;
+            
+            // Exponential backoff: min(2^(attempts-1) * 1000, 30000) ms
+            const delay = Math.min(Math.pow(2, reconnectAttempts - 1) * 1000, 30000);
+            
+            statusEl.textContent = `WebSocket: Reconnecting (${reconnectAttempts}/${maxReconnectAttempts})...`;
+            statusEl.className = 'ws-reconnecting';
+            
+            connectBtn.disabled = true;
+            disconnectBtn.disabled = true;
+            cancelBtn.disabled = false;
+            
+            logMessage(`Reconnection attempt ${reconnectAttempts}/${maxReconnectAttempts} in ${delay}ms...`, 'warning');
+            
+            reconnectTimeout = setTimeout(function() {
+                logMessage(`Attempting to reconnect...`, 'info');
+                attemptConnection(url);
+            }, delay);
+        }
+        
+        function disconnectWebSocket() {
+            if (socket && isConnected) {
+                socket.close();
+                socket = null;
+                isConnected = false;
+                logMessage('Disconnected manually', 'info');
+            }
+        }
+        
+        function cancelReconnection() {
+            if (reconnectTimeout) {
+                clearTimeout(reconnectTimeout);
+                reconnectTimeout = null;
+            }
+            isReconnecting = false;
+            reconnectAttempts = 0;
+            
+            statusEl.textContent = 'WebSocket: Disconnected';
+            statusEl.className = 'ws-disconnected';
+            
+            connectBtn.disabled = false;
+            disconnectBtn.disabled = true;
+            cancelBtn.disabled = true;
+            
+            logMessage('Reconnection cancelled', 'info');
+        }
+        
+        function simulateError() {
+            if (socket) {
+                logMessage('Simulating WebSocket error...', 'warning');
+                socket.onerror(new Error('Simulated error'));
+            }
+        }
+        
+        function simulateClose() {
+            if (socket) {
+                logMessage('Simulating WebSocket close...', 'warning');
+                socket.close();
+            }
+        }
+        
+        logMessage('WebSocket Reconnect Test initialized', 'info');
+    </script>
+</body>
+</html>

@@ -1,6 +1,25 @@
 ## Change Log
 
 ### 2026-03-01
+- **Objective**: Implement WebSocket Client Reconnection with Exponential Backoff for improved reliability
+- **Rationale**: Enhance WebSocket connection resilience in unstable network conditions by automatically reconnecting with exponential backoff, providing a more robust real-time monitoring experience
+- **Impact**: Web UI, WebSocket client, real-time monitoring, user experience
+- **Changes**:
+  - Added WebSocket reconnection state management: `reconnectAttempts`, `maxReconnectAttempts`, `reconnectTimeout`, `isReconnecting`, `autoReconnectEnabled`
+  - Implemented `attemptWebSocketConnection()` function to handle connection attempts with reconnection logic
+  - Added `attemptReconnection()` function with exponential backoff algorithm (2^(attempts-1) * 1000ms, max 30s)
+  - Enhanced WebSocket event handlers (`onclose`, `onerror`) to trigger automatic reconnection when enabled
+  - Added cancel reconnection functionality with `cancelReconnection()` function
+  - Updated UI with reconnection status indicators and cancel button
+  - Added CSS styles for reconnecting state with pulse animation
+  - Implemented auto-reconnect toggle checkbox for user control
+  - Enhanced WebSocket status display to show reconnection attempts
+  - Added comprehensive WebSocket reconnection test page for verification
+  - Updated WebSocket client handling tests to verify connection management
+- **Testing**: Unit tests for WebSocket client handling, manual testing with reconnection test page
+- **Result**: WebSocket connections now automatically reconnect with exponential backoff when disconnected, providing resilient real-time monitoring. Users can control auto-reconnect behavior and cancel reconnection attempts as needed.
+
+### 2026-03-01
 - **Objective**: Implement WebSocket Message Compression for efficient real-time data streaming
 - **Rationale**: Reduce bandwidth usage and improve performance for high-frequency WebSocket messages, especially beneficial for large performance data payloads and remote monitoring scenarios
 - **Impact**: WebSocket server, real-time monitoring, network performance, CLI interface

@@ -55,6 +55,15 @@
                     <input type="text" id="wsUrlInput" placeholder="ws://localhost:8080/ws" value="ws://localhost:8080/ws">
                     <button id="connectWsBtn" class="btn success"><i class="fas fa-plug"></i> Connect</button>
                     <button id="disconnectWsBtn" class="btn danger" style="display: none;"><i class="fas fa-unlink"></i> Disconnect</button>
+                    <button id="cancelReconnectBtn" class="btn warning" style="display: none;"><i class="fas fa-times"></i> Cancel</button>
+                </div>
+                
+                <!-- Reconnection Settings -->
+                <div class="reconnect-settings" style="margin-top: 10px;">
+                    <label style="color: #ccc; margin-right: 10px;">
+                        <input type="checkbox" id="autoReconnectCheckbox" checked>
+                        Auto-reconnect on failure
+                    </label>
                 </div>
                 
                 <!-- Authentication Controls -->

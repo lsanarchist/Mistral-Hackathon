@@ -127,6 +127,21 @@ document.addEventListener('DOMContentLoaded', function() {
         connectWsBtn.addEventListener('click', connectWebSocket);
         disconnectWsBtn.addEventListener('click', disconnectWebSocket);
         
+        // Set up cancel reconnection button
+        const cancelReconnectBtn = document.getElementById('cancelReconnectBtn');
+        if (cancelReconnectBtn) {
+            cancelReconnectBtn.addEventListener('click', cancelReconnection);
+        }
+        
+        // Set up auto-reconnect checkbox
+        const autoReconnectCheckbox = document.getElementById('autoReconnectCheckbox');
+        if (autoReconnectCheckbox) {
+            autoReconnectCheckbox.addEventListener('change', function() {
+                autoReconnectEnabled = this.checked;
+                console.log('Auto-reconnect ' + (autoReconnectEnabled ? 'enabled' : 'disabled'));
+            });
+        }
+        
         // Set up auth controls if available
         if (authControls && generateTokenBtn) {
             generateTokenBtn.addEventListener('click', generateToken);
@@ -322,6 +337,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // WebSocket reconnection state
+    let reconnectAttempts = 0;
+    let maxReconnectAttempts = 5;
+    let reconnectTimeout = null;
+    let isReconnecting = false;
+    let autoReconnectEnabled = true;
+
     // WebSocket connection functions
     function connectWebSocket() {
         const wsUrl = wsUrlInput.value.trim() || 'ws://localhost:8080/ws';
@@ -332,6 +354,18 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        // Reset reconnection state for manual connection attempts
+        if (reconnectTimeout) {
+            clearTimeout(reconnectTimeout);
+            reconnectTimeout = null;
+        }
+        reconnectAttempts = 0;
+        isReconnecting = false;
+
+        attemptWebSocketConnection(wsUrl, token);
+    }
+
+    function attemptWebSocketConnection(wsUrl, token) {
         try {
             // Add token to URL if provided
             let finalUrl = wsUrl;
@@ -360,6 +394,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 console.log('WebSocket connected to', finalUrl);
                 showNotification('WebSocket connected successfully!', 'success');
+                
+                // Reset reconnection state on successful connection
+                reconnectAttempts = 0;
+                if (reconnectTimeout) {
+                    clearTimeout(reconnectTimeout);
+                    reconnectTimeout = null;
+                }
+                isReconnecting = false;
             };
 
             // Set up message handler
@@ -380,16 +422,58 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 console.log('WebSocket disconnected');
                 showNotification('WebSocket disconnected', 'info');
+                
+                // Attempt reconnection with exponential backoff if enabled
+                if (autoReconnectEnabled && !isReconnecting && reconnectAttempts < maxReconnectAttempts) {
+                    attemptReconnection(wsUrl, token);
+                }
             };
 
             websocket.onerror = function(error) {
                 console.error('WebSocket error:', error);
                 showError('WebSocket connection error: ' + error.message);
+                
+                // Attempt reconnection with exponential backoff if enabled
+                if (autoReconnectEnabled && !isReconnecting && reconnectAttempts < maxReconnectAttempts) {
+                    attemptReconnection(wsUrl, token);
+                }
             };
 
         } catch (err) {
             showError('Failed to connect to WebSocket: ' + err.message);
+            
+            // Attempt reconnection with exponential backoff if enabled
+            if (autoReconnectEnabled && !isReconnecting && reconnectAttempts < maxReconnectAttempts) {
+                attemptReconnection(wsUrl, token);
+            }
         }
+    }
+
+    function attemptReconnection(wsUrl, token) {
+        if (isReconnecting) return;
+        
+        isReconnecting = true;
+        reconnectAttempts++;
+        
+        // Calculate exponential backoff delay: min(2^(attempts-1) * 1000, 30000) ms
+        const delay = Math.min(Math.pow(2, reconnectAttempts - 1) * 1000, 30000);
+        
+        console.log(`Attempting to reconnect (${reconnectAttempts}/${maxReconnectAttempts}) in ${delay}ms...`);
+        wsStatus.textContent = `WebSocket: Reconnecting (${reconnectAttempts}/${maxReconnectAttempts})...`;
+        wsStatus.className = 'ws-reconnecting';
+        
+        // Show cancel button during reconnection
+        const cancelReconnectBtn = document.getElementById('cancelReconnectBtn');
+        if (cancelReconnectBtn) {
+            cancelReconnectBtn.style.display = 'inline-block';
+        }
+        connectWsBtn.style.display = 'none';
+        disconnectWsBtn.style.display = 'none';
+        
+        reconnectTimeout = setTimeout(function() {
+            console.log(`Reconnection attempt ${reconnectAttempts}...`);
+            attemptWebSocketConnection(wsUrl, token);
+        }, delay);
     }
 
     function disconnectWebSocket() {
@@ -398,6 +482,29 @@ document.addEventListener('DOMContentLoaded', function() {
             websocket = null;
             isWebSocketConnected = false;
         }
+    }
+
+    function cancelReconnection() {
+        if (reconnectTimeout) {
+            clearTimeout(reconnectTimeout);
+            reconnectTimeout = null;
+        }
+        isReconnecting = false;
+        reconnectAttempts = 0;
+        
+        wsStatus.textContent = 'WebSocket: Disconnected';
+        wsStatus.className = 'ws-disconnected';
+        
+        const cancelReconnectBtn = document.getElementById('cancelReconnectBtn');
+        if (cancelReconnectBtn) {
+            cancelReconnectBtn.style.display = 'none';
+        }
+        
+        connectWsBtn.style.display = 'inline-block';
+        disconnectWsBtn.style.display = 'none';
+        
+        console.log('WebSocket reconnection cancelled');
+        showNotification('WebSocket reconnection cancelled', 'info');
     }
 
     function updateWebSocketStats(stats) {

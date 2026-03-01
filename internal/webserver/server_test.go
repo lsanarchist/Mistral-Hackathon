@@ -588,3 +588,39 @@ func TestJWTWebSocketConnectionWithAuthDisabled(t *testing.T) {
 	assert.Equal(t, "anonymous", claims.Username)
 	assert.Equal(t, "viewer", claims.Role)
 }
+
+// TestWebSocketClientHandling tests WebSocket client connection management
+func TestWebSocketClientHandling(t *testing.T) {
+	// Create WebSocket server
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false)
+	defer server.Stop()
+
+	// Test initial client count
+	assert.Equal(t, 0, server.GetClientCount(), "Should start with 0 clients")
+
+	// Test broadcast functionality (should not panic with no clients)
+	server.BroadcastData()
+
+	// Test performance history tracking
+	findings := &model.FindingsBundle{
+		Summary: model.Summary{
+			OverallScore: 90,
+		},
+		Findings: []model.Finding{
+			{Severity: "high", Title: "Test Finding"},
+		},
+	}
+	
+	// Update data multiple times to test history
+	for i := 0; i < 3; i++ {
+		server.UpdateData(findings, nil)
+	}
+	
+	// Wait for async operations
+	time.Sleep(100 * time.Millisecond)
+	
+	// Verify history is being tracked
+	history := server.GetPerformanceHistory()
+	assert.True(t, len(history) > 0, "Should have performance history")
+	assert.True(t, len(history) <= server.maxHistorySize, "Should respect max history size")
+}

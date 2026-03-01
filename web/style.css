@@ -1009,6 +1009,12 @@ input[type="text"]:focus, select:focus {
     font-weight: 600;
 }
 
+.ws-reconnecting {
+    color: var(--warning-color);
+    font-weight: 600;
+    animation: pulse 1.5s infinite;
+}
+
 /* No Findings Message */
 .no-findings {
     text-align: center;
