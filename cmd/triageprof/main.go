@@ -852,6 +852,10 @@ func runDemoCommand(pipeline *core.Pipeline) {
 	samplingRate := flagSet.Float64("sampling-rate", 1.0, "Profile sampling rate (0.1-1.0)")
 	memoryOptimization := flagSet.Bool("memory-optimization", false, "Enable memory optimization for large profiles")
 	largeCodebase := flagSet.Bool("large-codebase", false, "Optimize for large codebases")
+	remediationEnabled := flagSet.Bool("remediation", false, "Enable automated code remediation suggestions")
+	remediationConfidence := flagSet.Float64("remediation-confidence", 0.7, "Minimum confidence threshold for remediation suggestions (0.0-1.0)")
+	remediationMaxChanges := flagSet.Int("remediation-max-changes", 3, "Maximum number of code changes per finding")
+	remediationCodeLimit := flagSet.Int("remediation-code-limit", 200, "Maximum characters per code change")
 	flagSet.Parse(os.Args[2:])
 
 	if *repoURL == "" || *outDir == "" {
@@ -893,6 +897,18 @@ func runDemoCommand(pipeline *core.Pipeline) {
 	}
 	fmt.Printf("\n")
 
+	// Display remediation settings
+	fmt.Printf("🔧 Remediation Settings:\n")
+	if *remediationEnabled {
+		fmt.Printf("   ✅ Automated remediation: ENABLED\n")
+		fmt.Printf("   📊 Minimum confidence: %.1f\n", *remediationConfidence)
+		fmt.Printf("   🔄 Max changes per finding: %d\n", *remediationMaxChanges)
+		fmt.Printf("   📝 Max code characters: %d\n", *remediationCodeLimit)
+	} else {
+		fmt.Printf("   ❌ Automated remediation: DISABLED\n")
+	}
+	fmt.Printf("\n")
+
 	// Create performance configuration
 	perfConfig := &model.PerformanceOptimizationConfig{
 		EnableConcurrentBenchmarks: *concurrentBenchmarks,
@@ -901,6 +917,17 @@ func runDemoCommand(pipeline *core.Pipeline) {
 		SamplingRate:               *samplingRate,
 		EnableMemoryOptimization:   *memoryOptimization,
 		LargeCodebaseMode:          *largeCodebase,
+	}
+
+	// Create remediation configuration
+	remediationConfig := &model.RemediationConfig{
+		Enabled:           *remediationEnabled,
+		MinConfidence:     *remediationConfidence,
+		MaxCodeChanges:    *remediationMaxChanges,
+		CodeChangeLimit:   *remediationCodeLimit,
+		Provider:          "mistral",
+		Model:             "mistral-large-latest",
+		Temperature:       0.3,
 	}
 
 	// Run the demo workflow with performance configuration
@@ -952,6 +979,26 @@ func runDemoCommand(pipeline *core.Pipeline) {
 		for _, profile := range manifest.Profiles {
 			fmt.Printf("  📈 %s\n", profile)
 		}
+
+		// Generate remediations if enabled
+		if *remediationEnabled {
+			fmt.Printf("\n🔧 Generating automated remediations...\n")
+			
+			findingsPath := filepath.Join(*outDir, "findings.json")
+			insightsPath := filepath.Join(*outDir, "insights.json")
+			remediationsPath := filepath.Join(*outDir, "remediations.json")
+			
+			// Generate remediations
+			remediations, err := pipeline.GenerateRemediations(ctx, findingsPath, insightsPath, remediationsPath, *remediationConfig)
+			if err != nil {
+				fmt.Printf("⚠️  Warning: failed to generate remediations: %v\n", err)
+			} else if remediations != nil {
+				fmt.Printf("✅ Generated %d remediation suggestions\n", len(remediations.Remediations))
+				fmt.Printf("   Estimated total gain: %s\n", remediations.Summary.EstimatedTotalGain)
+				fmt.Printf("   Average confidence: %.1f%%\n", remediations.Summary.ConfidenceScore*100)
+				fmt.Printf("  🛠️  %s\n", remediationsPath)
+			}
+		}
 	} else {
 		fmt.Printf("\n❌ Demo failed: %s\n", manifest.Error)
 		
@@ -984,6 +1031,10 @@ func runDemoKitCommand(pipeline *core.Pipeline) {
 	samplingRate := flagSet.Float64("sampling-rate", 1.0, "Profile sampling rate (0.1-1.0)")
 	memoryOptimization := flagSet.Bool("memory-optimization", false, "Enable memory optimization for large profiles")
 	largeCodebase := flagSet.Bool("large-codebase", false, "Optimize for large codebases")
+	remediationEnabled := flagSet.Bool("remediation", false, "Enable automated code remediation suggestions")
+	remediationConfidence := flagSet.Float64("remediation-confidence", 0.7, "Minimum confidence threshold for remediation suggestions (0.0-1.0)")
+	remediationMaxChanges := flagSet.Int("remediation-max-changes", 3, "Maximum number of code changes per finding")
+	remediationCodeLimit := flagSet.Int("remediation-code-limit", 200, "Maximum characters per code change")
 	flagSet.Parse(os.Args[2:])
 
 	if *outDir == "" {
@@ -1036,6 +1087,17 @@ func runDemoKitCommand(pipeline *core.Pipeline) {
 		LargeCodebaseMode:          *largeCodebase,
 	}
 
+	// Create remediation configuration
+	remediationConfig := &model.RemediationConfig{
+		Enabled:           *remediationEnabled,
+		MinConfidence:     *remediationConfidence,
+		MaxCodeChanges:    *remediationMaxChanges,
+		CodeChangeLimit:   *remediationCodeLimit,
+		Provider:          "mistral",
+		Model:             "mistral-large-latest",
+		Temperature:       0.3,
+	}
+
 	// Run the demo workflow with the local demo repository
 	manifest, err := pipeline.DemoWithPerformance(ctx, demoRepoPath, "", *outDir, *duration, perfConfig)
 	if err != nil {
@@ -1085,6 +1147,26 @@ func runDemoKitCommand(pipeline *core.Pipeline) {
 		for _, profile := range manifest.Profiles {
 			fmt.Printf("  📈 %s\n", profile)
 		}
+
+		// Generate remediations if enabled
+		if *remediationEnabled {
+			fmt.Printf("\n🔧 Generating automated remediations...\n")
+			
+			findingsPath := filepath.Join(*outDir, "findings.json")
+			insightsPath := filepath.Join(*outDir, "insights.json")
+			remediationsPath := filepath.Join(*outDir, "remediations.json")
+			
+			// Generate remediations
+			remediations, err := pipeline.GenerateRemediations(ctx, findingsPath, insightsPath, remediationsPath, *remediationConfig)
+			if err != nil {
+				fmt.Printf("⚠️  Warning: failed to generate remediations: %v\n", err)
+			} else if remediations != nil {
+				fmt.Printf("✅ Generated %d remediation suggestions\n", len(remediations.Remediations))
+				fmt.Printf("   Estimated total gain: %s\n", remediations.Summary.EstimatedTotalGain)
+				fmt.Printf("   Average confidence: %.1f%%\n", remediations.Summary.ConfidenceScore*100)
+				fmt.Printf("  🛠️  %s\n", remediationsPath)
+			}
+		}
 		
 		fmt.Println("\n🎉 Demo Kit Features Showcased:")
 		fmt.Println("  ✓ Go benchmark detection")
@@ -1093,6 +1175,9 @@ func runDemoKitCommand(pipeline *core.Pipeline) {
 		fmt.Println("  ✓ Structured findings with evidence")
 		fmt.Println("  ✓ Markdown report generation")
 		fmt.Println("  ✓ Profile artifact collection")
+		if *remediationEnabled {
+			fmt.Println("  ✓ Automated code remediation suggestions")
+		}
 		
 		fmt.Println("\n🚀 Next Steps:")
 		fmt.Println("  • Try with your own Go repository: triageprof demo --repo <your-repo-url> --out <dir>")

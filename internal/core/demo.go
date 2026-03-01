@@ -31,6 +31,7 @@ type RunManifest struct {
 	Error        string    `json:"error,omitempty"`
 	ErrorContext *model.ErrorContext `json:"errorContext,omitempty"`
 	PerformanceConfig *model.PerformanceOptimizationConfig `json:"performanceConfig,omitempty"`
+	RemediationConfig *model.RemediationConfig `json:"remediationConfig,omitempty"`
 }
 
 // cloneRepo clones a Git repository to the specified directory

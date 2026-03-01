@@ -370,3 +370,23 @@ func applyRedactionToInsights(insights *model.InsightsBundle) {
 		}
 	}
 }
+
+// GenerateRemediations creates automated code fix suggestions from findings and insights
+	func (g *InsightsGenerator) GenerateRemediations(ctx context.Context, findings *model.FindingsBundle, insights *model.InsightsBundle, config model.RemediationConfig) (*model.RemediationBundle, error) {
+
+		// Validate inputs
+		if findings == nil || len(findings.Findings) == 0 {
+			return nil, fmt.Errorf("no findings available for remediation")
+		}
+
+		// Create remediation generator
+		remediationGen := NewRemediationGenerator(g.Provider, config, findings, insights)
+
+		// Generate remediations
+		remediations, err := remediationGen.GenerateRemediations(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate remediations: %w", err)
+		}
+
+		return remediations, nil
+	}

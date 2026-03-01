@@ -740,3 +740,57 @@ func (p *Pipeline) ClearLLMCache() error {
 	}
 	return nil
 }
+
+// GenerateRemediations creates automated code fix suggestions from findings and insights
+func (p *Pipeline) GenerateRemediations(ctx context.Context, findingsPath, insightsPath, outPath string, config model.RemediationConfig) (*model.RemediationBundle, error) {
+	// Read findings
+	findingsData, err := os.ReadFile(findingsPath)
+	if err != nil {
+		return nil, err
+	}
+
+	var findingsBundle model.FindingsBundle
+	if err := json.Unmarshal(findingsData, &findingsBundle); err != nil {
+		return nil, err
+	}
+
+	// Read insights if available
+	var insightsBundle *model.InsightsBundle
+	if insightsPath != "" {
+		if _, err := os.Stat(insightsPath); err == nil {
+			// File exists, try to read it
+			insightsData, err := os.ReadFile(insightsPath)
+			if err != nil {
+				log.Printf("Warning: failed to read insights file: %v", err)
+			} else {
+				if err := json.Unmarshal(insightsData, &insightsBundle); err != nil {
+					log.Printf("Warning: failed to parse insights file: %v", err)
+				}
+			}
+		}
+		// If file doesn't exist or there were errors, insightsBundle remains nil
+	}
+
+	// Generate remediations
+	if p.llmGenerator == nil {
+		return nil, fmt.Errorf("LLM generator is not configured")
+	}
+
+	remediations, err := p.llmGenerator.GenerateRemediations(ctx, &findingsBundle, insightsBundle, config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate remediations: %w", err)
+	}
+
+	// Save remediations
+	if remediations != nil {
+		remediationsData, err := json.MarshalIndent(remediations, "", "  ")
+		if err != nil {
+			return nil, err
+		}
+		if err := os.WriteFile(outPath, remediationsData, 0644); err != nil {
+			return nil, err
+		}
+	}
+
+	return remediations, nil
+}

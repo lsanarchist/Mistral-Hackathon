@@ -18,6 +18,17 @@ type PerformanceOptimizationConfig struct {
 	LargeCodebaseMode          bool    `json:"largeCodebaseMode,omitempty"`
 }
 
+// RemediationConfig contains configuration for automated remediation
+type RemediationConfig struct {
+	Enabled           bool    `json:"enabled"`
+	MinConfidence     float64 `json:"minConfidence"`
+	MaxCodeChanges    int     `json:"maxCodeChanges"`
+	CodeChangeLimit   int     `json:"codeChangeLimit"`
+	Provider          string  `json:"provider"`
+	Model             string  `json:"model"`
+	Temperature       float64 `json:"temperature"`
+}
+
 // ErrorContext provides structured error information for better error handling
 type ErrorContext struct {
 	ErrorType    string `json:"errorType,omitempty"`

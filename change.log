@@ -302,6 +302,32 @@
   - ✅ GitHub Actions workflows validate successfully
 - **Result**: TriageProf now has comprehensive CI/CD integration with automated testing, security scanning, linting, and release automation. Developers can use `make` commands for common tasks, and GitHub Actions handles automated quality checks and releases. The project is now production-ready with proper CI/CD pipelines.
 
+### 2026-03-01 23:00: Phase 11 — Advanced Analysis Features: Automated Remediation ✅ COMPLETED
+
+- **Objective**: Implement automated code remediation suggestions based on performance findings
+- **Rationale**: Provide actionable code fixes to help developers resolve performance issues automatically
+- **Impact**: Remediation pipeline, CLI interface, LLM integration, reporting, model types
+- **Changes**:
+  - ✅ **Remediation Model**: Added `Remediation`, `CodeChange`, `RemediationBundle`, and `RemediationSummary` structs to `internal/model/remediation.go`
+  - ✅ **Remediation Configuration**: Added `RemediationConfig` to `internal/model/types.go` and integrated with `RunManifest`
+  - ✅ **Remediation Generator**: New `internal/llm/remediation.go` with comprehensive remediation generation logic including prompt building, LLM integration, response parsing, validation, and guardrails
+  - ✅ **Insights Integration**: Extended `InsightsGenerator` with `GenerateRemediations()` method in `internal/llm/insights.go`
+  - ✅ **Pipeline Integration**: Added `GenerateRemediations()` method to core pipeline with proper error handling and file management
+  - ✅ **CLI Support**: Added `--remediation`, `--remediation-confidence`, `--remediation-max-changes`, `--remediation-code-limit` flags to both `demo` and `demo-kit` commands
+  - ✅ **Configuration Management**: Added remediation config creation and display in CLI workflows
+  - ✅ **Error Handling**: Robust error handling for missing insights files and unavailable LLM generators
+  - ✅ **Validation & Guardrails**: Comprehensive validation including finding reference checks, confidence range validation, code change limits, and evidence citation requirements
+  - ✅ **Backward Compatibility**: Graceful degradation when LLM is not configured or insights are unavailable
+  - ✅ **Testing**: Added comprehensive test suite in `internal/llm/remediation_test.go` with mock provider and validation tests
+- **Testing**:
+  - ✅ `go build` succeeds with new remediation code
+  - ✅ `./bin/triageprof demo --help` shows new remediation flags
+  - ✅ `./bin/triageprof demo-kit --help` shows new remediation flags
+  - ✅ Demo kit with `--remediation` flag runs successfully and shows remediation generation attempt
+  - ✅ Graceful error handling when LLM generator is not configured
+  - ✅ Proper handling of missing insights.json files
+- **Result**: TriageProf now provides automated code remediation suggestions that analyze performance findings and generate specific code changes with confidence scores, impact estimates, and detailed explanations. The system integrates seamlessly with existing LLM infrastructure, provides configurable remediation parameters, and gracefully handles cases where LLM is not available. This enables developers to get immediate, actionable fixes for performance issues, significantly reducing the time from diagnosis to resolution.
+
 ### 2026-03-01 22:30: Phase 10 — Advanced Analysis Features: Comparative Analysis ✅ COMPLETED
 
 - **Objective**: Implement comparative analysis for performance regression detection
