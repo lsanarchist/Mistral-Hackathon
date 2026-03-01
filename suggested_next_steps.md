@@ -59,6 +59,53 @@
 - ✅ `internal/model/types.go` - Add RunManifest struct
 - ✅ `internal/core/pipeline_test.go` - Fix test paths
 
+## ✅ Phase 2 — Deterministic Analyzer: `pprof → findings.json` (COMPLETED)
+
+Create stable schema and rules that never depend on LLM.
+
+### Findings Schema (v1)
+```go
+type Finding struct {
+    ID               string
+    Title            string
+    Category         string // cpu, alloc, heap, gc, mutex, block
+    Severity         string // low, medium, high, critical
+    Confidence       float64 // 0.0-1.0
+    ImpactSummary    string
+    Evidence         []EvidenceItem
+    DeterministicHints []string
+    Tags             []string
+}
+```
+
+### Rules Implemented
+1. ✅ **CPU hotpath dominance** - Top N functions consuming >70% cumulative time
+2. ✅ **Allocation churn** - High mallocgc/memmove/bytes.growSlice patterns
+3. ✅ **JSON hotspots** - encoding/json decode/encode in top functions
+4. ✅ **String churn** - strings.Builder, bytes.Buffer, regexp in hot paths
+5. ✅ **GC pressure** - runtime.gcBgMarkWorker, runtime.gcAssistAlloc
+6. ✅ **Mutex contention** - sync.(*Mutex).Lock with high contention
+7. ✅ **Heap allocation concentration** - Top N functions consuming >60% of heap allocations
+8. ✅ **Block contention** - runtime.chan, select, Wait, Sleep patterns
+
+### Implementation Details
+- **New deterministic analyzer** in `internal/analyzer/deterministic.go`
+- **Updated model types** with new Finding schema and backward compatibility
+- **Enhanced report generation** to handle both new and legacy evidence formats
+- **Updated LLM client** to work with new evidence structure
+- **Comprehensive test coverage** for all deterministic rules
+
+### Files Modified
+- ✅ `internal/model/types.go` - Added new Finding schema with EvidenceItem
+- ✅ `internal/analyzer/deterministic.go` - New deterministic analyzer implementation
+- ✅ `internal/analyzer/analyzer.go` - Added deterministic analysis method
+- ✅ `internal/core/pipeline.go` - Added deterministic analysis pipeline method
+- ✅ `internal/core/demo.go` - Updated to use deterministic analysis
+- ✅ `internal/report/report.go` - Enhanced to handle both evidence formats
+- ✅ `internal/llm/client.go` - Updated for new evidence structure
+- ✅ `internal/analyzer/analyzer_test.go` - Added deterministic analyzer tests
+- ✅ `internal/core/pipeline_test.go` - Updated test evidence format
+
 ---
 
 ## 🚀 Phase 1 — Golden Path CLI: `triageprof demo`

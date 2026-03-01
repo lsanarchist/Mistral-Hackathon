@@ -53,16 +53,32 @@ type PluginRef struct {
 	Version string `json:"version"`
 }
 
+// Finding represents a performance finding with deterministic analysis
 type Finding struct {
-	Category        string                  `json:"category"`
-	Title           string                  `json:"title"`
-	Severity        string                  `json:"severity"`
-	Score           int                     `json:"score"`
-	Top             []StackFrame            `json:"top"`
+	ID               string      `json:"id"`
+	Title            string      `json:"title"`
+	Category         string      `json:"category"` // cpu, alloc, heap, gc, mutex, block
+	Severity         string      `json:"severity"` // low, medium, high, critical
+	Confidence       float64     `json:"confidence"` // 0.0-1.0
+	ImpactSummary    string      `json:"impactSummary"`
+	Evidence         []EvidenceItem `json:"evidence"`
+	DeterministicHints []string    `json:"deterministicHints"`
+	Tags             []string    `json:"tags"`
+	// Legacy fields for backward compatibility
+	Score           int                     `json:"score,omitempty"`
+	Top             []StackFrame            `json:"top,omitempty"`
 	Callgraph       []CallgraphNode         `json:"callgraph,omitempty"`
 	Regression      *RegressionAnalysis    `json:"regression,omitempty"`
 	AllocationAnalysis *AllocationAnalysis `json:"allocationAnalysis,omitempty"`
-	Evidence        Evidence                `json:"evidence"`
+	EvidenceLegacy  Evidence                `json:"evidenceLegacy,omitempty"`
+}
+
+// EvidenceItem represents a piece of evidence for a finding
+type EvidenceItem struct {
+	Type        string  `json:"type"`
+	Description string  `json:"description"`
+	Value       string  `json:"value"`
+	Weight      float64 `json:"weight"`
 }
 
 // AllocationAnalysis represents allocation-specific analysis results

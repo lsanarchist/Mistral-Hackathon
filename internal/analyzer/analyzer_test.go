@@ -118,7 +118,7 @@ func TestAnalyzeWithOptions(t *testing.T) {
 			{
 				Kind:        "pprof",
 				ProfileType: "heap",
-				Path:        "../../out/heap.pb.gz",
+				Path:        "../../demo-output/heap.pb.gz",
 				ContentType: "application/octet-stream",
 			},
 		},
@@ -206,7 +206,7 @@ func TestAnalyzeWithOptions(t *testing.T) {
 				{
 					Kind:        "pprof",
 					ProfileType: "heap",
-					Path:        "../../out/heap.pb.gz",
+					Path:        "../../demo-output/heap.pb.gz",
 					ContentType: "application/octet-stream",
 				},
 			},
@@ -308,6 +308,124 @@ func TestMaxFunction(t *testing.T) {
 	assert.Equal(t, 5, max(5, 5))
 }
 
+func TestDeterministicAnalyzer(t *testing.T) {
+	analyzer := NewDeterministicAnalyzer()
+
+	// Create a test bundle with a simple profile
+	bundle := model.ProfileBundle{
+		Metadata: model.Metadata{
+			Timestamp:   time.Now(),
+			DurationSec: 10,
+			Service:     "test",
+			Scenario:    "test",
+			GitSha:      "test",
+		},
+		Target: model.Target{
+			Type:    "url",
+			BaseURL: "http://localhost:6060",
+		},
+		Plugin: model.PluginRef{
+			Name:    "test",
+			Version: "0.1.0",
+		},
+		Artifacts: []model.Artifact{
+			{
+				Kind:        "pprof",
+				ProfileType: "cpu",
+				Path:        "../../demo-output/cpu.pb.gz",
+				ContentType: "application/octet-stream",
+			},
+		},
+	}
+
+	// Test deterministic analysis
+	t.Run("deterministic analysis", func(t *testing.T) {
+		findings, err := analyzer.AnalyzeWithDeterministicRules(bundle, 5)
+		require.NoError(t, err)
+		require.NotNil(t, findings)
+		assert.True(t, len(findings.Findings) > 0, "Should have at least one finding")
+		
+		// Verify findings have the new structure
+		for _, finding := range findings.Findings {
+			assert.NotEmpty(t, finding.ID, "Finding should have an ID")
+			assert.NotEmpty(t, finding.Title, "Finding should have a title")
+			assert.NotEmpty(t, finding.Category, "Finding should have a category")
+			assert.NotEmpty(t, finding.Severity, "Finding should have a severity")
+			assert.Greater(t, finding.Confidence, 0.0, "Finding should have confidence > 0")
+			assert.NotEmpty(t, finding.ImpactSummary, "Finding should have impact summary")
+			assert.NotEmpty(t, finding.Evidence, "Finding should have evidence")
+			assert.NotEmpty(t, finding.DeterministicHints, "Finding should have deterministic hints")
+			assert.NotEmpty(t, finding.Tags, "Finding should have tags")
+		}
+	})
+}
+
+func TestCPUDominanceRule(t *testing.T) {
+	analyzer := NewDeterministicAnalyzer()
+
+	// Create a profile with concentrated hotspots
+	prof := &profile.Profile{
+		Sample: []*profile.Sample{
+			{Value: []int64{1000}, Location: []*profile.Location{
+				{Line: []profile.Line{
+					{Function: &profile.Function{Name: "hotFunction1", Filename: "file1.go"}, Line: 10},
+				}},
+			}},
+			{Value: []int64{500}, Location: []*profile.Location{
+				{Line: []profile.Line{
+					{Function: &profile.Function{Name: "hotFunction2", Filename: "file2.go"}, Line: 20},
+				}},
+			}},
+			{Value: []int64{250}, Location: []*profile.Location{
+				{Line: []profile.Line{
+					{Function: &profile.Function{Name: "otherFunction", Filename: "file3.go"}, Line: 30},
+				}},
+			}},
+		},
+	}
+
+	finding := analyzer.analyzeCPUDominance(prof, 2)
+	require.NotNil(t, finding)
+	assert.Equal(t, "cpu", finding.Category)
+	assert.Contains(t, finding.Title, "CPU Hotpath Dominance")
+	assert.Contains(t, finding.ImpactSummary, "CPU time concentrated")
+	assert.NotEmpty(t, finding.Evidence)
+	assert.NotEmpty(t, finding.DeterministicHints)
+}
+
+func TestAllocationChurnRule(t *testing.T) {
+	analyzer := NewDeterministicAnalyzer()
+
+	// Create a profile with allocation patterns
+	prof := &profile.Profile{
+		Sample: []*profile.Sample{
+			{Value: []int64{1000}, Location: []*profile.Location{
+				{Line: []profile.Line{
+					{Function: &profile.Function{Name: "runtime.mallocgc", Filename: "malloc.go"}, Line: 100},
+				}},
+			}},
+			{Value: []int64{500}, Location: []*profile.Location{
+				{Line: []profile.Line{
+					{Function: &profile.Function{Name: "runtime.memmove", Filename: "memmove.go"}, Line: 200},
+				}},
+			}},
+			{Value: []int64{250}, Location: []*profile.Location{
+				{Line: []profile.Line{
+					{Function: &profile.Function{Name: "otherFunction", Filename: "file.go"}, Line: 50},
+				}},
+			}},
+		},
+	}
+
+	finding := analyzer.analyzeAllocationChurn(prof, 3)
+	require.NotNil(t, finding)
+	assert.Equal(t, "alloc", finding.Category)
+	assert.Contains(t, finding.Title, "High Allocation Churn")
+	assert.Contains(t, finding.ImpactSummary, "allocation time spent in runtime memory functions")
+	assert.NotEmpty(t, finding.Evidence)
+	assert.NotEmpty(t, finding.DeterministicHints)
+}
+
 func TestAnalyzeAllocationPatterns(t *testing.T) {
 	// Create a test profile with allocation data
 	prof := &profile.Profile{
@@ -386,7 +504,7 @@ func TestAllocationAnalysisIntegration(t *testing.T) {
 			{
 				Kind:        "pprof",
 				ProfileType: "allocs",
-				Path:        "../../out/allocs.pb.gz",
+				Path:        "../../demo-output/allocs.pb.gz",
 				ContentType: "application/octet-stream",
 			},
 		},

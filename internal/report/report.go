@@ -100,10 +100,21 @@ func (r *Reporter) GenerateWithInsights(findings model.FindingsBundle, insights 
 		sb.WriteString(fmt.Sprintf("## %s: %s\n\n", strings.Title(finding.Category), finding.Title))
 		sb.WriteString(fmt.Sprintf("- **Severity**: %s\n", strings.Title(finding.Severity)))
 		sb.WriteString(fmt.Sprintf("- **Score**: %d\n", finding.Score))
-		sb.WriteString("- **Evidence**:\n")
-		sb.WriteString(fmt.Sprintf("  - Profile: %s\n", finding.Evidence.ProfileType))
-		sb.WriteString(fmt.Sprintf("  - Artifact: %s\n", finding.Evidence.ArtifactPath))
-		sb.WriteString("\n")
+
+		// Handle evidence (new structure)
+		if len(finding.Evidence) > 0 {
+			sb.WriteString("### Evidence\n\n")
+			for _, evidence := range finding.Evidence {
+				sb.WriteString(fmt.Sprintf("- **%s**: %s (%.1f%% weight)\n", evidence.Type, evidence.Description, evidence.Weight*100))
+			}
+			sb.WriteString("\n")
+		} else if finding.EvidenceLegacy.ArtifactPath != "" {
+			// Legacy evidence structure
+			sb.WriteString("- **Evidence**:")
+			sb.WriteString(fmt.Sprintf("  - Profile: %s\n", finding.EvidenceLegacy.ProfileType))
+			sb.WriteString(fmt.Sprintf("  - Artifact: %s\n", finding.EvidenceLegacy.ArtifactPath))
+			sb.WriteString("\n")
+		}
 
 		if len(finding.Top) > 0 {
 			sb.WriteString("### Top Hotspots\n\n")
@@ -248,6 +259,41 @@ func (r *Reporter) GenerateWithInsights(findings model.FindingsBundle, insights 
 }
 
 // GenerateJSON creates a structured JSON report
+// convertEvidenceToLegacy converts new EvidenceItem format to legacy Evidence format
+func convertEvidenceToLegacy(newEvidence []model.EvidenceItem, legacyEvidence model.Evidence) model.Evidence {
+	if legacyEvidence.ArtifactPath != "" {
+		return legacyEvidence // Use existing legacy evidence
+	}
+	
+	// Try to extract artifact path from new evidence
+	if len(newEvidence) > 0 {
+		for _, evidence := range newEvidence {
+			if evidence.Type == "profile" {
+				return model.Evidence{
+					ArtifactPath: evidence.Value,
+					ProfileType:  "pprof", // Default type
+					ExtractedAt:  time.Now(),
+				}
+			}
+		}
+		// Use first evidence item if no profile type found
+		if len(newEvidence) > 0 {
+			return model.Evidence{
+				ArtifactPath: newEvidence[0].Value,
+				ProfileType:  newEvidence[0].Type,
+				ExtractedAt:  time.Now(),
+			}
+		}
+	}
+	
+	// Return empty evidence if nothing found
+	return model.Evidence{
+		ArtifactPath: "unknown",
+		ProfileType:  "unknown",
+		ExtractedAt:  time.Now(),
+	}
+}
+
 func (r *Reporter) GenerateJSON(findings model.FindingsBundle, insights *model.InsightsBundle, options model.JSONReportOptions) ([]byte, error) {
 	report := model.JSONReport{
 		SchemaVersion: "1.0",
@@ -263,6 +309,9 @@ func (r *Reporter) GenerateJSON(findings model.FindingsBundle, insights *model.I
 
 	// Convert findings to report format
 	for i, finding := range findings.Findings {
+		// Convert new evidence format to legacy format for report
+		legacyEvidence := convertEvidenceToLegacy(finding.Evidence, finding.EvidenceLegacy)
+		
 		report.Findings[i] = model.ReportFinding{
 			ID:               fmt.Sprintf("finding-%d", i),
 			Category:         finding.Category,
@@ -273,7 +322,7 @@ func (r *Reporter) GenerateJSON(findings model.FindingsBundle, insights *model.I
 			Callgraph:        finding.Callgraph,
 			Regression:       finding.Regression,
 			AllocationAnalysis: finding.AllocationAnalysis,
-			Evidence:         finding.Evidence,
+			Evidence:         legacyEvidence,
 		}
 	}
 

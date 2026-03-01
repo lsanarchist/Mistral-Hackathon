@@ -30,6 +30,12 @@ func (a *Analyzer) Analyze(bundle model.ProfileBundle, topN int) (*model.Finding
 	return a.AnalyzeWithOptions(bundle, topN, AnalyzeOptions{})
 }
 
+// AnalyzeWithDeterministicRules applies deterministic analysis rules
+func (a *Analyzer) AnalyzeWithDeterministicRules(bundle model.ProfileBundle, topN int) (*model.FindingsBundle, error) {
+	deterministicAnalyzer := NewDeterministicAnalyzer()
+	return deterministicAnalyzer.AnalyzeWithDeterministicRules(bundle, topN)
+}
+
 func (a *Analyzer) AnalyzeWithOptions(bundle model.ProfileBundle, topN int, options AnalyzeOptions) (*model.FindingsBundle, error) {
 	findings := []model.Finding{}
 
@@ -90,7 +96,15 @@ func (a *Analyzer) AnalyzeWithOptions(bundle model.ProfileBundle, topN int, opti
 			Top:        topFuncs,
 			Callgraph:  callgraph,
 			Regression: regression,
-			Evidence: model.Evidence{
+			Evidence: []model.EvidenceItem{
+				{
+					Type:        "profile",
+					Description: "Profile evidence",
+					Value:       artifact.Path,
+					Weight:      1.0,
+				},
+			},
+			EvidenceLegacy: model.Evidence{
 				ArtifactPath: artifact.Path,
 				ProfileType:  artifact.ProfileType,
 				ExtractedAt:  time.Now(),

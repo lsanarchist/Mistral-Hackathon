@@ -359,6 +359,38 @@ func (p *Pipeline) Analyze(ctx context.Context, bundlePath string, topN int, out
 	return p.AnalyzeWithOptions(ctx, bundlePath, topN, outPath, CoreAnalyzeOptions{})
 }
 
+// AnalyzeWithDeterministicRules performs deterministic analysis
+func (p *Pipeline) AnalyzeWithDeterministicRules(ctx context.Context, bundlePath string, topN int, outPath string) (*model.FindingsBundle, error) {
+	// Read bundle
+	data, err := os.ReadFile(bundlePath)
+	if err != nil {
+		return nil, err
+	}
+
+	var profileBundle model.ProfileBundle
+	if err := json.Unmarshal(data, &profileBundle); err != nil {
+		return nil, err
+	}
+
+	// Analyze with deterministic rules
+	findings, err := p.analyzer.AnalyzeWithDeterministicRules(profileBundle, topN)
+	if err != nil {
+		return nil, err
+	}
+
+	// Save findings
+	findingsData, err := json.MarshalIndent(findings, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+
+	if err := os.WriteFile(outPath, findingsData, 0644); err != nil {
+		return nil, err
+	}
+
+	return findings, nil
+}
+
 func (p *Pipeline) AnalyzeWithOptions(ctx context.Context, bundlePath string, topN int, outPath string, options CoreAnalyzeOptions) (*model.FindingsBundle, error) {
 	// Read bundle
 	data, err := os.ReadFile(bundlePath)

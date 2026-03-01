@@ -218,9 +218,10 @@ func (p *PromptBuilder) buildFindingsSummary() string {
 			}
 		}
 
-		// Evidence (redacted)
-		if finding.Evidence.ProfileType != "" {
-			sections = append(sections, fmt.Sprintf("Evidence: %s profile", finding.Evidence.ProfileType))
+		// Evidence (redacted) - handle both new and legacy formats
+		evidenceDesc := getEvidenceDescription(finding)
+		if evidenceDesc != "" {
+			sections = append(sections, fmt.Sprintf("Evidence: %s", evidenceDesc))
 		}
 
 		// Add callgraph analysis if available
@@ -343,6 +344,27 @@ func (p *PromptBuilder) addCallgraphNode(sections *[]string, node model.Callgrap
 			p.addCallgraphNode(sections, node.Children[i], depth+1)
 		}
 	}
+}
+
+// getEvidenceDescription extracts evidence description from finding (handles both new and legacy formats)
+func getEvidenceDescription(finding model.Finding) string {
+	// Handle new evidence format
+	if len(finding.Evidence) > 0 {
+		evidenceTypes := []string{}
+		for _, evidence := range finding.Evidence {
+			evidenceTypes = append(evidenceTypes, evidence.Type)
+		}
+		if len(evidenceTypes) > 0 {
+			return fmt.Sprintf("%s evidence", strings.Join(evidenceTypes, ", "))
+		}
+	}
+	
+	// Handle legacy evidence format
+	if finding.EvidenceLegacy.ProfileType != "" {
+		return fmt.Sprintf("%s profile", finding.EvidenceLegacy.ProfileType)
+	}
+	
+	return ""
 }
 
 // redactFunctionName redacts sensitive info from function names

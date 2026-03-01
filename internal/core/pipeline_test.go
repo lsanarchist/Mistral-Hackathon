@@ -212,7 +212,15 @@ func TestPipeline_Report(t *testing.T) {
 						Flat:     256.0,
 					},
 				},
-				Evidence: model.Evidence{
+				Evidence: []model.EvidenceItem{
+						{
+							Type:        "profile",
+							Description: "Heap profile evidence",
+							Value:       "heap.pb.gz",
+							Weight:      1.0,
+						},
+					},
+					EvidenceLegacy: model.Evidence{
 					ArtifactPath: "heap.pb.gz",
 					ProfileType:  "heap",
 					ExtractedAt:  time.Now(),
@@ -267,7 +275,15 @@ func TestPipeline_ReportWithInsights(t *testing.T) {
 						Flat:     256.0,
 					},
 				},
-				Evidence: model.Evidence{
+				Evidence: []model.EvidenceItem{
+						{
+							Type:        "profile",
+							Description: "Heap profile evidence",
+							Value:       "heap.pb.gz",
+							Weight:      1.0,
+						},
+					},
+					EvidenceLegacy: model.Evidence{
 					ArtifactPath: "heap.pb.gz",
 					ProfileType:  "heap",
 					ExtractedAt:  time.Now(),
@@ -470,7 +486,15 @@ func TestPipeline_ReportJSON(t *testing.T) {
 						Flat:     256.0,
 					},
 				},
-				Evidence: model.Evidence{
+				Evidence: []model.EvidenceItem{
+						{
+							Type:        "profile",
+							Description: "Heap profile evidence",
+							Value:       "heap.pb.gz",
+							Weight:      1.0,
+						},
+					},
+					EvidenceLegacy: model.Evidence{
 					ArtifactPath: "heap.pb.gz",
 					ProfileType:  "heap",
 					ExtractedAt:  time.Now(),

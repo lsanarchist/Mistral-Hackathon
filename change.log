@@ -57,6 +57,36 @@
   - ✅ Core pipeline tests pass
 - **Result**: Users can now run `triageprof demo --repo <repository> --out <directory>` to get a complete performance analysis with benchmarks, profiles, findings, and reports. The command handles local paths and git URLs, detects Go benchmarks automatically, collects all pprof profiles, and generates structured reports.
 
+### 2026-03-01 15:30: Phase 2 — Deterministic Analyzer ✅ COMPLETED
+- **Objective**: Implement deterministic performance analysis with stable schema and rules
+- **Rationale**: Provide evidence-backed bottleneck findings that don't depend on LLM for core analysis
+- **Impact**: Analyzer, model types, report generation, LLM integration, core pipeline
+- **Changes**:
+  - ✅ **New Finding Schema**: Added structured `Finding` with `ID`, `Title`, `Category`, `Severity`, `Confidence`, `ImpactSummary`, `Evidence[]`, `DeterministicHints`, `Tags`
+  - ✅ **EvidenceItem Structure**: New evidence format with `Type`, `Description`, `Value`, `Weight` for detailed evidence tracking
+  - ✅ **Deterministic Analyzer**: New `internal/analyzer/deterministic.go` with 8 rule-based analysis patterns:
+    - CPU hotpath dominance (>70% concentration in top N functions)
+    - Allocation churn (mallocgc/memmove/bytes.growSlice patterns)
+    - JSON hotspots (encoding/json in top functions)
+    - String churn (strings.Builder/bytes.Buffer/regexp patterns)
+    - GC pressure (runtime.gcBgMarkWorker/gcAssistAlloc)
+    - Mutex contention (sync.(*Mutex).Lock patterns)
+    - Heap allocation concentration (>60% in top N functions)
+    - Block contention (runtime.chan/select/Wait patterns)
+  - ✅ **Backward Compatibility**: Maintained legacy fields (`Score`, `Top`, `Callgraph`, etc.) and added `EvidenceLegacy`
+  - ✅ **Pipeline Integration**: Added `AnalyzeWithDeterministicRules()` to analyzer and pipeline
+  - ✅ **Demo Integration**: Updated `demo.go` to use deterministic analysis by default
+  - ✅ **Report Enhancements**: Updated report generation to handle both new and legacy evidence formats
+  - ✅ **LLM Compatibility**: Updated LLM client to work with new evidence structure
+  - ✅ **Test Coverage**: Added comprehensive tests for deterministic rules and updated existing tests
+  - ✅ **Updated suggested_next_steps.md** to mark Phase 2 as completed
+- **Testing**:
+  - ✅ All analyzer tests pass including new deterministic rule tests
+  - ✅ Core pipeline tests pass with updated evidence format
+  - ✅ Build succeeds with new model types
+  - ✅ Backward compatibility verified with legacy evidence handling
+- **Result**: TriageProf now produces structured, deterministic findings with clear evidence, severity levels, confidence scores, and actionable hints. The analyzer identifies specific performance patterns without requiring LLM, providing a solid foundation for optional LLM enrichment. Findings include detailed evidence trails and concrete optimization suggestions.
+
 ### 2026-03-01 06:45: WebSocket Connection Quality Dashboard Advanced Enhancements Phase 2 ✅ COMPLETED
 - **Objective**: Implement ML-based anomaly detection and advanced monitoring features
 - **Rationale**: Enhance WebSocket connection monitoring with machine learning capabilities for better anomaly detection, pattern recognition, and automated remediation

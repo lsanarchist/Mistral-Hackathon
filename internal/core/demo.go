@@ -284,9 +284,9 @@ func (p *Pipeline) Demo(ctx context.Context, repoURL, ref, outDir string, durati
 		return manifest, fmt.Errorf("demo failed: %w", err)
 	}
 
-	// Analyze profiles
+	// Analyze profiles with deterministic rules
 	findingsPath := filepath.Join(outDir, "findings.json")
-	_, err = p.Analyze(ctx, bundlePath, 20, findingsPath)
+	_, err = p.AnalyzeWithDeterministicRules(ctx, bundlePath, 20, findingsPath)
 	if err != nil {
 		manifest.Success = false
 		manifest.Error = fmt.Sprintf("analysis failed: %v", err)
