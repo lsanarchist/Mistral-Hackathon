@@ -18,6 +18,41 @@ type PerformanceOptimizationConfig struct {
 	LargeCodebaseMode          bool    `json:"largeCodebaseMode,omitempty"`
 }
 
+// PerformanceGateConfig contains configuration for CI/CD performance gates
+type PerformanceGateConfig struct {
+	Enabled                     bool   `json:"enabled,omitempty"`
+	CriticalFindingsThreshold  int    `json:"criticalFindingsThreshold,omitempty"`
+	HighFindingsThreshold       int    `json:"highFindingsThreshold,omitempty"`
+	MediumFindingsThreshold     int    `json:"mediumFindingsThreshold,omitempty"`
+	MaxRegressionPercentage     float64 `json:"maxRegressionPercentage,omitempty"`
+	FailOnCriticalThreshold     bool   `json:"failOnCriticalThreshold,omitempty"`
+	FailOnHighThreshold         bool   `json:"failOnHighThreshold,omitempty"`
+	WarnOnMediumThreshold       bool   `json:"warnOnMediumThreshold,omitempty"`
+}
+
+// DefaultPerformanceGateConfig returns default performance gate configuration
+func DefaultPerformanceGateConfig() PerformanceGateConfig {
+	return PerformanceGateConfig{
+		Enabled:                    true,
+		CriticalFindingsThreshold: 5,
+		HighFindingsThreshold:      10,
+		MediumFindingsThreshold:    20,
+		MaxRegressionPercentage:    15.0,
+		FailOnCriticalThreshold:    true,
+		FailOnHighThreshold:        false,
+		WarnOnMediumThreshold:      true,
+	}
+}
+
+// PerformanceGateResult contains the results of performance gate checking
+type PerformanceGateResult struct {
+	Passed          bool              `json:"passed"`
+	Message         string            `json:"message"`
+	Warnings        []string          `json:"warnings,omitempty"`
+	Errors          []string          `json:"errors,omitempty"`
+	SeverityCounts  map[string]int    `json:"severityCounts,omitempty"`
+}
+
 // RemediationConfig contains configuration for automated remediation
 type RemediationConfig struct {
 	Enabled           bool    `json:"enabled"`
@@ -128,6 +163,21 @@ type Metadata struct {
 	Service     string    `json:"service"`
 	Scenario    string    `json:"scenario"`
 	GitSha      string    `json:"gitSha"`
+}
+
+// RunManifest contains metadata about a profiling run
+type RunManifest struct {
+	Timestamp            time.Time                  `json:"timestamp"`
+	DurationSec          int                       `json:"durationSec"`
+	GoVersion            string                    `json:"goVersion"`
+	RepoURL              string                    `json:"repoUrl,omitempty"`
+	RepoRef              string                    `json:"repoRef,omitempty"`
+	BenchmarksFound      int                       `json:"benchmarksFound"`
+	ProfilesGenerated    []string                  `json:"profilesGenerated"`
+	PerformanceConfig    PerformanceOptimizationConfig `json:"performanceConfig,omitempty"`
+	RemediationConfig    RemediationConfig        `json:"remediationConfig,omitempty"`
+	PerformanceGateConfig PerformanceGateConfig     `json:"performanceGateConfig,omitempty"`
+	ErrorContext         *ErrorContext             `json:"errorContext,omitempty"`
 }
 
 type ProfileBundle struct {

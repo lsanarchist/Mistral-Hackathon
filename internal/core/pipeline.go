@@ -44,10 +44,12 @@ type Pipeline struct {
 	phase4FeaturesEnabled  bool
 	phase5FeaturesEnabled  bool
 	phase6FeaturesEnabled  bool
+	performanceGateConfig model.PerformanceGateConfig
 }
 
 func NewPipeline(pluginDir string) *Pipeline {
 	return &Pipeline{
+		performanceGateConfig: model.DefaultPerformanceGateConfig(),
 		pluginManager: plugin.NewPluginManager(pluginDir),
 		analyzer:      analyzer.NewAnalyzer(),
 		reporter:      report.NewReporter(),
@@ -96,6 +98,70 @@ func (p *Pipeline) WithLLMWithCache(apiKey, model string, timeout, maxResponse, 
 	// For now, we'll use the basic generator
 	p.llmGenerator = generator
 	return p, nil
+}
+
+// WithPerformanceGates configures performance gate settings
+func (p *Pipeline) WithPerformanceGates(config model.PerformanceGateConfig) *Pipeline {
+	p.performanceGateConfig = config
+	return p
+}
+
+// CheckPerformanceGates checks findings against configured performance gates
+func (p *Pipeline) CheckPerformanceGates(findings []model.Finding) (model.PerformanceGateResult, error) {
+	if !p.performanceGateConfig.Enabled {
+		return model.PerformanceGateResult{
+			Passed: true,
+			Message: "Performance gates disabled",
+		}, nil
+	}
+	
+	// Count findings by severity
+	severityCounts := make(map[string]int)
+	for _, finding := range findings {
+		severityCounts[finding.Severity]++
+	}
+	
+	// Check thresholds
+	var warnings []string
+	var errors []string
+	
+	if criticalCount, ok := severityCounts["critical"]; ok && criticalCount > p.performanceGateConfig.CriticalFindingsThreshold {
+		if p.performanceGateConfig.FailOnCriticalThreshold {
+			errors = append(errors, fmt.Sprintf("Critical findings threshold exceeded: %d > %d", criticalCount, p.performanceGateConfig.CriticalFindingsThreshold))
+		} else {
+			warnings = append(warnings, fmt.Sprintf("Critical findings threshold exceeded: %d > %d", criticalCount, p.performanceGateConfig.CriticalFindingsThreshold))
+		}
+	}
+	
+	if highCount, ok := severityCounts["high"]; ok && highCount > p.performanceGateConfig.HighFindingsThreshold {
+		if p.performanceGateConfig.FailOnHighThreshold {
+			errors = append(errors, fmt.Sprintf("High findings threshold exceeded: %d > %d", highCount, p.performanceGateConfig.HighFindingsThreshold))
+		} else {
+			warnings = append(warnings, fmt.Sprintf("High findings threshold exceeded: %d > %d", highCount, p.performanceGateConfig.HighFindingsThreshold))
+		}
+	}
+	
+	if mediumCount, ok := severityCounts["medium"]; ok && mediumCount > p.performanceGateConfig.MediumFindingsThreshold {
+		if p.performanceGateConfig.WarnOnMediumThreshold {
+			warnings = append(warnings, fmt.Sprintf("Medium findings threshold exceeded: %d > %d", mediumCount, p.performanceGateConfig.MediumFindingsThreshold))
+		}
+	}
+	
+	passed := len(errors) == 0
+	message := "Performance gates passed"
+	if len(errors) > 0 {
+		message = fmt.Sprintf("Performance gates failed: %s", strings.Join(errors, "; "))
+	} else if len(warnings) > 0 {
+		message = fmt.Sprintf("Performance gates passed with warnings: %s", strings.Join(warnings, "; "))
+	}
+	
+	return model.PerformanceGateResult{
+		Passed:    passed,
+		Message:   message,
+		Warnings:  warnings,
+		Errors:    errors,
+		SeverityCounts: severityCounts,
+	}, nil
 }
 
 // WithWebSocketServer configures WebSocket server for real-time monitoring

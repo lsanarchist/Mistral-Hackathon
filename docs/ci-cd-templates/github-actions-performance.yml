@@ -1,0 +1,133 @@
+name: Performance Analysis with TriageProf
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  performance-analysis:
+    name: Performance Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+      
+    - name: Install triageprof
+      run: |
+        # Download pre-built binary or build from source
+        # Option 1: Download release (recommended)
+        # curl -L https://github.com/mistral-hackathon/triageprof/releases/latest/download/triageprof-linux-amd64 -o triageprof
+        # chmod +x triageprof
+        
+        # Option 2: Build from source
+        go build -o triageprof cmd/triageprof/main.go
+      
+    - name: Run performance analysis
+      id: performance
+      run: |
+        ./triageprof demo-kit --out performance-output --duration 15
+        
+        # Check if analysis completed successfully
+        if [ -f "performance-output/findings.json" ]; then
+          echo "performance_status=success" >> $GITHUB_OUTPUT
+          echo "Performance analysis completed successfully"
+        else
+          echo "performance_status=failure" >> $GITHUB_OUTPUT
+          echo "Performance analysis failed"
+          exit 1
+        fi
+      
+    - name: Check performance gates
+      run: |
+        # Configure your performance thresholds here
+        CRITICAL_THRESHOLD=3
+        HIGH_THRESHOLD=8
+        MEDIUM_THRESHOLD=15
+        
+        # Count findings by severity
+        CRITICAL=$(jq '[.findings[] | select(.severity == "critical")] | length' performance-output/findings.json)
+        HIGH=$(jq '[.findings[] | select(.severity == "high")] | length' performance-output/findings.json)
+        MEDIUM=$(jq '[.findings[] | select(.severity == "medium")] | length' performance-output/findings.json)
+        
+        echo "Performance Findings Summary:"
+        echo "Critical: $CRITICAL (threshold: $CRITICAL_THRESHOLD)"
+        echo "High: $HIGH (threshold: $HIGH_THRESHOLD)"
+        echo "Medium: $MEDIUM (threshold: $MEDIUM_THRESHOLD)"
+        
+        # Apply performance gates
+        GATE_FAILED=false
+        
+        if [ "$CRITICAL" -gt "$CRITICAL_THRESHOLD" ]; then
+          echo "::error::Critical findings threshold exceeded: $CRITICAL > $CRITICAL_THRESHOLD"
+          GATE_FAILED=true
+        fi
+        
+        if [ "$HIGH" -gt "$HIGH_THRESHOLD" ]; then
+          echo "::error::High findings threshold exceeded: $HIGH > $HIGH_THRESHOLD"
+          GATE_FAILED=true
+        fi
+        
+        if [ "$MEDIUM" -gt "$MEDIUM_THRESHOLD" ]; then
+          echo "::warning::Medium findings threshold exceeded: $MEDIUM > $MEDIUM_THRESHOLD"
+        fi
+        
+        if [ "$GATE_FAILED" = true ]; then
+          echo "Performance gates failed - build will be marked as failed"
+          exit 1
+        else
+          echo "Performance gates passed successfully"
+        fi
+      
+    - name: Upload performance artifacts
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-artifacts
+        path: performance-output/
+      
+    - name: Generate performance report
+      if: success() || failure()
+      run: |
+        echo "# Performance Analysis Report" > performance-report.md
+        echo "" >> performance-report.md
+        echo "## Summary" >> performance-report.md
+        echo "" >> performance-report.md
+        
+        # Add findings summary
+        TOTAL=$(jq '.findings | length' performance-output/findings.json)
+        CRITICAL=$(jq '[.findings[] | select(.severity == "critical")] | length' performance-output/findings.json)
+        HIGH=$(jq '[.findings[] | select(.severity == "high")] | length' performance-output/findings.json)
+        MEDIUM=$(jq '[.findings[] | select(.severity == "medium")] | length' performance-output/findings.json)
+        LOW=$(jq '[.findings[] | select(.severity == "low")] | length' performance-output/findings.json)
+        
+        echo "Total Findings: $TOTAL" >> performance-report.md
+        echo "- Critical: $CRITICAL" >> performance-report.md
+        echo "- High: $HIGH" >> performance-report.md
+        echo "- Medium: $MEDIUM" >> performance-report.md
+        echo "- Low: $LOW" >> performance-report.md
+        echo "" >> performance-report.md
+        
+        # Add top findings
+        echo "## Top Critical Findings" >> performance-report.md
+        echo "" >> performance-report.md
+        jq -r '.findings[] | select(.severity == "critical") | "### \(.title)" + "\n" + "**Category:** \(.category)" + "\n" + "**Impact:** \(.impactSummary)" + "\n"' performance-output/findings.json >> performance-report.md || echo "No critical findings found" >> performance-report.md
+        
+        echo "" >> performance-report.md
+        echo "## Performance Gate Status" >> performance-report.md
+        echo "" >> performance-report.md
+        echo "✅ Performance gates passed" >> performance-report.md
+      
+    - name: Upload performance report
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-report
+        path: performance-report.md

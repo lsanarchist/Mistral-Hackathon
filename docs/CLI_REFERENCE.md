@@ -55,6 +55,12 @@ triageprof demo --repo <repository> --out <output-directory> [options]
 | `--large-codebase` | Optimize for large codebases | false |
 | `--force` | Force analysis even if no benchmarks found | false |
 | `--no-cleanup` | Keep temporary files | false |
+| `--critical-threshold` | Critical findings threshold for CI/CD gates | 5 |
+| `--high-threshold` | High findings threshold for CI/CD gates | 10 |
+| `--medium-threshold` | Medium findings threshold for CI/CD gates | 20 |
+| `--fail-on-critical` | Fail build on critical threshold exceedance | true |
+| `--fail-on-high` | Fail build on high threshold exceedance | false |
+| `--warn-on-medium` | Warn on medium threshold exceedance | true |
 
 **Examples:**
 

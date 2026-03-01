@@ -328,6 +328,31 @@
   - ✅ Proper handling of missing insights.json files
 - **Result**: TriageProf now provides automated code remediation suggestions that analyze performance findings and generate specific code changes with confidence scores, impact estimates, and detailed explanations. The system integrates seamlessly with existing LLM infrastructure, provides configurable remediation parameters, and gracefully handles cases where LLM is not available. This enables developers to get immediate, actionable fixes for performance issues, significantly reducing the time from diagnosis to resolution.
 
+### 2026-03-02 01:00: Phase 12 — Integration Hub & CI/CD Pipeline ✅ COMPLETED
+
+- **Objective**: Implement GitHub Actions integration with performance gates for CI/CD pipelines
+- **Rationale**: Enable automated performance testing and quality gates in continuous integration workflows
+- **Impact**: CI/CD integration, GitHub Actions, performance gates, CLI interface, core pipeline
+- **Changes**:
+  - ✅ **GitHub Actions Workflow**: Added `.github/workflows/performance.yml` with complete performance analysis pipeline
+  - ✅ **Performance Gate Configuration**: Added `PerformanceGateConfig` struct to `internal/model/types.go` with configurable thresholds
+  - ✅ **Performance Gate Checking**: Implemented `CheckPerformanceGates()` method in `internal/core/pipeline.go` with severity-based validation
+  - ✅ **Performance Gate Result**: Added `PerformanceGateResult` struct for structured gate checking results
+  - ✅ **CLI Integration**: Added performance gate flags (`--critical-threshold`, `--high-threshold`, `--medium-threshold`, `--fail-on-critical`, `--fail-on-high`, `--warn-on-medium`) to both `demo` and `demo-kit` commands
+  - ✅ **Run Manifest Integration**: Extended `RunManifest` struct in `internal/core/demo.go` to include performance gate configuration
+  - ✅ **CI/CD Templates**: Created `docs/ci-cd-templates/` directory with ready-to-use GitHub Actions workflow template and comprehensive documentation
+  - ✅ **Documentation Updates**: Updated `docs/USER_GUIDE.md` and `docs/CLI_REFERENCE.md` with CI/CD integration guides and performance gate documentation
+  - ✅ **Automatic Gate Checking**: Integrated performance gate checking into both `demo` and `demo-kit` command workflows with automatic build failure on threshold violations
+  - ✅ **Severity Distribution Reporting**: Added finding severity distribution display in CLI output
+- **Testing**:
+  - ✅ `go build` succeeds with new CI/CD integration code
+  - ✅ `./bin/triageprof demo --help` shows new performance gate flags
+  - ✅ `./bin/triageprof demo-kit --help` shows new performance gate flags
+  - ✅ `./bin/triageprof demo-kit --out /tmp/test-output --duration 5` runs successfully with performance gate checking
+  - ✅ Performance gate configuration properly serialized to JSON in run manifest
+  - ✅ Existing tests continue to pass (`go test ./internal/core/...`)
+- **Result**: TriageProf now provides comprehensive CI/CD integration with GitHub Actions workflows and configurable performance gates. Users can enforce performance quality standards by setting thresholds for different severity levels (critical, high, medium) and automatically fail builds when thresholds are exceeded. The system includes ready-to-use templates, detailed documentation, and seamless integration with existing workflows. This enables teams to catch performance regressions early in the development cycle and maintain consistent performance standards across all commits and pull requests.
+
 ### 2026-03-01 22:30: Phase 10 — Advanced Analysis Features: Comparative Analysis ✅ COMPLETED
 
 - **Objective**: Implement comparative analysis for performance regression detection

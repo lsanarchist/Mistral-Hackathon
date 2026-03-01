@@ -98,6 +98,54 @@ triageprof demo --repo <repository> --out <output-directory>
 triageprof demo-kit --out <output-directory> --duration <seconds>
 ```
 
+## CI/CD Integration
+
+TriageProf integrates seamlessly with CI/CD pipelines to enforce performance gates and catch regressions early.
+
+### GitHub Actions
+
+Use our pre-configured workflow template:
+
+```bash
+# Copy the template to your workflows directory
+cp docs/ci-cd-templates/github-actions-performance.yml .github/workflows/performance.yml
+```
+
+### Performance Gates
+
+Configure thresholds for different severity levels:
+
+- **Critical findings**: Hard limit that fails the build
+- **High findings**: Configurable limit (can fail or warn)
+- **Medium findings**: Warning threshold only
+
+Example configuration:
+
+```yaml
+# In your GitHub Actions workflow
+- name: Check performance gates
+  run: |
+    CRITICAL_THRESHOLD=3
+    HIGH_THRESHOLD=8
+    
+    CRITICAL=$(jq '[.findings[] | select(.severity == "critical")] | length' performance-output/findings.json)
+    HIGH=$(jq '[.findings[] | select(.severity == "high")] | length' performance-output/findings.json)
+    
+    if [ "$CRITICAL" -gt "$CRITICAL_THRESHOLD" ]; then
+      echo "::error::Critical findings threshold exceeded"
+      exit 1
+    fi
+```
+
+### Benefits
+
+- **Early detection**: Catch performance regressions before they reach production
+- **Automated reporting**: Generate performance reports for every commit/PR
+- **Configurable thresholds**: Adapt gates to your project's requirements
+- **Historical tracking**: Preserve performance data as build artifacts
+
+See `docs/ci-cd-templates/README.md` for detailed integration guides.
+
 **Options:**
 - `--out`: Output directory (default: out-demo/)
 - `--duration`: Benchmark duration in seconds (default: 5)

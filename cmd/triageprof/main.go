@@ -856,6 +856,14 @@ func runDemoCommand(pipeline *core.Pipeline) {
 	remediationConfidence := flagSet.Float64("remediation-confidence", 0.7, "Minimum confidence threshold for remediation suggestions (0.0-1.0)")
 	remediationMaxChanges := flagSet.Int("remediation-max-changes", 3, "Maximum number of code changes per finding")
 	remediationCodeLimit := flagSet.Int("remediation-code-limit", 200, "Maximum characters per code change")
+	
+	// CI/CD Performance Gates
+	criticalThreshold := flagSet.Int("critical-threshold", 5, "Critical findings threshold for CI/CD gates")
+	highThreshold := flagSet.Int("high-threshold", 10, "High findings threshold for CI/CD gates")
+	mediumThreshold := flagSet.Int("medium-threshold", 20, "Medium findings threshold for CI/CD gates")
+	failOnCritical := flagSet.Bool("fail-on-critical", true, "Fail build on critical threshold exceedance")
+	failOnHigh := flagSet.Bool("fail-on-high", false, "Fail build on high threshold exceedance")
+	warnOnMedium := flagSet.Bool("warn-on-medium", true, "Warn on medium threshold exceedance")
 	flagSet.Parse(os.Args[2:])
 
 	if *repoURL == "" || *outDir == "" {
@@ -930,6 +938,20 @@ func runDemoCommand(pipeline *core.Pipeline) {
 		Temperature:       0.3,
 	}
 
+	// Create performance gate configuration
+	performanceGateConfig := model.PerformanceGateConfig{
+		Enabled:                    true,
+		CriticalFindingsThreshold:  *criticalThreshold,
+		HighFindingsThreshold:      *highThreshold,
+		MediumFindingsThreshold:    *mediumThreshold,
+		FailOnCriticalThreshold:    *failOnCritical,
+		FailOnHighThreshold:        *failOnHigh,
+		WarnOnMediumThreshold:      *warnOnMedium,
+	}
+
+	// Configure performance gates in pipeline
+	pipeline.WithPerformanceGates(performanceGateConfig)
+
 	// Run the demo workflow with performance configuration
 	manifest, err := pipeline.DemoWithPerformance(ctx, *repoURL, *ref, *outDir, *duration, perfConfig)
 	if err != nil {
@@ -953,6 +975,12 @@ func runDemoCommand(pipeline *core.Pipeline) {
 		
 		os.Exit(1)
 	}
+
+	// Add performance gate config to manifest
+	manifest.PerformanceGateConfig = performanceGateConfig
+
+	// Add performance gate config to manifest
+	manifest.PerformanceGateConfig = performanceGateConfig
 
 	// Save run manifest
 	manifestData, err := json.MarshalIndent(manifest, "", "  ")
@@ -978,6 +1006,56 @@ func runDemoCommand(pipeline *core.Pipeline) {
 		fmt.Printf("  📊 %s\n", filepath.Join(*outDir, "report.md"))
 		for _, profile := range manifest.Profiles {
 			fmt.Printf("  📈 %s\n", profile)
+		}
+
+		// Check performance gates
+		fmt.Println("\n🚦 Checking performance gates...")
+		findingsPath := filepath.Join(*outDir, "findings.json")
+		findingsData, err := os.ReadFile(findingsPath)
+		if err != nil {
+			fmt.Printf("⚠️  Warning: failed to read findings for performance gate check: %v\n", err)
+		} else {
+			var findingsBundle struct {
+				Findings []model.Finding `json:"findings"`
+			}
+			if err := json.Unmarshal(findingsData, &findingsBundle); err != nil {
+				fmt.Printf("⚠️  Warning: failed to parse findings: %v\n", err)
+			} else {
+				gateResult, err := pipeline.CheckPerformanceGates(findingsBundle.Findings)
+				if err != nil {
+					fmt.Printf("⚠️  Warning: performance gate check failed: %v\n", err)
+				} else {
+					if gateResult.Passed {
+						fmt.Printf("✅ Performance gates PASSED\n")
+						if len(gateResult.Warnings) > 0 {
+							fmt.Printf("⚠️  Warnings:\n")
+							for _, warning := range gateResult.Warnings {
+								fmt.Printf("   - %s\n", warning)
+							}
+						}
+					} else {
+						fmt.Printf("❌ Performance gates FAILED\n")
+						fmt.Printf("🔍 Reason: %s\n", gateResult.Message)
+						if len(gateResult.Errors) > 0 {
+							fmt.Printf("💥 Errors:\n")
+							for _, error := range gateResult.Errors {
+								fmt.Printf("   - %s\n", error)
+							}
+						}
+						if performanceGateConfig.FailOnCriticalThreshold || performanceGateConfig.FailOnHighThreshold {
+							fmt.Printf("\n💥 Build failed due to performance gate violations\n")
+							os.Exit(1)
+							return
+						}
+					}
+					
+					// Display severity distribution
+					fmt.Printf("\n📊 Finding Severity Distribution:\n")
+					for severity, count := range gateResult.SeverityCounts {
+						fmt.Printf("   %s: %d\n", severity, count)
+					}
+				}
+			}
 		}
 
 		// Generate remediations if enabled
@@ -1035,6 +1113,14 @@ func runDemoKitCommand(pipeline *core.Pipeline) {
 	remediationConfidence := flagSet.Float64("remediation-confidence", 0.7, "Minimum confidence threshold for remediation suggestions (0.0-1.0)")
 	remediationMaxChanges := flagSet.Int("remediation-max-changes", 3, "Maximum number of code changes per finding")
 	remediationCodeLimit := flagSet.Int("remediation-code-limit", 200, "Maximum characters per code change")
+	
+	// CI/CD Performance Gates
+	criticalThreshold := flagSet.Int("critical-threshold", 5, "Critical findings threshold for CI/CD gates")
+	highThreshold := flagSet.Int("high-threshold", 10, "High findings threshold for CI/CD gates")
+	mediumThreshold := flagSet.Int("medium-threshold", 20, "Medium findings threshold for CI/CD gates")
+	failOnCritical := flagSet.Bool("fail-on-critical", true, "Fail build on critical threshold exceedance")
+	failOnHigh := flagSet.Bool("fail-on-high", false, "Fail build on high threshold exceedance")
+	warnOnMedium := flagSet.Bool("warn-on-medium", true, "Warn on medium threshold exceedance")
 	flagSet.Parse(os.Args[2:])
 
 	if *outDir == "" {
@@ -1098,6 +1184,20 @@ func runDemoKitCommand(pipeline *core.Pipeline) {
 		Temperature:       0.3,
 	}
 
+	// Create performance gate configuration
+	performanceGateConfig := model.PerformanceGateConfig{
+		Enabled:                    true,
+		CriticalFindingsThreshold:  *criticalThreshold,
+		HighFindingsThreshold:      *highThreshold,
+		MediumFindingsThreshold:    *mediumThreshold,
+		FailOnCriticalThreshold:    *failOnCritical,
+		FailOnHighThreshold:        *failOnHigh,
+		WarnOnMediumThreshold:      *warnOnMedium,
+	}
+
+	// Configure performance gates in pipeline
+	pipeline.WithPerformanceGates(performanceGateConfig)
+
 	// Run the demo workflow with the local demo repository
 	manifest, err := pipeline.DemoWithPerformance(ctx, demoRepoPath, "", *outDir, *duration, perfConfig)
 	if err != nil {
@@ -1146,6 +1246,56 @@ func runDemoKitCommand(pipeline *core.Pipeline) {
 		fmt.Printf("  📊 %s\n", filepath.Join(*outDir, "report.md"))
 		for _, profile := range manifest.Profiles {
 			fmt.Printf("  📈 %s\n", profile)
+		}
+
+		// Check performance gates
+		fmt.Println("\n🚦 Checking performance gates...")
+		findingsPath := filepath.Join(*outDir, "findings.json")
+		findingsData, err := os.ReadFile(findingsPath)
+		if err != nil {
+			fmt.Printf("⚠️  Warning: failed to read findings for performance gate check: %v\n", err)
+		} else {
+			var findingsBundle struct {
+				Findings []model.Finding `json:"findings"`
+			}
+			if err := json.Unmarshal(findingsData, &findingsBundle); err != nil {
+				fmt.Printf("⚠️  Warning: failed to parse findings: %v\n", err)
+			} else {
+				gateResult, err := pipeline.CheckPerformanceGates(findingsBundle.Findings)
+				if err != nil {
+					fmt.Printf("⚠️  Warning: performance gate check failed: %v\n", err)
+				} else {
+					if gateResult.Passed {
+						fmt.Printf("✅ Performance gates PASSED\n")
+						if len(gateResult.Warnings) > 0 {
+							fmt.Printf("⚠️  Warnings:\n")
+							for _, warning := range gateResult.Warnings {
+								fmt.Printf("   - %s\n", warning)
+							}
+						}
+					} else {
+						fmt.Printf("❌ Performance gates FAILED\n")
+						fmt.Printf("🔍 Reason: %s\n", gateResult.Message)
+						if len(gateResult.Errors) > 0 {
+							fmt.Printf("💥 Errors:\n")
+							for _, error := range gateResult.Errors {
+								fmt.Printf("   - %s\n", error)
+							}
+						}
+						if performanceGateConfig.FailOnCriticalThreshold || performanceGateConfig.FailOnHighThreshold {
+							fmt.Printf("\n💥 Build failed due to performance gate violations\n")
+							os.Exit(1)
+							return
+						}
+					}
+					
+					// Display severity distribution
+					fmt.Printf("\n📊 Finding Severity Distribution:\n")
+					for severity, count := range gateResult.SeverityCounts {
+						fmt.Printf("   %s: %d\n", severity, count)
+					}
+				}
+			}
 		}
 
 		// Generate remediations if enabled
