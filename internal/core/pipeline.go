@@ -52,7 +52,7 @@ func (p *Pipeline) WithLLM(apiKey, model string, timeout, maxResponse, maxPrompt
 
 // WithWebSocketServer configures WebSocket server for real-time monitoring
 func (p *Pipeline) WithWebSocketServer(port int, dataDir string, enableAuth bool) {
-	p.wsServer = webserver.NewWebSocketServer(port, dataDir, false) // Auth parameter kept for API compatibility
+	p.wsServer = webserver.NewWebSocketServer(port, dataDir, dataDir, enableAuth)
 }
 
 // WithWebSocketAutoRefresh configures auto-refresh interval for WebSocket server

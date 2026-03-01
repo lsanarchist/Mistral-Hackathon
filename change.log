@@ -1,5 +1,48 @@
 # TriageProf Change Log
 
+## 2026-03-01 03:30:00
+- **Objective**: Enhanced Web UI with Professional Design and Dark Mode
+- **Rationale**: Create a professional, modern web interface for demos and production use that showcases TriageProf's capabilities effectively
+- **Impact**: Web viewer UI/UX, user experience, demo presentation, accessibility, visual design
+- **Changes**:
+  - Completely redesigned CSS with modern, professional styling and gradient backgrounds
+  - Added dark mode support with smooth transitions and localStorage persistence
+  - Enhanced color scheme with improved contrast and accessibility
+  - Implemented responsive design for mobile, tablet, and desktop devices
+  - Added interactive hover effects, animations, and transitions throughout the UI
+  - Created enhanced chart visualizations with doughnut and bar charts using Chart.js
+  - Added modal dialogs for detailed finding information with click-to-expand functionality
+  - Implemented notification system for live updates and user feedback
+  - Enhanced WebSocket monitoring dashboard with real-time stats and client count
+  - Added AI insights section with professional styling for LLM-generated recommendations
+  - Improved plugin information display with interactive cards and hover effects
+  - Added severity indicators, score badges, and visual status indicators
+  - Implemented print-friendly styles for report generation
+  - Enhanced error handling and user feedback with styled error messages
+  - Added dark mode toggle button with icon and state persistence
+  - Improved typography, spacing, and visual hierarchy throughout the application
+- **Testing**: Manual testing of dark mode toggle, responsive design across devices, chart rendering, modal functionality, WebSocket integration, and overall visual consistency
+- **Result**: Professional, production-ready web interface that effectively showcases TriageProf's AI-powered performance analysis capabilities. The enhanced UI provides better user experience, improved accessibility, and a polished presentation suitable for demos and professional use.
+
+## 2026-03-01 02:30:00
+- **Objective**: WebSocket JWT Authentication Implementation
+- **Rationale**: Enhance WebSocket security with JWT authentication to support multi-user scenarios and secure production deployments
+- **Impact**: WebSocket server, authentication system, API security, production deployment capabilities
+- **Changes**:
+  - Added JWT token generation and validation to WebSocket server using golang-jwt/jwt/v5
+  - Implemented `GenerateJWTToken()` and `ValidateJWTToken()` methods with HS256 signing
+  - Added `extractTokenFromRequest()` utility for token extraction from headers/query params
+  - Enhanced WebSocket handler with JWT authentication middleware for secure connections
+  - Added `/auth/token` HTTP endpoint for JWT token generation with role-based access
+  - Updated `BroadcastData()` to include authentication status in real-time statistics
+  - Added comprehensive JWT authentication unit tests covering token generation, validation, and error cases
+  - Enhanced WebSocket server constructor with authentication configuration support
+  - Updated core pipeline integration for WebSocket authentication compatibility
+  - Maintained backward compatibility - authentication can be disabled for existing deployments
+  - Added proper error handling for invalid/missing tokens with appropriate HTTP status codes
+- **Testing**: Unit tests for JWT token lifecycle, authentication flow, and WebSocket integration; manual testing of token generation and validation; security testing with invalid tokens
+- **Result**: Secure WebSocket connections with JWT authentication, supporting multi-user access control and production-grade security. The implementation provides role-based access, cryptographically secure tokens, and comprehensive error handling while maintaining full backward compatibility with existing non-authenticated deployments.
+
 ## 2026-03-01 02:15:00
 - **Objective**: Enhanced WebSocket Real-time Monitoring with Live Data Streaming
 - **Rationale**: Enable continuous performance monitoring with automatic updates and comprehensive statistics
