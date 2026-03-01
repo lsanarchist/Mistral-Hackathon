@@ -17,6 +17,17 @@
 - **Testing**: Manual testing of server compilation; verified load script syntax; confirmed build process works; validated enhanced performance characteristics
 - **Result**: Demo now generates significantly richer profiling data with more pronounced performance issues, creating a more compelling and professional "wow" factor demonstration that better highlights TriageProf's AI-powered analysis capabilities
 
+### 2026-03-01 17:30: Demo Enhancement Iteration
+- **Objective**: Enhance demo experience with more pronounced performance issues
+- **Changes**:
+  - Increased memory leak simulation from 100MB to 400MB
+  - Enhanced blocking I/O operations with longer delays
+  - Increased goroutine leak from 100 to 200 goroutines
+  - Enhanced memory allocation patterns in export endpoint
+  - Fixed load script syntax error and improved load generation
+- **Testing**: Verified compilation, build process, and syntax validation
+- **Result**: Demo now showcases 11 distinct performance issues with enhanced visibility
+
 ### 2026-03-01
 - **Objective**: Enhance LLM client with robust error handling, retry logic, and better error messages
 - **Rationale**: Improve reliability and user experience of LLM insights generation by adding automatic retry with exponential backoff for transient failures, better error messages for debugging, and configurable retry parameters
