@@ -114,6 +114,22 @@ demo-ruby: build
 
 clean:
 	rm -rf bin/ plugins/bin/ out/
+	@echo "Cleaned build artifacts"
+
+# Show help
+help:
+	@echo "Makefile targets:"
+	@echo "  all         - Build the project (default)"
+	@echo "  build       - Build binaries"
+	@echo "  test        - Run all tests"
+	@echo "  lint        - Run linter"
+	@echo "  clean       - Clean build artifacts"
+	@echo "  release     - Create release artifacts"
+	@echo "  demo        - Run demo"
+	@echo "  demo-python - Run Python demo"
+	@echo "  demo-node   - Run Node.js demo"
+	@echo "  demo-ruby   - Run Ruby demo"
+	@echo "  help        - Show this help"
 
 install:
 	mkdir -p bin/ plugins/bin/
