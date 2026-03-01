@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -557,8 +558,8 @@ func (p *Pipeline) GenerateWebReport(ctx context.Context, findingsPath, outDir s
 		return err
 	}
 
-	// Copy web assets
-	webAssets := []string{"index.html", "style.css", "app.js"}
+	// Copy new web assets for professional report
+	webAssets := []string{"report-template.html", "report.js", "style.css"}
 	for _, asset := range webAssets {
 		srcPath := filepath.Join("web", asset)
 		dstPath := filepath.Join(webDir, asset)
@@ -599,20 +600,49 @@ func (p *Pipeline) GenerateWebReport(ctx context.Context, findingsPath, outDir s
 		}
 	}
 
-	// Create index.html that loads the data automatically
-	indexHTML := `<!DOCTYPE html>
+	// Create report.html that loads the data with URL parameters
+	findingsJSON := url.QueryEscape(string(data))
+	var insightsJSON string
+	if insights != nil {
+		insightsData, _ := json.Marshal(insights)
+		insightsJSON = url.QueryEscape(string(insightsData))
+	}
+
+	// Create the main report HTML file
+	var reportHTML string
+	if insights != nil {
+		reportHTML = fmt.Sprintf(`<!DOCTYPE html>
 <html>
 <head>
-    <title>TriageProf Web Report</title>
-    <meta http-equiv="refresh" content="0; url=web/index.html">
+    <title>TriageProf Performance Report</title>
+    <meta http-equiv="refresh" content="0; url=web/report-template.html?findings=%s&insights=%s">
 </head>
 <body>
-    <p>Redirecting to web report...</p>
+    <p>Loading performance report...</p>
 </body>
-</html>`
+</html>`, findingsJSON, insightsJSON)
+	} else {
+		reportHTML = fmt.Sprintf(`<!DOCTYPE html>
+<html>
+<head>
+    <title>TriageProf Performance Report</title>
+    <meta http-equiv="refresh" content="0; url=web/report-template.html?findings=%s">
+</head>
+<body>
+    <p>Loading performance report...</p>
+</body>
+</html>`, findingsJSON)
+	}
 
+	// Create both report.html and index.html for compatibility
+	reportPath := filepath.Join(outDir, "report.html")
+	if err := os.WriteFile(reportPath, []byte(reportHTML), 0644); err != nil {
+		return err
+	}
+
+	// Also create index.html for backward compatibility
 	indexPath := filepath.Join(outDir, "index.html")
-	return os.WriteFile(indexPath, []byte(indexHTML), 0644)
+	return os.WriteFile(indexPath, []byte(reportHTML), 0644)
 }
 
 // GetCacheStats returns cache statistics if caching is enabled

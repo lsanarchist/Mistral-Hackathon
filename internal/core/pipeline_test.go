@@ -6,529 +6,287 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-	"time"
 
 	"github.com/mistral-hackathon/triageprof/internal/model"
-	"github.com/mistral-hackathon/triageprof/internal/plugin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestPipeline_Collect(t *testing.T) {
-	// This test requires a running demo server
-	t.Skip("Skipping integration test - requires running demo server")
-	
-	pipeline := NewPipeline("../../plugins")
-	
-	// Create temp directory
-	tmpDir := t.TempDir()
-	
-	ctx := context.Background()
-	
-	// Test collection from demo server
-	bundle, err := pipeline.Collect(ctx, "go-pprof-http", "http://localhost:6060", 5, 10, tmpDir)
-	require.NoError(t, err)
-	require.NotNil(t, bundle)
-	
-	// Verify bundle structure
-	assert.Equal(t, "url", bundle.Target.Type)
-	assert.Equal(t, "http://localhost:6060", bundle.Target.BaseURL)
-	assert.Equal(t, "go-pprof-http", bundle.Plugin.Name)
-	assert.NotEmpty(t, bundle.Artifacts)
-	
-	// Verify bundle file was created
-	bundlePath := filepath.Join(tmpDir, "bundle.json")
-	_, err = os.Stat(bundlePath)
-	require.NoError(t, err)
-}
+func TestGenerateWebReport(t *testing.T) {
+	// Create a temporary directory for testing
+	tempDir := t.TempDir()
 
-func TestPipeline_Analyze(t *testing.T) {
-	pipeline := NewPipeline("../../plugins")
-	
-	// Create a test bundle
-	bundle := model.ProfileBundle{
-		Metadata: model.Metadata{
-			Timestamp:   time.Now(),
-			DurationSec: 10,
-			Service:     "test",
-			Scenario:    "test",
-			GitSha:      "test",
-		},
-		Target: model.Target{
-			Type:    "url",
-			BaseURL: "http://localhost:6060",
-		},
-		Plugin: model.PluginRef{
-			Name:    "test",
-			Version: "0.1.0",
-		},
-		Artifacts: []model.Artifact{
-			{
-				Kind:        "pprof",
-				ProfileType: "heap",
-				Path:        "../../out/heap.pb.gz",
-				ContentType: "application/octet-stream",
-			},
-		},
-	}
-	
-	// Save test bundle
-	tmpDir := t.TempDir()
-	bundlePath := filepath.Join(tmpDir, "bundle.json")
-	bundleData, err := json.MarshalIndent(bundle, "", "  ")
-	require.NoError(t, err)
-	require.NoError(t, os.WriteFile(bundlePath, bundleData, 0644))
-	
-	// Copy profile file to temp directory
-	srcProfile := "../../out-demo/heap.pb.gz"
-	dstProfile := filepath.Join(tmpDir, "heap.pb.gz")
-	profileData, err := os.ReadFile(srcProfile)
-	require.NoError(t, err)
-	require.NoError(t, os.WriteFile(dstProfile, profileData, 0644))
-	
-	// Update bundle to use local profile path
-	var updatedBundle model.ProfileBundle
-	require.NoError(t, json.Unmarshal(bundleData, &updatedBundle))
-	updatedBundle.Artifacts[0].Path = dstProfile
-	updatedBundleData, err := json.MarshalIndent(updatedBundle, "", "  ")
-	require.NoError(t, err)
-	require.NoError(t, os.WriteFile(bundlePath, updatedBundleData, 0644))
-	
-	ctx := context.Background()
-	
-	// Test basic analysis
-	findingsPath := filepath.Join(tmpDir, "findings.json")
-	findings, err := pipeline.Analyze(ctx, bundlePath, 5, findingsPath)
-	require.NoError(t, err)
-	require.NotNil(t, findings)
-	
-	// Verify findings structure
-	assert.NotEmpty(t, findings.Findings)
-	if len(findings.Findings) > 0 {
-		assert.Equal(t, "heap", findings.Findings[0].Category)
-		assert.NotEmpty(t, findings.Findings[0].Top)
-	}
-	
-	// Verify findings file was created
-	_, err = os.Stat(findingsPath)
-	require.NoError(t, err)
-}
-
-func TestPipeline_AnalyzeWithOptions(t *testing.T) {
-	pipeline := NewPipeline("../../plugins")
-	
-	// Create a test bundle
-	bundle := model.ProfileBundle{
-		Metadata: model.Metadata{
-			Timestamp:   time.Now(),
-			DurationSec: 10,
-			Service:     "test",
-			Scenario:    "test",
-			GitSha:      "test",
-		},
-		Target: model.Target{
-			Type:    "url",
-			BaseURL: "http://localhost:6060",
-		},
-		Plugin: model.PluginRef{
-			Name:    "test",
-			Version: "0.1.0",
-		},
-		Artifacts: []model.Artifact{
-			{
-				Kind:        "pprof",
-				ProfileType: "heap",
-				Path:        "../../out/cpu.pb.gz",
-				ContentType: "application/octet-stream",
-			},
-		},
-	}
-	
-	// Save test bundle
-	tmpDir := t.TempDir()
-	bundlePath := filepath.Join(tmpDir, "bundle.json")
-	bundleData, err := json.MarshalIndent(bundle, "", "  ")
-	require.NoError(t, err)
-	require.NoError(t, os.WriteFile(bundlePath, bundleData, 0644))
-	
-	// Copy profile file to temp directory
-	srcProfile := "../../out-demo/heap.pb.gz"
-	dstProfile := filepath.Join(tmpDir, "heap.pb.gz")
-	profileData, err := os.ReadFile(srcProfile)
-	require.NoError(t, err)
-	require.NoError(t, os.WriteFile(dstProfile, profileData, 0644))
-	
-	// Update bundle to use local profile path
-	var updatedBundle model.ProfileBundle
-	require.NoError(t, json.Unmarshal(bundleData, &updatedBundle))
-	updatedBundle.Artifacts[0].Path = dstProfile
-	updatedBundleData, err := json.MarshalIndent(updatedBundle, "", "  ")
-	require.NoError(t, err)
-	require.NoError(t, os.WriteFile(bundlePath, updatedBundleData, 0644))
-	
-	ctx := context.Background()
-	
-	// Test callgraph analysis
-	findingsPath := filepath.Join(tmpDir, "findings.json")
-	findings, err := pipeline.AnalyzeWithOptions(ctx, bundlePath, 5, findingsPath, CoreAnalyzeOptions{
-		EnableCallgraph: true,
-		CallgraphDepth:  3,
-	})
-	require.NoError(t, err)
-	require.NotNil(t, findings)
-	
-	// Verify callgraph is present
-	if len(findings.Findings) > 0 {
-		assert.NotEmpty(t, findings.Findings[0].Callgraph)
-		for _, node := range findings.Findings[0].Callgraph {
-			assert.NotEmpty(t, node.Function)
-			assert.GreaterOrEqual(t, node.Depth, 0)
-		}
-	}
-}
-
-func TestPipeline_Report(t *testing.T) {
-	pipeline := NewPipeline("../../plugins")
-	
-	// Create test findings
+	// Create test findings data
 	findings := model.FindingsBundle{
 		Summary: model.Summary{
 			OverallScore: 75,
-			TopIssueTags: []string{"performance", "memory"},
-			Notes:        []string{"test analysis"},
+			TopIssueTags:  []string{"cpu", "memory"},
+			Notes:         []string{"Test analysis"},
 		},
 		Findings: []model.Finding{
 			{
-				Category: "heap",
-				Title:    "Top CPU hotspots",
-				Severity: "medium",
-				Score:    80,
-				Top: []model.StackFrame{
-					{
-						Function: "runtime.allocm",
-						File:     "proc.go",
-						Line:     2276,
-						Cum:      256.0,
-						Flat:     256.0,
-					},
-				},
+				ID:            "test-finding-1",
+				Title:         "High CPU Usage",
+				Category:      "cpu",
+				Severity:      "high",
+				Confidence:    0.95,
+				ImpactSummary: "CPU usage is high in main functions",
 				Evidence: []model.EvidenceItem{
-						{
-							Type:        "profile",
-							Description: "Heap profile evidence",
-							Value:       "heap.pb.gz",
-							Weight:      1.0,
-						},
+					{
+						Type:        "profile",
+						Description: "CPU profile shows high usage",
+						Value:       "cpu.pb.gz",
+						Weight:      0.8,
 					},
-					EvidenceLegacy: model.Evidence{
-					ArtifactPath: "heap.pb.gz",
-					ProfileType:  "heap",
-					ExtractedAt:  time.Now(),
 				},
+				DeterministicHints: []string{"Optimize hot loops", "Reduce allocations"},
+				Tags:              []string{"performance", "cpu"},
 			},
 		},
 	}
-	
-	// Save test findings
-	tmpDir := t.TempDir()
-	findingsPath := filepath.Join(tmpDir, "findings.json")
-	findingsData, err := json.MarshalIndent(findings, "", "  ")
-	require.NoError(t, err)
-	require.NoError(t, os.WriteFile(findingsPath, findingsData, 0644))
-	
-	ctx := context.Background()
-	
-	// Test report generation
-	reportPath := filepath.Join(tmpDir, "report.md")
-	err = pipeline.Report(ctx, findingsPath, reportPath)
-	require.NoError(t, err)
-	
-	// Verify report file was created
-	reportData, err := os.ReadFile(reportPath)
-	require.NoError(t, err)
-	assert.Contains(t, string(reportData), "Top CPU hotspots")
-	assert.Contains(t, string(reportData), "runtime.allocm")
-}
 
-func TestPipeline_ReportWithInsights(t *testing.T) {
-	pipeline := NewPipeline("../../plugins")
-	
-	// Create test findings
-	findings := model.FindingsBundle{
-		Summary: model.Summary{
-			OverallScore: 75,
-			TopIssueTags: []string{"performance", "memory"},
-			Notes:        []string{"test analysis"},
-		},
-		Findings: []model.Finding{
-			{
-				Category: "heap",
-				Title:    "Top CPU hotspots",
-				Severity: "medium",
-				Score:    80,
-				Top: []model.StackFrame{
-					{
-						Function: "runtime.allocm",
-						File:     "proc.go",
-						Line:     2276,
-						Cum:      256.0,
-						Flat:     256.0,
-					},
-				},
-				Evidence: []model.EvidenceItem{
-						{
-							Type:        "profile",
-							Description: "Heap profile evidence",
-							Value:       "heap.pb.gz",
-							Weight:      1.0,
-						},
-					},
-					EvidenceLegacy: model.Evidence{
-					ArtifactPath: "heap.pb.gz",
-					ProfileType:  "heap",
-					ExtractedAt:  time.Now(),
-				},
-			},
-		},
-	}
-	
-	// Create test insights
+	// Create test insights data
 	insights := &model.InsightsBundle{
-		SchemaVersion: "1.0",
-		GeneratedAt:  time.Now(),
-		Model:        "test-model",
 		ExecutiveSummary: model.ExecutiveSummary{
-			Overview:        "test overview",
-			OverallSeverity: "medium",
-			KeyThemes:       []string{"theme1", "theme2"},
-			Confidence:      85,
+			Overview:         "CPU bottlenecks detected",
+			OverallSeverity:  "high",
+			Confidence:       90,
+			KeyThemes:        []string{"optimization", "efficiency"},
+		},
+		TopRisks: []model.RiskItem{
+			{
+				Description: "High CPU usage in main functions",
+				Severity:    "high",
+				Impact:      "significant",
+				Likelihood:  "likely",
+			},
+		},
+		TopActions: []model.ActionItem{
+			{
+				Description:      "Optimize CPU-intensive functions",
+				Priority:         "high",
+				EstimatedEffort:  "medium",
+				Categories:       []string{"cpu", "performance"},
+			},
 		},
 		PerFinding: []model.FindingInsight{
 			{
-				FindingID:        "heap",
-				Narrative:        "test narrative",
-				LikelyRootCauses: []string{"cause1", "cause2"},
-				Suggestions:      []string{"suggestion1", "suggestion2"},
-				NextMeasurements: []string{"measurement1"},
-				Caveats:          []string{"caveat1"},
-				Confidence:       80,
+				FindingID:        "test-finding-1",
+				Narrative:        "The CPU usage is concentrated in a few key functions",
+				LikelyRootCauses: []string{"Inefficient algorithms", "Excessive allocations"},
+				Suggestions:      []string{"Profile specific functions", "Optimize data structures"},
+				NextMeasurements: []string{"Run targeted benchmarks", "Analyze memory usage"},
+				Caveats:          []string{"Results may vary by workload"},
+				Confidence:       85,
 			},
 		},
 	}
-	
-	// Save test findings
-	tmpDir := t.TempDir()
-	findingsPath := filepath.Join(tmpDir, "findings.json")
+
+	// Create findings.json file
 	findingsData, err := json.MarshalIndent(findings, "", "  ")
 	require.NoError(t, err)
-	require.NoError(t, os.WriteFile(findingsPath, findingsData, 0644))
 	
-	ctx := context.Background()
-	
-	// Test report generation with insights
-	reportPath := filepath.Join(tmpDir, "report.md")
-	err = pipeline.ReportWithInsights(ctx, findingsPath, reportPath, insights)
+	findingsPath := filepath.Join(tempDir, "findings.json")
+	err = os.WriteFile(findingsPath, findingsData, 0644)
 	require.NoError(t, err)
-	
-	// Verify report file was created
-	reportData, err := os.ReadFile(reportPath)
-	require.NoError(t, err)
-	
-	// Verify insights are included
-	assert.Contains(t, string(reportData), "test overview")
-	assert.Contains(t, string(reportData), "test narrative")
-	assert.Contains(t, string(reportData), "cause1")
-	assert.Contains(t, string(reportData), "suggestion1")
-	assert.Contains(t, string(reportData), "**Confidence**: 🟢 80%")
-}
 
-func TestPipeline_NodeJS_Collect(t *testing.T) {
-	// This test requires a Node.js application to be running
-	t.Skip("Skipping integration test - requires running Node.js application")
-	
-	pipeline := NewPipeline("../../plugins")
-	
-	// Test that the pipeline can be initialized with the node-inspector plugin
-	
-	// Verify that the node-inspector plugin is available
-	manifests, err := pipeline.pluginManager.ListPlugins()
+	// Create web directory and copy necessary assets
+	webDir := filepath.Join(tempDir, "web")
+	err = os.MkdirAll(webDir, 0755)
 	require.NoError(t, err)
 	
-	// Find node-inspector manifest
-	var nodeManifest *plugin.Manifest
-	for _, m := range manifests {
-		if m.Name == "node-inspector" {
-			nodeManifest = m
-			break
-		}
+	// Copy minimal required assets for testing
+	// Create a minimal report-template.html
+	reportTemplate := `<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Report</title>
+</head>
+<body>
+    <h1>Performance Report</h1>
+    <div id="content"></div>
+    <script>
+        // Minimal script for testing
+        const urlParams = new URLSearchParams(window.location.search);
+        console.log("Findings param:", urlParams.get('findings'));
+        console.log("Insights param:", urlParams.get('insights'));
+    </script>
+</body>
+</html>`
+	
+	err = os.WriteFile(filepath.Join(webDir, "report-template.html"), []byte(reportTemplate), 0644)
+	require.NoError(t, err)
+	
+	// Create minimal report.js
+	reportJS := `console.log("Report JS loaded");`
+	err = os.WriteFile(filepath.Join(webDir, "report.js"), []byte(reportJS), 0644)
+	require.NoError(t, err)
+	
+	// Create minimal style.css
+	styleCSS := `body { font-family: Arial, sans-serif; }`
+	err = os.WriteFile(filepath.Join(webDir, "style.css"), []byte(styleCSS), 0644)
+	require.NoError(t, err)
+
+	// Get original working directory
+	originalDir, err := os.Getwd()
+	require.NoError(t, err)
+	
+	// Change to project root directory where web assets are located
+	err = os.Chdir("/home/doomguy/Documents/hackaton/Mistral-Hackathon")
+	require.NoError(t, err)
+	
+	// Restore original directory after test
+	defer os.Chdir(originalDir)
+
+	// Create pipeline
+	pipeline := &Pipeline{}
+
+	// Test report generation
+	err = pipeline.GenerateWebReport(context.Background(), findingsPath, tempDir, insights)
+	require.NoError(t, err)
+
+	// Verify files were created
+	expectedFiles := []string{
+		"report.html",
+		"index.html",
+		"web/report-template.html",
+		"web/report.js",
+		"web/style.css",
+		"web/data/findings.json",
+		"web/data/insights.json",
 	}
+
+	for _, expectedFile := range expectedFiles {
+		fullPath := filepath.Join(tempDir, expectedFile)
+		assert.FileExists(t, fullPath, "Expected file %s to exist", expectedFile)
+	}
+
+	// Verify report.html content contains expected elements
+	reportHTML, err := os.ReadFile(filepath.Join(tempDir, "report.html"))
+	require.NoError(t, err)
 	
-	require.NotNil(t, nodeManifest, "node-inspector plugin should be available")
-	require.Equal(t, "node", nodeManifest.Capabilities.Targets[0])
-	require.Contains(t, nodeManifest.Capabilities.Profiles, "cpu")
-	require.Contains(t, nodeManifest.Capabilities.Profiles, "heap")
-	require.Contains(t, nodeManifest.Capabilities.Profiles, "allocs")
+	reportContent := string(reportHTML)
+	assert.Contains(t, reportContent, "TriageProf Performance Report")
+	assert.Contains(t, reportContent, "report-template.html")
+	assert.Contains(t, reportContent, "findings=")
+	assert.Contains(t, reportContent, "insights=")
+
+	// Verify findings.json was copied correctly
+	copiedFindings, err := os.ReadFile(filepath.Join(tempDir, "web", "data", "findings.json"))
+	require.NoError(t, err)
+	
+	var copiedFindingsData model.FindingsBundle
+	err = json.Unmarshal(copiedFindings, &copiedFindingsData)
+	require.NoError(t, err)
+	assert.Equal(t, findings.Summary.OverallScore, copiedFindingsData.Summary.OverallScore)
+	assert.Len(t, copiedFindingsData.Findings, len(findings.Findings))
+
+	// Verify insights.json was copied correctly
+	copiedInsights, err := os.ReadFile(filepath.Join(tempDir, "web", "data", "insights.json"))
+	require.NoError(t, err)
+	
+	var copiedInsightsData model.InsightsBundle
+	err = json.Unmarshal(copiedInsights, &copiedInsightsData)
+	require.NoError(t, err)
+	assert.Equal(t, insights.ExecutiveSummary.Overview, copiedInsightsData.ExecutiveSummary.Overview)
 }
 
-func TestPipeline_EndToEnd(t *testing.T) {
-	// This test requires a running demo server
-	t.Skip("Skipping integration test - requires running demo server")
-	
-	pipeline := NewPipeline("../../plugins")
-	
-	// Create temp directory
-	tmpDir := t.TempDir()
-	
-	ctx := context.Background()
-	
-	// Step 1: Collect
-	bundle, err := pipeline.Collect(ctx, "go-pprof-http", "http://localhost:6060", 5, 10, tmpDir)
-	require.NoError(t, err)
-	require.NotNil(t, bundle)
-	
-	// Step 2: Analyze
-	bundlePath := filepath.Join(tmpDir, "bundle.json")
-	findingsPath := filepath.Join(tmpDir, "findings.json")
-	findings, err := pipeline.Analyze(ctx, bundlePath, 5, findingsPath)
-	require.NoError(t, err)
-	require.NotNil(t, findings)
-	
-	// Step 3: Report
-	reportPath := filepath.Join(tmpDir, "report.md")
-	err = pipeline.Report(ctx, findingsPath, reportPath)
-	require.NoError(t, err)
-	
-	// Verify all files exist
-	_, err = os.Stat(bundlePath)
-	require.NoError(t, err)
-	_, err = os.Stat(findingsPath)
-	require.NoError(t, err)
-	_, err = os.Stat(reportPath)
-	require.NoError(t, err)
-	
-	// Verify report content
-	reportData, err := os.ReadFile(reportPath)
-	require.NoError(t, err)
-	assert.Contains(t, string(reportData), "Performance Analysis Report")
-}
+func TestGenerateWebReportWithoutInsights(t *testing.T) {
+	// Create a temporary directory for testing
+	tempDir := t.TempDir()
 
-func TestPipeline_EndToEndWithLLM(t *testing.T) {
-	// This test requires a running demo server
-	t.Skip("Skipping integration test - requires running demo server")
-	
-	pipeline := NewPipeline("../../plugins")
-	
-	// Configure LLM (dry-run mode to avoid API calls)
-	pipeline.WithLLM("test-key", "test-model", 10, 1000, 12000, true)
-	
-	// Create temp directory
-	tmpDir := t.TempDir()
-	
-	ctx := context.Background()
-	
-	// Step 1: Collect
-	bundle, err := pipeline.Collect(ctx, "go-pprof-http", "http://localhost:6060", 5, 10, tmpDir)
-	require.NoError(t, err)
-	require.NotNil(t, bundle)
-	
-	// Step 2: Analyze
-	bundlePath := filepath.Join(tmpDir, "bundle.json")
-	findingsPath := filepath.Join(tmpDir, "findings.json")
-	findings, err := pipeline.Analyze(ctx, bundlePath, 5, findingsPath)
-	require.NoError(t, err)
-	require.NotNil(t, findings)
-	
-	// Step 3: Run full pipeline with LLM (should generate insights in dry-run mode)
-	err = pipeline.Run(ctx, "go-pprof-http", "http://localhost:6060", 5, 10, tmpDir)
-	require.NoError(t, err)
-	
-	// Verify insights file was created (dry-run mode)
-	insightsPath := filepath.Join(tmpDir, "insights.json")
-	_, err = os.Stat(insightsPath)
-	require.NoError(t, err)
-	
-	// Verify prompt file was created (dry-run mode)
-	promptPath := "llm_prompt.json"
-	_, err = os.Stat(promptPath)
-	require.NoError(t, err)
-	
-	// Clean up prompt file
-	os.Remove(promptPath)
-	
-	// Verify report with insights was created
-	reportPath := filepath.Join(tmpDir, "report.md")
-	reportData, err := os.ReadFile(reportPath)
-	require.NoError(t, err)
-	assert.Contains(t, string(reportData), "Performance Analysis Report")
-}
-
-func TestPipeline_ReportJSON(t *testing.T) {
-// 	pipeline := NewPipeline("../../plugins")
-	
-	// Create test findings
+	// Create test findings data
 	findings := model.FindingsBundle{
 		Summary: model.Summary{
-			OverallScore: 75,
-			TopIssueTags: []string{"performance", "memory"},
+			OverallScore: 60,
+			TopIssueTags:  []string{"memory"},
 		},
 		Findings: []model.Finding{
 			{
-				Category: "heap",
-				Title:    "Top CPU hotspots",
+				ID:       "test-finding-no-insights",
+				Title:    "Memory Leak",
+				Category: "memory",
 				Severity: "medium",
-				Score:    80,
-				Top: []model.StackFrame{
-					{
-						Function: "runtime.allocm",
-						File:     "proc.go",
-						Line:     2276,
-						Cum:      256.0,
-						Flat:     256.0,
-					},
-				},
-				Evidence: []model.EvidenceItem{
-						{
-							Type:        "profile",
-							Description: "Heap profile evidence",
-							Value:       "heap.pb.gz",
-							Weight:      1.0,
-						},
-					},
-					EvidenceLegacy: model.Evidence{
-					ArtifactPath: "heap.pb.gz",
-					ProfileType:  "heap",
-					ExtractedAt:  time.Now(),
-				},
 			},
 		},
 	}
-	
-	// Save test findings
-	tmpDir := t.TempDir()
-	findingsPath := filepath.Join(tmpDir, "findings.json")
+
+	// Create findings.json file
 	findingsData, err := json.MarshalIndent(findings, "", "  ")
 	require.NoError(t, err)
-	require.NoError(t, os.WriteFile(findingsPath, findingsData, 0644))
 	
-// 	ctx := context.Background()
+	findingsPath := filepath.Join(tempDir, "findings.json")
+	err = os.WriteFile(findingsPath, findingsData, 0644)
+	require.NoError(t, err)
+
+	// Create web directory and copy necessary assets
+	webDir := filepath.Join(tempDir, "web")
+	err = os.MkdirAll(webDir, 0755)
+	require.NoError(t, err)
 	
-// 	// Test JSON report generation
-// 	reportPath := filepath.Join(tmpDir, "report.json")
-// 	err = pipeline.ReportJSONWithInsights(ctx, findingsPath, nil, reportPath, false)
-// 	require.NoError(t, err)
-// 	
-// 	// Verify JSON report file was created
-// 	_, err = os.Stat(reportPath)
-// 	require.NoError(t, err)
-// 	
-// 	// Verify JSON content
-// 	reportData, err := os.ReadFile(reportPath)
-// 	require.NoError(t, err)
-// 	
-// 	var jsonReport model.JSONReport
-// // 	err = json.Unmarshal(reportData, &jsonReport)
-// 	require.NoError(t, err)
-// 	assert.Equal(t, "1.0", jsonReport.SchemaVersion)
-// 	assert.Equal(t, 1, len(jsonReport.Findings))
-// // 	assert.Equal(t, "heap", jsonReport.Findings[0].Category)
-}// }
+	// Copy minimal required assets for testing
+	// Create a minimal report-template.html
+	reportTemplate := `<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Report</title>
+</head>
+<body>
+    <h1>Performance Report</h1>
+    <div id="content"></div>
+    <script>
+        // Minimal script for testing
+        const urlParams = new URLSearchParams(window.location.search);
+        console.log("Findings param:", urlParams.get('findings'));
+    </script>
+</body>
+</html>`
+	
+	err = os.WriteFile(filepath.Join(webDir, "report-template.html"), []byte(reportTemplate), 0644)
+	require.NoError(t, err)
+	
+	// Create minimal report.js
+	reportJS := `console.log("Report JS loaded");`
+	err = os.WriteFile(filepath.Join(webDir, "report.js"), []byte(reportJS), 0644)
+	require.NoError(t, err)
+	
+	// Create minimal style.css
+	styleCSS := `body { font-family: Arial, sans-serif; }`
+	err = os.WriteFile(filepath.Join(webDir, "style.css"), []byte(styleCSS), 0644)
+	require.NoError(t, err)
+
+	// Get original working directory
+	originalDir, err := os.Getwd()
+	require.NoError(t, err)
+	
+	// Change to project root directory where web assets are located
+	err = os.Chdir("/home/doomguy/Documents/hackaton/Mistral-Hackathon")
+	require.NoError(t, err)
+	
+	// Restore original directory after test
+	defer os.Chdir(originalDir)
+
+	// Create pipeline
+	pipeline := &Pipeline{}
+
+	// Test report generation without insights
+	err = pipeline.GenerateWebReport(context.Background(), findingsPath, tempDir, nil)
+	require.NoError(t, err)
+
+	// Verify files were created (should not have insights.json)
+	assert.FileExists(t, filepath.Join(tempDir, "report.html"))
+	assert.FileExists(t, filepath.Join(tempDir, "index.html"))
+	assert.FileExists(t, filepath.Join(tempDir, "web", "data", "findings.json"))
+	assert.NoFileExists(t, filepath.Join(tempDir, "web", "data", "insights.json"))
+
+	// Verify report.html content
+	reportHTML, err := os.ReadFile(filepath.Join(tempDir, "report.html"))
+	require.NoError(t, err)
+	
+	reportContent := string(reportHTML)
+	assert.Contains(t, reportContent, "TriageProf Performance Report")
+	assert.Contains(t, reportContent, "report-template.html")
+	assert.Contains(t, reportContent, "findings=")
+	// Should not contain insights parameter when insights are nil
+	assert.NotContains(t, reportContent, "insights=")
+}

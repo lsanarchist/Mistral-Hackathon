@@ -214,13 +214,13 @@ Add optional enrichment that takes deterministic findings and returns structured
 - [x] Phase 1: `triageprof demo` command works
 - [x] Phase 2: Deterministic analyzer produces findings.json
 - [x] Phase 3: LLM enrichment works with API key
-- [ ] Phase 4: HTML report looks professional
+- [x] Phase 4: HTML report looks professional
 - [ ] Phase 5: Demo kit with pinned repo works
 
 ---
 
 ## Immediate Next Action
 
-**Start Phase 2**: Implement deterministic analyzer that produces findings.json with stable schema and rules.
+**Start Phase 5**: Implement demo kit with pinned repository that works end-to-end.
 
-Expected time: 6-12 hours for analyzer implementation + tests.
+Expected time: 4-8 hours for demo kit implementation + testing.
