@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Vis.js for interactive network visualization -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vis-network@9.1.2/dist/vis-network.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.2/dist/vis-network.min.js"></script>
     <style>
         :root {
             --primary-color: #4a6bff;
@@ -619,6 +622,146 @@
             background: #343a40;
         }
 
+        /* Advanced Visualization Section */
+        .advanced-visualization-section {
+            background: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-top: 30px;
+        }
+
+        .dark-mode .advanced-visualization-section {
+            background: var(--dark-bg);
+            color: var(--light-text);
+        }
+
+        .visualization-controls {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .dark-mode .visualization-controls {
+            background: #2d3136;
+        }
+
+        .export-buttons {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .export-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .export-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .json-export {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .csv-export {
+            background: #28a745;
+            color: white;
+        }
+
+        .pdf-export {
+            background: #dc3545;
+            color: white;
+        }
+
+        .visualization-tabs {
+            margin-bottom: 20px;
+        }
+
+        .visualization-tab-nav {
+            display: flex;
+            gap: 5px;
+            border-bottom: 2px solid #ddd;
+            overflow-x: auto;
+        }
+
+        .visualization-tab-button {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .visualization-tab-button:hover {
+            color: var(--primary-color);
+        }
+
+        .visualization-tab-button.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .visualization-tab-content {
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .dark-mode .visualization-tab-content {
+            background: #2d3136;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .dashboard-widget {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .dark-mode .dashboard-widget {
+            background: #2d3136;
+        }
+
+        .node-details-popup {
+            position: absolute;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            max-width: 400px;
+        }
+
+        .dark-mode .node-details-popup {
+            background: #2d3136;
+            color: var(--light-text);
+        }
+
         .allocation-analysis {
             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
             color: white;
@@ -1047,6 +1190,26 @@
             <div id="findingsContainer"></div>
         </div>
 
+        <!-- Advanced Visualization Section -->
+        <div class="advanced-visualization-section">
+            <h2><i class="fas fa-chart-area"></i> Advanced Visualization & Analysis</h2>
+            <div class="visualization-controls">
+                <p>Explore your performance data with interactive visualizations, comparative analysis, and custom dashboards.</p>
+                <div class="export-buttons">
+                    <button onclick="exportReport('json')" class="export-btn json-export">
+                        <i class="fas fa-file-export"></i> Export JSON
+                    </button>
+                    <button onclick="exportReport('csv')" class="export-btn csv-export">
+                        <i class="fas fa-file-csv"></i> Export CSV
+                    </button>
+                    <button onclick="exportReport('pdf')" class="export-btn pdf-export">
+                        <i class="fas fa-file-pdf"></i> Export PDF
+                    </button>
+                </div>
+            </div>
+            <div id="advancedVisualizationContainer"></div>
+        </div>
+
         <footer>
             <p><i class="fas fa-chart-line"></i> Generated by TriageProf Performance Analysis Tool</p>
             <p style="margin-top: 10px; font-size: 0.8rem; color: #999;">
@@ -1056,5 +1219,6 @@
     </div>
 
     <script src="report.js"></script>
+    <script src="visualization.js"></script>
 </body>
 </html>

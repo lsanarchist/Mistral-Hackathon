@@ -781,7 +781,7 @@ func (p *Pipeline) GenerateWebReport(ctx context.Context, findingsPath, outDir s
 	}
 
 	// Copy new web assets for professional report
-	webAssets := []string{"report-template.html", "report.js", "style.css"}
+	webAssets := []string{"report-template.html", "report.js", "style.css", "visualization.js"}
 	for _, asset := range webAssets {
 		srcPath := filepath.Join("web", asset)
 		dstPath := filepath.Join(webDir, asset)

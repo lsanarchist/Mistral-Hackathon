@@ -49,6 +49,7 @@ func TestInsightsValidation(t *testing.T) {
 			BaseURL: "https://example.com",
 		},
 	}
+	_ = bundle // Use bundle to avoid "declared and not used" error
 
 	t.Run("Valid insights pass validation", func(t *testing.T) {
 		validInsights := &model.InsightsBundle{

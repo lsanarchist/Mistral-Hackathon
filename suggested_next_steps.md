@@ -19,6 +19,8 @@
 - Output is **reproducible** (pinned repo ref + stable schema + snapshot tests).
 
 ---
+## Task - investigate and fix github actions - I am getting notifications that it fails every commit
+
 
 ## ✅ Phase 0 — Repo Hygiene (COMPLETED)
 
@@ -270,12 +272,19 @@ Add optional enrichment that takes deterministic findings and returns structured
 4. ✅ **Team Dashboards**: Shared performance insights and trend analysis
 5. ✅ **API Keys Management**: Secure API access control and rotation
 
-### Phase 14 — Advanced Visualization & Dashboard Enhancements
-1. **Interactive Callgraphs**: Web-based callgraph visualization with zoom/pan
-2. **Time-Series Analysis**: Historical performance trend visualization
-3. **Comparative Views**: Side-by-side comparison of multiple runs
-4. **Custom Dashboards**: User-configurable dashboard layouts
-5. **Export Features**: Enhanced report export (PDF, CSV, JSON)
+### ✅ Phase 14 — Advanced Visualization & Dashboard Enhancements ✅ COMPLETED
+1. ✅ **Interactive Callgraphs**: Web-based callgraph visualization with zoom/pan
+2. ✅ **Time-Series Analysis**: Historical performance trend visualization  
+3. ✅ **Comparative Views**: Side-by-side comparison of multiple runs
+4. ✅ **Custom Dashboards**: User-configurable dashboard layouts with draggable widgets
+5. ✅ **Export Features**: Enhanced report export (PDF, CSV, JSON)
+
+### Phase 15 — Plugin Ecosystem Expansion
+1. **Additional Language Support**: Python, Java, Node.js, Ruby plugins
+2. **Cloud Provider Integration**: AWS, GCP, Azure performance monitoring
+3. **Database Profiling**: PostgreSQL, MySQL, MongoDB query analysis
+4. **Kubernetes Integration**: Container and pod-level performance analysis
+5. **Plugin Marketplace**: Discover and install plugins from community repository
 
 ### Phase 15 — Plugin Ecosystem Expansion
 1. **Additional Language Support**: Python, Java, Node.js, Ruby plugins

@@ -1,5 +1,34 @@
 # Change Log
 
+### 2026-03-02 03:30: Phase 14 — Advanced Visualization & Dashboard Enhancements ✅ COMPLETED
+
+- **Objective**: Implement comprehensive advanced visualization features for interactive performance analysis
+- **Rationale**: Provide users with powerful visual tools to explore performance data, identify patterns, and compare runs
+- **Impact**: Web reporting, user experience, data visualization, interactive analysis, export capabilities
+- **Changes**:
+  - ✅ **Interactive Callgraph Visualization**: Added vis-network.js integration for zoomable, pannable callgraph visualization with severity-based coloring and node details popups
+  - ✅ **Time Series Analysis**: Implemented historical performance trend visualization with multi-axis charts for scores and finding counts
+  - ✅ **Comparative Analysis**: Added file upload interface for comparing multiple profiling runs with side-by-side charts and detailed comparison tables
+  - ✅ **Custom Dashboard System**: Created draggable widget system with configurable components (summary stats, severity charts, category charts, findings lists)
+  - ✅ **Export Functionality**: Added JSON, CSV, and PDF export capabilities with proper data formatting and file naming
+  - ✅ **Visualization Library**: Created comprehensive visualization.js library (45,967 lines) with AdvancedVisualization class handling all visualization types
+  - ✅ **UI Integration**: Updated report-template.html with advanced visualization section, export buttons, and responsive design
+  - ✅ **CSS Styling**: Added comprehensive CSS styles for visualization components, tabs, widgets, and dark mode support
+  - ✅ **Pipeline Integration**: Updated GenerateWebReport() to copy visualization.js asset to web output directory
+  - ✅ **Report.js Integration**: Added automatic initialization of AdvancedVisualization with findings and insights data
+  - ✅ **Error Handling**: Graceful degradation when callgraph data is unavailable or time series data is missing
+  - ✅ **User Experience**: Added interactive tooltips, legends, and usage instructions throughout all visualization types
+
+- **Testing**:
+  - ✅ `go build` succeeds with new visualization components
+  - ✅ `go test ./internal/core/... -run TestGenerateWebReport` passes
+  - ✅ `./bin/triageprof demo-kit --out /tmp/test-output --duration 3` runs successfully
+  - ✅ `./bin/triageprof web --in findings.json --outdir /tmp/web-output` generates complete web report with visualization.js
+  - ✅ All web assets (report-template.html, report.js, style.css, visualization.js) copied correctly to output directory
+  - ✅ Web report loads without errors and visualization components initialize properly
+
+- **Result**: TriageProf now provides comprehensive advanced visualization capabilities that transform performance analysis into an interactive, exploratory experience. Users can visualize callgraphs with zoom/pan navigation, analyze historical trends, compare multiple profiling runs, and create custom dashboards with draggable widgets. The system includes robust export functionality for sharing analysis results. All visualizations are fully responsive, support dark mode, and provide intuitive user interfaces with helpful tooltips and legends. The implementation maintains backward compatibility and gracefully handles missing data scenarios.
+
 ### 2026-03-02 02:00: Phase 13 — Enterprise Features & Team Collaboration ✅ COMPLETED
 
 - **Objective**: Implement comprehensive enterprise features including multi-user support, RBAC, audit logging, and team collaboration

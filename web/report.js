@@ -172,6 +172,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Add fade-in animation
         document.body.classList.add('fade-in');
+        
+        // Initialize advanced visualization if available
+        if (window.AdvancedVisualization && findingsData) {
+            setTimeout(() => {
+                const advancedVis = new AdvancedVisualization('advancedVisualizationContainer', findingsData, insightsData);
+                window.advancedVis = advancedVis;
+                advancedVis.init();
+            }, 500);
+        }
     }
 
     // Render summary
@@ -895,3 +904,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Start the application
     init();
 });
+
+// Export functions for global access
+function exportReport(format) {
+    if (window.AdvancedVisualization) {
+        AdvancedVisualization.exportReport(format);
+    } else {
+        console.error('AdvancedVisualization not available');
+    }
+}
