@@ -12,7 +12,7 @@ import (
 func TestPhase4Features(t *testing.T) {
 	// Create a test WebSocket server with Phase 4 features enabled
 	server := NewWebSocketServer(8082, "./testdata", "./plugins", false, false, false, 0, 
-		true, nil, nil, ConnectionQualityConfig{}, true, true, true)
+		true, nil, nil, ConnectionQualityConfig{}, true, true, true, false)
 	
 	// Verify Phase 4 features are enabled
 	if !server.phase4FeaturesEnabled {
@@ -85,7 +85,7 @@ func TestPhase4Features(t *testing.T) {
 func TestPhase4AnomalyDetection(t *testing.T) {
 	// Create a test WebSocket server with Phase 4 features
 	server := NewWebSocketServer(8083, "./testdata", "./plugins", false, false, false, 0, 
-		true, nil, nil, ConnectionQualityConfig{}, true, true, true)
+		true, nil, nil, ConnectionQualityConfig{}, true, true, true, false)
 	
 	// Create a mock connection with anomalous behavior
 	mockConn := &websocket.Conn{}
@@ -171,7 +171,7 @@ func TestPhase4AnomalyDetection(t *testing.T) {
 // TestPhase4AdaptiveLearning tests adaptive learning with Phase 4 enhancements
 func TestPhase4AdaptiveLearning(t *testing.T) {
 	server := NewWebSocketServer(8084, "./testdata", "./plugins", false, false, false, 0, 
-		false, nil, nil, ConnectionQualityConfig{}, true, true, true)
+		false, nil, nil, ConnectionQualityConfig{}, true, true, true, false)
 	
 	// Get initial learning rate
 	initialLearningRate := server.mlModelInfo.LearningRate

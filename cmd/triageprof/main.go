@@ -56,7 +56,7 @@ func main() {
 		fmt.Println("  run --plugin <name> --target-type python --target-command <cmd> --duration <sec> --outdir <dir> [--websocket-port <port>] [--websocket-auth] [--websocket-compression] [--websocket-batching] [--websocket-batch-interval <ms>]")
 		fmt.Println("  run --plugin <name> --target-type node --target-command <cmd> --duration <sec> --outdir <dir> [--websocket-port <port>] [--websocket-auth] [--websocket-compression] [--websocket-batching] [--websocket-batch-interval <ms>]")
 		fmt.Println("  web --in <findings.json> --outdir <dir> [--insights <insights.json>]")
-		fmt.Println("  websocket --findings <findings.json> [--insights <insights.json>] [--port <port>] [--data-dir <dir>] [--compression] [--batching] [--batch-interval <ms>]")
+		fmt.Println("  websocket --findings <findings.json> [--insights <insights.json>] [--port <port>] [--data-dir <dir>] [--compression] [--batching] [--batch-interval <ms>] [--phase5]")
 		fmt.Println("\nLLM Options for 'run' command:")
 		fmt.Println("  --llm (enable LLM insights)")
 		fmt.Println("  --llm-provider <provider> (mistral, openai - default: mistral)")
@@ -314,6 +314,7 @@ func runRunCommand(pipeline *core.Pipeline) {
 	websocketMLModel := flagSet.Bool("websocket-ml-model", false, "Enable ML-based anomaly detection for WebSocket connections")
 	websocketAdvancedML := flagSet.Bool("websocket-advanced-ml", false, "Enable advanced ML features (root cause analysis, predictions, correlations)")
 	websocketPhase4Features := flagSet.Bool("websocket-phase4-features", false, "Enable Phase 4 advanced ML features (deep learning, time series forecasting, automated root cause analysis)")
+	websocketPhase5Features := flagSet.Bool("websocket-phase5-features", false, "Enable Phase 5 advanced ML features (anomaly correlation detection, predictive maintenance, enhanced root cause analysis)")
 	performanceAlerts := flagSet.String("performance-alerts", "", "Performance alert configuration file (JSON)")
 	flagSet.Parse(os.Args[2:])
 
@@ -420,6 +421,7 @@ func runRunCommand(pipeline *core.Pipeline) {
 		pipeline.WithWebSocketMLModel(*websocketMLModel)
 		pipeline.WithWebSocketAdvancedML(*websocketAdvancedML)
 		pipeline.WithWebSocketPhase4Features(*websocketPhase4Features)
+		pipeline.WithWebSocketPhase5Features(*websocketPhase5Features)
 		
 		if *performanceAlerts != "" {
 			pipeline.WithPerformanceAlerts(*performanceAlerts)
@@ -429,6 +431,7 @@ func runRunCommand(pipeline *core.Pipeline) {
 		fmt.Printf("  ML Anomaly Detection: %s\n", boolToStatus(*websocketMLModel))
 		fmt.Printf("  Advanced ML Features: %s\n", boolToStatus(*websocketAdvancedML))
 		fmt.Printf("  Phase 4 Features: %s\n", boolToStatus(*websocketPhase4Features))
+		fmt.Printf("  Phase 5 Features: %s\n", boolToStatus(*websocketPhase5Features))
 		if *websocketCompression {
 			fmt.Println("WebSocket compression: ENABLED")
 		} else {
@@ -635,6 +638,7 @@ func runWebSocketCommand(pipeline *core.Pipeline) {
 	adaptiveUpdates := flagSet.Bool("adaptive-updates", true, "Enable adaptive updates based on connection quality")
 	bandwidthThrottling := flagSet.Bool("bandwidth-throttling", true, "Enable bandwidth throttling based on connection quality")
 	phase4Features := flagSet.Bool("phase4-features", false, "Enable Phase 4 advanced ML features (deep learning, time series forecasting, automated root cause analysis)")
+	phase5Features := flagSet.Bool("phase5-features", false, "Enable Phase 5 advanced ML features (anomaly correlation detection, predictive maintenance, enhanced root cause analysis)")
 	flagSet.Parse(os.Args[2:])
 
 	if *findingsPath == "" {
@@ -647,6 +651,7 @@ func runWebSocketCommand(pipeline *core.Pipeline) {
 	pipeline.WithWebSocketServer(*port, *dataDir, false, *compression, *batching, batchIntervalDuration)
 	pipeline.WithWebSocketConnectionQuality(*connectionQuality)
 	pipeline.WithWebSocketPhase4Features(*phase4Features)
+	pipeline.WithWebSocketPhase5Features(*phase5Features)
 	
 	// Configure connection quality enhancements
 	if *connectionQuality {
