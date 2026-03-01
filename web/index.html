@@ -21,6 +21,24 @@
             <div class="file-hints">
                 <span>Select findings.json and optionally insights.json</span>
             </div>
+            <div class="refresh-controls" id="refreshControls" style="display: none;">
+                <div class="refresh-status">
+                    <span id="refreshStatus">Auto-refresh: Off</span>
+                    <span id="lastRefreshTime" class="last-refresh"></span>
+                </div>
+                <div class="refresh-buttons">
+                    <button id="startRefreshBtn" class="btn success"><i class="fas fa-play"></i> Start Auto-Refresh</button>
+                    <button id="stopRefreshBtn" class="btn danger" style="display: none;"><i class="fas fa-stop"></i> Stop Auto-Refresh</button>
+                    <button id="refreshNowBtn" class="btn info"><i class="fas fa-sync-alt"></i> Refresh Now</button>
+                    <select id="refreshInterval">
+                        <option value="5">5 seconds</option>
+                        <option value="10" selected>10 seconds</option>
+                        <option value="30">30 seconds</option>
+                        <option value="60">1 minute</option>
+                        <option value="300">5 minutes</option>
+                    </select>
+                </div>
+            </div>
         </div>
         
         <div id="loading" class="loading" style="display: none;">

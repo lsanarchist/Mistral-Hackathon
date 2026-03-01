@@ -65,6 +65,115 @@ h1 {
     margin-bottom: 30px;
 }
 
+.refresh-controls {
+    width: 100%;
+    max-width: 800px;
+    margin-top: 15px;
+    padding: 15px;
+    background-color: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    border-left: 4px solid var(--success-color);
+}
+
+.refresh-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--medium-gray);
+}
+
+.refresh-status span {
+    font-weight: 600;
+    color: var(--primary-dark);
+}
+
+.refresh-active {
+    color: var(--success-color);
+}
+
+.last-refresh {
+    font-size: 0.9rem;
+    color: var(--dark-gray);
+    font-style: italic;
+}
+
+.refresh-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn.success {
+    background-color: var(--success-color);
+    color: var(--white);
+}
+
+.btn.success:hover {
+    background-color: #3a9d9d;
+    transform: translateY(-2px);
+}
+
+.btn.danger {
+    background-color: var(--danger-color);
+    color: var(--white);
+}
+
+.btn.danger:hover {
+    background-color: #d64545;
+    transform: translateY(-2px);
+}
+
+.btn.info {
+    background-color: var(--info-color);
+    color: var(--white);
+}
+
+.btn.info:hover {
+    background-color: #8fd6b8;
+    transform: translateY(-2px);
+}
+
+.refresh-buttons select {
+    padding: 8px 12px;
+    border: 1px solid var(--medium-gray);
+    border-radius: var(--border-radius);
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+.refresh-buttons select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.refresh-loading {
+    background-color: rgba(255, 255, 255, 0.9);
+    color: var(--primary-color);
+    padding: 10px 20px;
+    border-radius: var(--border-radius);
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.refresh-loading::before {
+    content: "🔄";
+    animation: spin 1s linear infinite;
+}
+
 .btn {
     padding: 12px 24px;
     border: none;

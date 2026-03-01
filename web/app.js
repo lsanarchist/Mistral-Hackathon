@@ -5,10 +5,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const error = document.getElementById('error');
     const content = document.getElementById('content');
     const severityFilter = document.getElementById('severityFilter');
+    const refreshControls = document.getElementById('refreshControls');
+    const startRefreshBtn = document.getElementById('startRefreshBtn');
+    const stopRefreshBtn = document.getElementById('stopRefreshBtn');
+    const refreshNowBtn = document.getElementById('refreshNowBtn');
+    const refreshStatus = document.getElementById('refreshStatus');
+    const lastRefreshTime = document.getElementById('lastRefreshTime');
+    const refreshIntervalSelect = document.getElementById('refreshInterval');
 
     let findingsData = null;
     let insightsData = null;
     let allFindings = [];
+    let refreshIntervalId = null;
+    let currentFiles = null;
+    let isRefreshing = false;
 
     // Set up file input trigger
     loadBtn.addEventListener('click', function() {
@@ -23,10 +33,19 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
+        // Store current files for refresh
+        currentFiles = files;
+        
         // Show loading state
         loading.style.display = 'block';
         error.style.display = 'none';
         content.style.display = 'none';
+        
+        // Show refresh controls
+        refreshControls.style.display = 'block';
+        
+        // Stop any existing refresh
+        stopAutoRefresh();
         
         // Process files
         processFiles(files);
@@ -36,6 +55,11 @@ document.addEventListener('DOMContentLoaded', function() {
     severityFilter.addEventListener('change', function() {
         filterFindings();
     });
+    
+    // Set up refresh controls
+    startRefreshBtn.addEventListener('click', startAutoRefresh);
+    stopRefreshBtn.addEventListener('click', stopAutoRefresh);
+    refreshNowBtn.addEventListener('click', refreshNow);
 
     function processFiles(files) {
         const promises = [];
@@ -76,9 +100,93 @@ document.addEventListener('DOMContentLoaded', function() {
             // Store all findings for filtering
             allFindings = findingsData.findings || [];
             
+            // Update last refresh time
+            updateLastRefreshTime();
+            
             // Render the data
             renderData();
         });
+    }
+    
+    function updateLastRefreshTime() {
+        const now = new Date();
+        lastRefreshTime.textContent = `Last refreshed: ${now.toLocaleTimeString()} (${now.toLocaleDateString()})`;
+    }
+    
+    function startAutoRefresh() {
+        if (refreshIntervalId) {
+            stopAutoRefresh();
+        }
+        
+        const intervalSeconds = parseInt(refreshIntervalSelect.value);
+        
+        refreshIntervalId = setInterval(() => {
+            if (!isRefreshing && currentFiles && currentFiles.length > 0) {
+                isRefreshing = true;
+                refreshStatus.textContent = `Auto-refresh: Active (every ${intervalSeconds} seconds)`;
+                refreshStatus.className = 'refresh-active';
+                
+                // Show loading state briefly
+                const tempLoading = document.createElement('div');
+                tempLoading.className = 'refresh-loading';
+                tempLoading.textContent = 'Refreshing data...';
+                content.parentNode.insertBefore(tempLoading, content);
+                
+                // Re-process files
+                processFiles(currentFiles);
+                
+                // Remove temp loading after a short delay
+                setTimeout(() => {
+                    if (tempLoading.parentNode) {
+                        tempLoading.parentNode.removeChild(tempLoading);
+                    }
+                    isRefreshing = false;
+                }, 500);
+            }
+        }, intervalSeconds * 1000);
+        
+        // Update UI
+        startRefreshBtn.style.display = 'none';
+        stopRefreshBtn.style.display = 'inline-block';
+        refreshStatus.textContent = `Auto-refresh: Active (every ${intervalSeconds} seconds)`;
+        refreshStatus.className = 'refresh-active';
+        updateLastRefreshTime();
+    }
+    
+    function stopAutoRefresh() {
+        if (refreshIntervalId) {
+            clearInterval(refreshIntervalId);
+            refreshIntervalId = null;
+        }
+        
+        // Update UI
+        startRefreshBtn.style.display = 'inline-block';
+        stopRefreshBtn.style.display = 'none';
+        refreshStatus.textContent = 'Auto-refresh: Off';
+        refreshStatus.className = '';
+    }
+    
+    function refreshNow() {
+        if (currentFiles && currentFiles.length > 0) {
+            isRefreshing = true;
+            
+            // Show loading state briefly
+            const tempLoading = document.createElement('div');
+            tempLoading.className = 'refresh-loading';
+            tempLoading.textContent = 'Refreshing data...';
+            content.parentNode.insertBefore(tempLoading, content);
+            
+            // Re-process files
+            processFiles(currentFiles);
+            
+            // Remove temp loading after a short delay
+            setTimeout(() => {
+                if (tempLoading.parentNode) {
+                    tempLoading.parentNode.removeChild(tempLoading);
+                }
+                isRefreshing = false;
+            }, 500);
+        }
     }
 
     function showError(message) {

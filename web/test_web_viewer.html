@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Web Viewer Test</title>
+    <script>
+        // Simple test to verify the web viewer loads correctly
+        function testWebViewer() {
+            console.log('Testing web viewer functionality...');
+            
+            // Test that all required elements exist
+            const requiredElements = [
+                'loadBtn', 'fileInput', 'loading', 'error', 'content',
+                'severityFilter', 'refreshControls', 'startRefreshBtn', 
+                'stopRefreshBtn', 'refreshNowBtn', 'refreshInterval'
+            ];
+            
+            let allElementsFound = true;
+            requiredElements.forEach(id => {
+                const element = document.getElementById(id);
+                if (!element) {
+                    console.error(`Element ${id} not found`);
+                    allElementsFound = false;
+                } else {
+                    console.log(`✓ Element ${id} found`);
+                }
+            });
+            
+            if (allElementsFound) {
+                console.log('✓ All required elements found - web viewer loaded successfully!');
+                document.body.innerHTML = '<h1 style="color: green;">✓ Web Viewer Test Passed</h1>';
+                document.body.innerHTML += '<p>All required elements are present and the web viewer is ready to use.</p>';
+            } else {
+                console.error('✗ Some elements are missing');
+                document.body.innerHTML = '<h1 style="color: red;">✗ Web Viewer Test Failed</h1>';
+                document.body.innerHTML += '<p>Some required elements are missing.</p>';
+            }
+        }
+        
+        // Test the refresh functionality logic
+        function testRefreshFunctionality() {
+            console.log('Testing refresh functionality...');
+            
+            // Mock the refresh controls
+            const refreshStatus = document.getElementById('refreshStatus');
+            if (refreshStatus) {
+                refreshStatus.textContent = 'Auto-refresh: Ready';
+                console.log('✓ Refresh status element works');
+            }
+            
+            // Test interval selection
+            const refreshInterval = document.getElementById('refreshInterval');
+            if (refreshInterval) {
+                const selectedValue = refreshInterval.value;
+                console.log(`✓ Refresh interval select works (default: ${selectedValue} seconds)`);
+            }
+            
+            console.log('✓ Refresh functionality test completed');
+        }
+    </script>
+</head>
+<body>
+    <h1>Web Viewer Test</h1>
+    <p>Loading and testing web viewer components...</p>
+    
+    <script>
+        // Load the main app.js and test it
+        const script = document.createElement('script');
+        script.src = 'app.js';
+        script.onload = function() {
+            console.log('app.js loaded successfully');
+            testWebViewer();
+            testRefreshFunctionality();
+        };
+        script.onerror = function() {
+            console.error('Failed to load app.js');
+            document.body.innerHTML += '<p style="color: red;">Failed to load app.js</p>';
+        };
+        document.body.appendChild(script);
+    </script>
+</body>
+</html>
