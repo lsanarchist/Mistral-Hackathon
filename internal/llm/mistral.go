@@ -140,9 +140,60 @@ func (p *MistralProvider) GenerateInsights(ctx context.Context, prompt string) (
 	return insights, nil
 }
 
-// parseInsightsResponse parses the LLM response into structured insights
+// parseInsightsResponse parses the LLM response into structured insights with strict validation
 func parseInsightsResponse(response string) (*model.InsightsBundle, error) {
-	// Simple JSON parsing - in production this would be more robust
+	// First try strict JSON parsing
+	var insights model.InsightsBundle
+	insights.GeneratedAt = time.Now()
+	insights.SchemaVersion = "2.0"
+
+	// Try to parse as JSON first (preferred format)
+	if err := json.Unmarshal([]byte(response), &insights); err == nil {
+		// JSON parsing succeeded, validate the structure
+		if err := validateParsedInsights(&insights); err != nil {
+			return nil, fmt.Errorf("insights validation failed: %v", err)
+		}
+		return &insights, nil
+	}
+
+	// Fallback to legacy text parsing for backward compatibility
+	return parseLegacyTextResponse(response)
+}
+
+// validateParsedInsights validates the structure of parsed JSON insights
+func validateParsedInsights(insights *model.InsightsBundle) error {
+	// Validate executive summary
+	if insights.ExecutiveSummary.Overview == "" {
+		return fmt.Errorf("executive summary overview is required")
+	}
+
+	if insights.ExecutiveSummary.OverallSeverity == "" {
+		return fmt.Errorf("executive summary severity is required")
+	}
+
+	// Validate confidence range
+	if insights.ExecutiveSummary.Confidence < 0 || insights.ExecutiveSummary.Confidence > 100 {
+		return fmt.Errorf("confidence must be between 0-100")
+	}
+
+	// Validate per-finding insights
+	for i, finding := range insights.PerFinding {
+		if finding.FindingID == "" {
+			return fmt.Errorf("finding %d has empty finding_id", i)
+		}
+		if finding.Narrative == "" {
+			return fmt.Errorf("finding %d has empty narrative", i)
+		}
+		if finding.Confidence < 0 || finding.Confidence > 100 {
+			return fmt.Errorf("finding %d confidence must be between 0-100", i)
+		}
+	}
+
+	return nil
+}
+
+// parseLegacyTextResponse parses legacy text format responses (backward compatibility)
+func parseLegacyTextResponse(response string) (*model.InsightsBundle, error) {
 	var insights model.InsightsBundle
 	insights.GeneratedAt = time.Now()
 	insights.SchemaVersion = "1.0"

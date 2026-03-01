@@ -194,3 +194,30 @@
 - Automated remediation actions based on anomaly patterns
 - Anomaly prediction using time series analysis
 - Cross-connection correlation for root cause analysis
+
+### 2026-03-01 16:30: Phase 3 — LLM Enrichment via Mistral API ✅ COMPLETED
+- **Objective**: Implement LLM enrichment with strict guardrails, validation, and caching
+- **Rationale**: Provide optional AI-powered analysis that enhances deterministic findings with actionable insights
+- **Impact**: LLM integration, insights generation, validation, caching, security
+- **Changes**:
+  - ✅ **Enhanced InsightsGenerator**: Added comprehensive validation, guardrails, and automatic caching
+  - ✅ **Strict JSON validation**: Implemented schema validation with fallback to legacy text parsing
+  - ✅ **Evidence citations**: Added finding reference validation to ensure all insights cite specific findings
+  - ✅ **Redaction system**: Implemented sensitive data redaction for tokens, secrets, URLs, and hostnames
+  - ✅ **Field truncation**: Added automatic truncation for long fields with configurable limits
+  - ✅ **Caching enabled**: Insights caching enabled by default with hash-based cache keys
+  - ✅ **Confidence validation**: Added range validation for all confidence scores (0-100)
+  - ✅ **Code example limits**: Enforced 200 character maximum for all code examples
+  - ✅ **Severity/priority validation**: Added validation for valid severity and priority levels
+  - ✅ **Enhanced Mistral provider**: Updated with strict JSON parsing and comprehensive validation
+  - ✅ **Prompt improvements**: Added evidence citation requirements to prompt generation
+  - ✅ **Comprehensive testing**: Added extensive test coverage for validation and guardrails
+  - ✅ **Updated suggested_next_steps.md**: Marked Phase 3 as completed
+- **Testing**:
+  - ✅ Main binary builds successfully with new LLM integration
+  - ✅ Validation functions work correctly (tested manually)
+  - ✅ Redaction patterns function properly
+  - ✅ Finding reference detection works as expected
+  - ✅ Guardrails apply truncation and default values correctly
+  - ✅ Backward compatibility maintained with legacy text parsing
+- **Result**: TriageProf now provides comprehensive LLM enrichment with strict guardrails, automatic caching, sensitive data redaction, and robust validation. The system gracefully handles API failures, validates all LLM-generated content, and ensures insights are evidence-backed and secure. LLM analysis is optional and disabled when API keys are not configured, maintaining full backward compatibility.

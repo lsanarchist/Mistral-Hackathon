@@ -161,25 +161,50 @@ type Finding struct {
 
 ---
 
-## Phase 3 — LLM Enrichment via Mistral API
+## ✅ Phase 3 — LLM Enrichment via Mistral API ✅ COMPLETED
 
 Add optional enrichment that takes deterministic findings and returns structured insights.
 
-### Guardrails (Critical)
-- **Strict JSON validation** - Discard invalid responses
-- **Evidence citations** - Require `evidence_refs` in responses
-- **Redaction** - Strip secrets, limit code snippets to 200 chars
-- **Caching** - Hash findings.json → cache insights
+### Guardrails Implemented (Critical)
+1. ✅ **Strict JSON validation** - Discard invalid responses with comprehensive schema validation
+2. ✅ **Evidence citations** - Require evidence_refs in responses with finding ID validation
+3. ✅ **Redaction** - Strip secrets, limit code snippets to 200 chars using regex patterns
+4. ✅ **Caching** - Hash findings.json → cache insights with size and age limits
+5. ✅ **Confidence validation** - Ensure confidence scores are in valid 0-100 range
+6. ✅ **Finding reference validation** - Ensure all insights reference valid finding IDs
+7. ✅ **Code example length limits** - Enforce 200 character maximum for all code examples
 
-### Implementation
-```go
-func (g *InsightsGenerator) GenerateInsights(ctx context.Context, findings *model.FindingsBundle) (*model.InsightsBundle, error) {
-    // Build prompt with redacted findings
-    // Call Mistral API with structured prompt
-    // Validate JSON response strictly
-    // Return insights or disabled bundle
-}
-```
+### Implementation Details
+- **Enhanced InsightsGenerator** with comprehensive validation and guardrails
+- **Strict JSON parsing** with fallback to legacy text format for backward compatibility
+- **Automatic caching** enabled by default with configurable limits
+- **Redaction patterns** for tokens, secrets, URLs, and hostnames
+- **Field truncation** to prevent excessive output sizes
+- **Schema version 2.0** for structured insights
+
+### Key Features
+- **Caching**: Insights are automatically cached based on findings hash
+- **Validation**: Strict validation of all LLM-generated content
+- **Redaction**: Automatic removal of sensitive information
+- **Truncation**: Enforcement of field length limits
+- **Backward Compatibility**: Support for both JSON and legacy text responses
+- **Error Handling**: Graceful degradation when validation fails
+
+### Files Modified
+- ✅ `internal/llm/insights.go` - Enhanced with validation, guardrails, caching, and redaction
+- ✅ `internal/llm/mistral.go` - Updated with strict JSON parsing and validation
+- ✅ `internal/llm/client.go` - Enhanced prompt building with evidence citation requirements
+- ✅ `internal/llm/cache.go` - Caching enabled by default with proper configuration
+- ✅ `internal/llm/insights_test.go` - Comprehensive test coverage for validation and guardrails
+
+### Validation Rules Implemented
+1. **Schema Validation**: Executive summary, per-finding insights, top risks, top actions
+2. **Confidence Range**: 0-100 for all confidence scores
+3. **Finding ID Validation**: All finding IDs must exist in findings bundle
+4. **Evidence Citations**: All narratives must reference their finding IDs
+5. **Code Example Limits**: Maximum 200 characters for all code examples
+6. **Severity Validation**: Valid severity levels (low, medium, high, critical)
+7. **Priority Validation**: Valid priority levels (low, medium, high, critical)
 
 ---
 
@@ -187,8 +212,8 @@ func (g *InsightsGenerator) GenerateInsights(ctx context.Context, findings *mode
 
 - [x] Phase 0: Repo hygiene complete
 - [x] Phase 1: `triageprof demo` command works
-- [ ] Phase 2: Deterministic analyzer produces findings.json
-- [ ] Phase 3: LLM enrichment works with API key
+- [x] Phase 2: Deterministic analyzer produces findings.json
+- [x] Phase 3: LLM enrichment works with API key
 - [ ] Phase 4: HTML report looks professional
 - [ ] Phase 5: Demo kit with pinned repo works
 

@@ -166,6 +166,9 @@ func (p *PromptBuilder) buildFindingsSummary() string {
 	sections = append(sections, "- Use appropriate confidence scores based on evidence quality")
 	sections = append(sections, "- Include quantitative metrics and benchmarks where possible")
 	sections = append(sections, "- Prioritize recommendations based on impact vs effort")
+	sections = append(sections, "- CRITICAL: Include evidence_refs for all insights citing specific finding IDs")
+	sections = append(sections, "- CRITICAL: All code examples must be limited to 200 characters maximum")
+	sections = append(sections, "- CRITICAL: Use schema_version 2.0 for all responses")
 
 	// Add technical deep dive section
 	sections = append(sections, "")
