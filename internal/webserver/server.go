@@ -7,6 +7,7 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"hash/fnv"
 	"log"
 	"math"
 	"net/http"
@@ -119,6 +120,10 @@ type WebSocketConnectionStats struct {
 	ConnectionQuality  string        `json:"connection_quality"` // excellent, good, fair, poor
 	QualityHistory    []string      `json:"quality_history,omitempty"` // Historical quality states
 	LastQualityChange time.Time     `json:"last_quality_change,omitempty"`
+	Geolocation       string        `json:"geolocation,omitempty"` // Client location/region
+	ConnectionScore   float64       `json:"connection_score,omitempty"` // Comprehensive quality score (0-100)
+	QualityTrend      string        `json:"quality_trend,omitempty"` // improving, degrading, stable
+	PredictedQuality  string        `json:"predicted_quality,omitempty"` // Predicted future quality
 }
 
 // ConnectionQualityAlert represents a configurable alert for connection quality
@@ -802,6 +807,109 @@ func (s *WebSocketServer) calculateConnectionQuality(latency time.Duration, pack
 	return "excellent"
 }
 
+// calculateConnectionScore calculates a comprehensive connection quality score (0-100)
+func (s *WebSocketServer) calculateConnectionScore(latency time.Duration, packetLoss float64, messageSuccessRate float64) float64 {
+	// Normalize metrics to 0-100 scale
+	latencyScore := 100.0
+	if latency > 1000*time.Millisecond {
+		latencyScore = 0
+	} else if latency > 500*time.Millisecond {
+		latencyScore = 50
+	} else if latency > 200*time.Millisecond {
+		latencyScore = 75
+	} else if latency > 100*time.Millisecond {
+		latencyScore = 90
+	}
+
+	packetLossScore := 100.0 - packetLoss*2 // 2% packet loss = 1 point deduction
+	if packetLossScore < 0 {
+		packetLossScore = 0
+	}
+
+	messageSuccessScore := messageSuccessRate * 100
+
+	// Weighted average: 50% latency, 30% packet loss, 20% message success
+	return latencyScore*0.5 + packetLossScore*0.3 + messageSuccessScore*0.2
+}
+
+// determineQualityTrend analyzes historical quality to determine trend
+func (s *WebSocketServer) determineQualityTrend(qualityHistory []string) string {
+	if len(qualityHistory) < 2 {
+		return "stable"
+	}
+
+	// Map quality to numerical value for comparison
+	qualityValues := map[string]int{
+		"poor":    1,
+		"fair":    2,
+		"good":    3,
+		"excellent": 4,
+	}
+
+	// Compare first and last quality
+	firstQuality := qualityHistory[0]
+	lastQuality := qualityHistory[len(qualityHistory)-1]
+
+	if qualityValues[lastQuality] > qualityValues[firstQuality] {
+		return "improving"
+	} else if qualityValues[lastQuality] < qualityValues[firstQuality] {
+		return "degrading"
+	}
+	return "stable"
+}
+
+// predictConnectionQuality predicts future connection quality based on current trend
+func (s *WebSocketServer) predictConnectionQuality(currentQuality string, trend string, qualityHistory []string) string {
+	// Simple prediction based on current quality and trend
+	if trend == "improving" {
+		switch currentQuality {
+		case "poor": return "fair"
+		case "fair": return "good"
+		case "good": return "excellent"
+		default: return "excellent"
+		}
+	} else if trend == "degrading" {
+		switch currentQuality {
+		case "excellent": return "good"
+		case "good": return "fair"
+		case "fair": return "poor"
+		default: return "poor"
+		}
+	}
+	// If stable, return current quality
+	return currentQuality
+}
+
+// inferGeolocation infers client location based on IP address (simplified for demo)
+func (s *WebSocketServer) inferGeolocation(conn *websocket.Conn) string {
+	// In a real implementation, this would use a geolocation service
+	// For demo purposes, we'll return a simulated location based on the IP
+	remoteAddr := conn.RemoteAddr().String()
+	
+	// Simple heuristic for demo - in production use a proper geolocation API
+	if strings.Contains(remoteAddr, "192.168") {
+		return "Local Network"
+	} else if strings.Contains(remoteAddr, "10.") {
+		return "Private Network"
+	} else if strings.Contains(remoteAddr, "172.") {
+		return "Private Network"
+	} else if strings.HasSuffix(remoteAddr, ":1") {
+		return "Localhost"
+	} else {
+		// Simulate different regions for different IPs
+		hash := fnv.New32a()
+		hash.Write([]byte(remoteAddr))
+		switch hash.Sum32() % 5 {
+		case 0: return "North America"
+		case 1: return "Europe"
+		case 2: return "Asia"
+		case 3: return "South America"
+		case 4: return "Australia"
+		default: return "Unknown"
+		}
+	}
+}
+
 // updateConnectionStats updates connection statistics for a client
 func (s *WebSocketServer) updateConnectionStats(conn *websocket.Conn, bytesSent int, bytesReceived int) {
 	s.statsMu.Lock()
@@ -813,6 +921,7 @@ func (s *WebSocketServer) updateConnectionStats(conn *websocket.Conn, bytesSent 
 			ClientID:       generateClientID(),
 			ConnectionTime: time.Now(),
 			LastPingTime:   time.Now(),
+			Geolocation:    s.inferGeolocation(conn),
 		}
 		s.connectionStats[conn] = stats
 	}
@@ -825,6 +934,16 @@ func (s *WebSocketServer) updateConnectionStats(conn *websocket.Conn, bytesSent 
 	// Calculate latency if we have pong response
 	if !stats.LastPongTime.IsZero() {
 		stats.Latency = stats.LastPongTime.Sub(stats.LastPingTime) / 2
+	}
+
+	// Calculate message success rate (simplified for demo)
+	messageSuccessRate := 1.0 // Assume 100% success rate for demo
+	if stats.MessagesSent > 0 {
+		// In real implementation, track failed messages
+		messageSuccessRate = float64(stats.MessagesReceived) / float64(stats.MessagesSent)
+		if messageSuccessRate > 1.0 {
+			messageSuccessRate = 1.0
+		}
 	}
 
 	// Update connection quality
@@ -840,6 +959,15 @@ func (s *WebSocketServer) updateConnectionStats(conn *websocket.Conn, bytesSent 
 		stats.QualityHistory = append(stats.QualityHistory, newQuality)
 	}
 	stats.ConnectionQuality = newQuality
+
+	// Calculate connection score
+	stats.ConnectionScore = s.calculateConnectionScore(stats.Latency, stats.PacketLoss, messageSuccessRate)
+
+	// Determine quality trend
+	stats.QualityTrend = s.determineQualityTrend(stats.QualityHistory)
+
+	// Predict future quality
+	stats.PredictedQuality = s.predictConnectionQuality(stats.ConnectionQuality, stats.QualityTrend, stats.QualityHistory)
 	
 	// Record connection quality history
 	s.recordConnectionQualityHistory(conn, stats)
@@ -1028,7 +1156,266 @@ func (s *WebSocketServer) GetConnectionQualityInfo() map[string]interface{} {
 		"adaptive_updates_enabled": config.AdaptiveUpdatesEnabled,
 		"bandwidth_throttling_enabled": config.BandwidthThrottlingEnabled,
 		"active_quality_alerts": activeAlerts,
+		"geographical_analysis": s.getGeographicalConnectionAnalysis(),
+		"quality_predictions": s.getQualityPredictions(),
 	}
+}
+
+// getGeographicalConnectionAnalysis analyzes connection quality by geographical region
+func (s *WebSocketServer) getGeographicalConnectionAnalysis() map[string]interface{} {
+	stats := s.getConnectionStats()
+	if len(stats) == 0 {
+		return map[string]interface{}{
+			"status": "no_data",
+			"message": "No active connections for geographical analysis",
+		}
+	}
+
+	// Group connections by region
+	regionStats := make(map[string]map[string]int)
+	regionConnectionCounts := make(map[string]int)
+	regionLatencySum := make(map[string]float64)
+	regionPacketLossSum := make(map[string]float64)
+	regionScoreSum := make(map[string]float64)
+
+	for _, stat := range stats {
+		region := stat.Geolocation
+		if region == "" {
+			region = "Unknown"
+		}
+
+		if _, exists := regionStats[region]; !exists {
+			regionStats[region] = map[string]int{
+				"excellent": 0,
+				"good": 0,
+				"fair": 0,
+				"poor": 0,
+			}
+			regionConnectionCounts[region] = 0
+			regionLatencySum[region] = 0
+			regionPacketLossSum[region] = 0
+			regionScoreSum[region] = 0
+		}
+
+		// Update quality distribution
+		regionStats[region][strings.ToLower(stat.ConnectionQuality)]++
+		regionConnectionCounts[region]++
+		regionLatencySum[region] += float64(stat.Latency.Milliseconds())
+		regionPacketLossSum[region] += stat.PacketLoss
+		regionScoreSum[region] += stat.ConnectionScore
+	}
+
+	// Calculate regional averages and identify best/worst regions
+	var bestRegion, worstRegion string
+	var highestAvgScore, lowestAvgScore float64 = 0, 100
+	var bestRegionScore, worstRegionScore float64 = 0, 100
+
+	regionalAnalysis := make([]map[string]interface{}, 0)
+	for region, counts := range regionStats {
+		connectionCount := regionConnectionCounts[region]
+		avgLatency := regionLatencySum[region] / float64(connectionCount)
+		avgPacketLoss := regionPacketLossSum[region] / float64(connectionCount)
+		avgScore := regionScoreSum[region] / float64(connectionCount)
+
+		// Determine predominant quality
+		predominantQuality := "excellent"
+		maxCount := 0
+		for quality, count := range counts {
+			if count > maxCount {
+				maxCount = count
+				predominantQuality = quality
+			}
+		}
+
+		regionalAnalysis = append(regionalAnalysis, map[string]interface{}{
+			"region":               region,
+			"connection_count":     connectionCount,
+			"quality_distribution": counts,
+			"predominant_quality":  predominantQuality,
+			"avg_latency_ms":       avgLatency,
+			"avg_packet_loss":      avgPacketLoss,
+			"avg_connection_score": avgScore,
+		})
+
+		// Track best and worst regions
+		if avgScore > highestAvgScore {
+			highestAvgScore = avgScore
+			bestRegion = region
+			bestRegionScore = avgScore
+		}
+		if avgScore < lowestAvgScore {
+			lowestAvgScore = avgScore
+			worstRegion = region
+			worstRegionScore = avgScore
+		}
+	}
+
+	return map[string]interface{}{
+		"status": "analyzed",
+		"regions": regionalAnalysis,
+		"region_count": len(regionalAnalysis),
+		"best_region": map[string]interface{}{
+			"name":  bestRegion,
+			"score": bestRegionScore,
+		},
+		"worst_region": map[string]interface{}{
+			"name":  worstRegion,
+			"score": worstRegionScore,
+		},
+		"overall_geographical_quality": calculateOverallGeographicalQuality(highestAvgScore, lowestAvgScore),
+	}
+}
+
+// getQualityPredictions provides connection quality predictions for all active connections
+func (s *WebSocketServer) getQualityPredictions() map[string]interface{} {
+	stats := s.getConnectionStats()
+	if len(stats) == 0 {
+		return map[string]interface{}{
+			"status": "no_data",
+			"message": "No active connections for quality prediction",
+		}
+	}
+
+	// Count predictions by quality level
+	predictionCounts := map[string]int{
+		"excellent": 0,
+		"good": 0,
+		"fair": 0,
+		"poor": 0,
+	}
+
+	// Analyze trends
+	trendCounts := map[string]int{
+		"improving": 0,
+		"degrading": 0,
+		"stable": 0,
+	}
+
+	// Calculate average connection score
+	var totalScore float64
+	for _, stat := range stats {
+		predictionCounts[strings.ToLower(stat.PredictedQuality)]++
+		trendCounts[strings.ToLower(stat.QualityTrend)]++
+		totalScore += stat.ConnectionScore
+	}
+
+	avgScore := totalScore / float64(len(stats))
+
+	// Determine overall prediction trend
+	overallTrend := "stable"
+	if trendCounts["improving"] > trendCounts["degrading"] {
+		overallTrend = "improving"
+	} else if trendCounts["degrading"] > trendCounts["improving"] {
+		overallTrend = "degrading"
+	}
+
+	// Calculate prediction confidence based on trend stability
+	predictionConfidence := "medium"
+	if overallTrend == "stable" {
+		predictionConfidence = "high"
+	} else if float64(trendCounts[overallTrend])/float64(len(stats)) > 0.7 {
+		predictionConfidence = "high"
+	} else if float64(trendCounts[overallTrend])/float64(len(stats)) < 0.4 {
+		predictionConfidence = "low"
+	}
+
+	return map[string]interface{}{
+		"status": "predicted",
+		"prediction_distribution": predictionCounts,
+		"trend_distribution": trendCounts,
+		"average_connection_score": avgScore,
+		"overall_prediction_trend": overallTrend,
+		"prediction_confidence": predictionConfidence,
+		"predictive_insights": generatePredictiveInsights(predictionCounts, trendCounts, avgScore),
+	}
+}
+
+// calculateOverallGeographicalQuality calculates overall geographical quality score
+func calculateOverallGeographicalQuality(highestScore, lowestScore float64) map[string]interface{} {
+	if highestScore == lowestScore {
+		return map[string]interface{}{
+			"score": highestScore,
+			"variability": "none",
+			"rating": "consistent",
+		}
+	}
+
+	scoreRange := highestScore - lowestScore
+	variability := "low"
+	rating := "good"
+
+	if scoreRange > 50 {
+		variability = "high"
+		rating = "poor"
+	} else if scoreRange > 30 {
+		variability = "medium"
+		rating = "fair"
+	} else if scoreRange > 10 {
+		variability = "low"
+		rating = "good"
+	} else {
+		variability = "minimal"
+		rating = "excellent"
+	}
+
+	return map[string]interface{}{
+		"score_range": scoreRange,
+		"variability": variability,
+		"rating": rating,
+		"average_score": (highestScore + lowestScore) / 2,
+	}
+}
+
+// generatePredictiveInsights generates insights based on quality predictions
+func generatePredictiveInsights(predictionCounts map[string]int, trendCounts map[string]int, avgScore float64) []string {
+	insights := make([]string, 0)
+
+	// Analyze prediction distribution
+	totalConnections := 0
+	for _, count := range predictionCounts {
+		totalConnections += count
+	}
+
+	if totalConnections == 0 {
+		return insights
+	}
+
+	// Check for potential issues
+	poorPercentage := float64(predictionCounts["poor"]) / float64(totalConnections) * 100
+	if poorPercentage > 20 {
+		insights = append(insights, fmt.Sprintf("⚠️ %.1f%% of connections predicted to have poor quality - investigate network issues", poorPercentage))
+	} else if poorPercentage > 10 {
+		insights = append(insights, fmt.Sprintf("⚠️ %.1f%% of connections predicted to have poor quality - monitor closely", poorPercentage))
+	}
+
+	// Check for improvement opportunities
+	fairPercentage := float64(predictionCounts["fair"]) / float64(totalConnections) * 100
+	if fairPercentage > 30 {
+		insights = append(insights, fmt.Sprintf("🔍 %.1f%% of connections predicted as fair - potential for optimization", fairPercentage))
+	}
+
+	// Analyze trends
+	improvingPercentage := float64(trendCounts["improving"]) / float64(totalConnections) * 100
+	degradingPercentage := float64(trendCounts["degrading"]) / float64(totalConnections) * 100
+
+	if improvingPercentage > degradingPercentage + 15 {
+		insights = append(insights, fmt.Sprintf("📈 Overall connection quality is improving (%.1f%% improving vs %.1f%% degrading)", improvingPercentage, degradingPercentage))
+	} else if degradingPercentage > improvingPercentage + 15 {
+		insights = append(insights, fmt.Sprintf("📉 Overall connection quality is degrading (%.1f%% degrading vs %.1f%% improving)", degradingPercentage, improvingPercentage))
+	}
+
+	// Score-based insights
+	if avgScore > 85 {
+		insights = append(insights, "✅ Overall connection quality is excellent - good network conditions")
+	} else if avgScore > 70 {
+		insights = append(insights, "👍 Overall connection quality is good - satisfactory network conditions")
+	} else if avgScore > 50 {
+		insights = append(insights, "⚠️ Overall connection quality is fair - some network issues detected")
+	} else {
+		insights = append(insights, "❌ Overall connection quality is poor - significant network problems")
+	}
+
+	return insights
 }
 
 // calculateAverageLatency calculates average latency across all connections
@@ -2448,6 +2835,10 @@ func (s *WebSocketServer) BroadcastConnectionQualityData() {
 			"messages_sent":       stats.MessagesSent,
 			"messages_received":   stats.MessagesReceived,
 			"connection_time":     stats.ConnectionTime.Format(time.RFC3339),
+			"geolocation":         stats.Geolocation,
+			"connection_score":    stats.ConnectionScore,
+			"quality_trend":       stats.QualityTrend,
+			"predicted_quality":  stats.PredictedQuality,
 		})
 	}
 	

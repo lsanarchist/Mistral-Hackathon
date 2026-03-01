@@ -209,6 +209,35 @@
                 grid-template-columns: 1fr;
             }
         }
+        
+        .geographical-summary {
+            display: inline-block;
+            padding: 10px;
+            background: #e7f3ff;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        
+        .prediction-summary {
+            display: inline-block;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        
+        .insights-list {
+            margin-top: 10px;
+        }
+        
+        .insights-list ul {
+            padding-left: 20px;
+            margin: 5px 0;
+        }
+        
+        .insights-list li {
+            margin-bottom: 5px;
+        }
     </style>
 </head>
 <body>
@@ -290,6 +319,20 @@
             
             <div class="charts-grid">
                 <div class="chart-container">
+                    <h3><i class="fas fa-globe-americas"></i> Geographical Connection Analysis</h3>
+                    <canvas id="geographicalChart"></canvas>
+                    <div id="geographicalAnalysis" style="margin-top: 15px;"></div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3><i class="fas fa-crystal-ball"></i> Connection Quality Predictions</h3>
+                    <canvas id="predictionChart"></canvas>
+                    <div id="predictionInsights" style="margin-top: 15px;"></div>
+                </div>
+            </div>
+            
+            <div class="charts-grid">
+                <div class="chart-container">
                     <h3><i class="fas fa-tachometer-alt"></i> Latency Trends</h3>
                     <canvas id="latencyTrendChart"></canvas>
                 </div>
@@ -329,6 +372,10 @@
                             <th>Packet Loss</th>
                             <th>Messages Sent</th>
                             <th>Messages Received</th>
+                            <th>Location</th>
+                            <th>Score</th>
+                            <th>Trend</th>
+                            <th>Predicted</th>
                             <th>Connected Since</th>
                         </tr>
                     </thead>
@@ -507,6 +554,67 @@
                     }
                 }
             });
+            
+            // Initialize Geographical Chart
+            const geographicalCtx = document.getElementById('geographicalChart').getContext('2d');
+            qualityCharts.geographical = new Chart(geographicalCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Connection Count',
+                        data: [],
+                        backgroundColor: '#007bff',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Connections'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Region'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Initialize Prediction Chart
+            const predictionCtx = document.getElementById('predictionChart').getContext('2d');
+            qualityCharts.prediction = new Chart(predictionCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Excellent', 'Good', 'Fair', 'Poor'],
+                    datasets: [{
+                        data: [0, 0, 0, 0],
+                        backgroundColor: ['#28a745', '#17a2b8', '#ffc107', '#dc3545'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Predicted Connection Quality Distribution'
+                        }
+                    }
+                }
+            });
         }
         
         // Connect to WebSocket
@@ -600,6 +708,8 @@
             updateQualityDistributionChart(data);
             updateLatencyTrendChart(data);
             updatePacketLossTrendChart(data);
+            updateGeographicalChart(data);
+            updatePredictionChart(data);
             
             // Update connection stats table
             updateConnectionStatsTable(data.connection_stats || []);
@@ -671,6 +781,88 @@
             qualityCharts.packetLossTrend.update();
         }
         
+        // Update geographical chart
+        function updateGeographicalChart(data) {
+            if (!data.geographical_analysis || !data.geographical_analysis.regions) {
+                return;
+            }
+            
+            const regions = data.geographical_analysis.regions;
+            const labels = regions.map(r => r.region);
+            const counts = regions.map(r => r.connection_count);
+            
+            qualityCharts.geographical.data.labels = labels;
+            qualityCharts.geographical.data.datasets[0].data = counts;
+            qualityCharts.geographical.update();
+            
+            // Update geographical analysis display
+            updateGeographicalAnalysisDisplay(data.geographical_analysis);
+        }
+        
+        // Update geographical analysis display
+        function updateGeographicalAnalysisDisplay(analysis) {
+            const container = document.getElementById('geographicalAnalysis');
+            if (!analysis || analysis.status === 'no_data') {
+                container.innerHTML = '<p>No geographical data available</p>';
+                return;
+            }
+            
+            let html = '<div class="geographical-summary">';
+            html += `<p><strong>Regions:</strong> ${analysis.region_count}</p>`;
+            html += `<p><strong>Best Region:</strong> ${analysis.best_region.name} (Score: ${analysis.best_region.score.toFixed(1)})</p>`;
+            html += `<p><strong>Worst Region:</strong> ${analysis.worst_region.name} (Score: ${analysis.worst_region.score.toFixed(1)})</p>`;
+            html += `<p><strong>Overall Quality:</strong> ${analysis.overall_geographical_quality.rating} (${analysis.overall_geographical_quality.variability} variability)</p>`;
+            html += '</div>';
+            
+            container.innerHTML = html;
+        }
+        
+        // Update prediction chart
+        function updatePredictionChart(data) {
+            if (!data.quality_predictions || !data.quality_predictions.prediction_distribution) {
+                return;
+            }
+            
+            const predictions = data.quality_predictions.prediction_distribution;
+            qualityCharts.prediction.data.datasets[0].data = [
+                predictions.excellent || 0,
+                predictions.good || 0,
+                predictions.fair || 0,
+                predictions.poor || 0
+            ];
+            qualityCharts.prediction.update();
+            
+            // Update prediction insights display
+            updatePredictionInsightsDisplay(data.quality_predictions);
+        }
+        
+        // Update prediction insights display
+        function updatePredictionInsightsDisplay(predictions) {
+            const container = document.getElementById('predictionInsights');
+            if (!predictions || predictions.status === 'no_data') {
+                container.innerHTML = '<p>No prediction data available</p>';
+                return;
+            }
+            
+            let html = '<div class="prediction-summary">';
+            html += `<p><strong>Overall Trend:</strong> ${predictions.overall_prediction_trend}</p>`;
+            html += `<p><strong>Confidence:</strong> ${predictions.prediction_confidence}</p>`;
+            html += `<p><strong>Average Score:</strong> ${predictions.average_connection_score.toFixed(1)}/100</p>`;
+            
+            if (predictions.predictive_insights && predictions.predictive_insights.length > 0) {
+                html += '<div class="insights-list" style="margin-top: 10px;">';
+                html += '<strong>Insights:</strong><ul>';
+                predictions.predictive_insights.forEach(insight => {
+                    html += `<li>${insight}</li>`;
+                });
+                html += '</ul></div>';
+            }
+            
+            html += '</div>';
+            
+            container.innerHTML = html;
+        }
+        
         // Update connection stats table
         function updateConnectionStatsTable(stats) {
             const tbody = document.getElementById('connectionStatsTableBody');
@@ -691,6 +883,10 @@
                     <td>${stat.packet_loss ? stat.packet_loss.toFixed(2) + '%' : 'N/A'}</td>
                     <td>${stat.messages_sent || 0}</td>
                     <td>${stat.messages_received || 0}</td>
+                    <td>${stat.geolocation || 'Unknown'}</td>
+                    <td>${stat.connection_score ? stat.connection_score.toFixed(1) : 'N/A'}</td>
+                    <td>${stat.quality_trend || 'N/A'}</td>
+                    <td>${stat.predicted_quality || 'N/A'}</td>
                     <td>${stat.connection_time ? new Date(stat.connection_time).toLocaleString() : 'N/A'}</td>
                 `;
                 
