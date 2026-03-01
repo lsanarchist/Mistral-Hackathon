@@ -36,146 +36,94 @@
 
 ---
 
-## Phase 1 — Golden Path CLI: `triageprof demo`
+## 🚀 Phase 1 — Golden Path CLI: `triageprof demo`
 
-Implement a single "golden" command that does everything:
+**NEXT PRIORITY**: Implement the single "golden" command that does everything.
 
-- **Inputs**
-  - `--repo` (git URL or local path)
-  - `--ref` (commit/tag/branch; default: default branch)
-  - `--bench` (regex; default: `.`)
-  - `--pkg` (optional package selector)
-  - `--duration` / `--count` (for stability)
-  - `--out` (output dir)
-- **Steps**
-  1) Clone (or copy local)
-  2) Detect benchmarks (fast scan: `go test ./... -list=.` or `-run=^$ -bench=.` with dry mode)
-  3) Run benchmark(s) and generate:
-     - CPU: `-cpuprofile`
-     - Mem/alloc: `-memprofile` (+ `-benchmem`)
-     - Optional: mutex/block profiles behind flags
-  4) Save a `run.json` manifest (repo/ref, go env, flags, timestamps, versions)
+### Implementation Plan
 
-Acceptance criteria:
-- `triageprof demo --repo <repo> --out out/` produces `out/profiles/*` + `out/run.json` every time.
+1. **Add `demo` command** to `cmd/triageprof/main.go`
+2. **Implement repo cloning** with git support
+3. **Add benchmark detection** using `go test` patterns
+4. **Create profile collection** with proper pprof flags
+5. **Generate run manifest** with metadata
+
+### Acceptance Criteria
+- `triageprof demo --repo <repo> --out out/` produces `out/profiles/*` + `out/run.json`
+- Works with both local paths and git URLs
+- Handles benchmark detection gracefully
+
+### Estimated Files to Modify
+- `cmd/triageprof/main.go` - Add demo command handler
+- `internal/core/pipeline.go` - Add Demo() method
+- `internal/model/types.go` - Add RunManifest struct
 
 ---
 
 ## Phase 2 — Deterministic Analyzer: `pprof → findings.json`
 
-Create a stable schema and rules that never depend on LLM.
+Create stable schema and rules that never depend on LLM.
 
-### Findings schema (v1)
-Each finding should contain:
-- `id`, `title`, `category` (cpu/alloc/heap/gc/mutex/block)
-- `severity` (low/med/high/critical) + `confidence` (0..1)
-- `impact_summary` (short)
-- `evidence[]` (top funcs, flat/cum, stack excerpts, file:line where possible)
-- `deterministic_hints[]` (rule-based fix ideas)
-- `tags[]` (e.g., `allocation_churn`, `lock_contention`, `json_decode_hotpath`)
+### Findings Schema (v1)
+```go
+type Finding struct {
+    ID               string
+    Title            string
+    Category         string // cpu, alloc, heap, gc, mutex, block
+    Severity         string // low, medium, high, critical
+    Confidence       float64 // 0.0-1.0
+    ImpactSummary    string
+    Evidence         []EvidenceItem
+    DeterministicHints []string
+    Tags             []string
+}
+```
 
-### Rules to implement first (highest demo value)
-- CPU hotpath dominance (top N cumulative + dominance ratio)
-- Allocation churn (mallocgc/memmove/bytes.growSlice patterns)
-- JSON decode/encode hotspots (encoding/json heavy frames)
-- String churn patterns (strings/bytes/regexp hotspots)
-- GC pressure (runtime/GC frames noticeable in CPU profile)
-- Mutex contention (single lock dominating)
-
-Acceptance criteria:
-- `triageprof analyze --in out/profiles --out out/` creates `out/findings.json` with 3–10 findings for a typical repo.
-
----
-
-## Phase 3 — LLM Enrichment via Mistral API (no local ML)
-
-Add an enrichment stage that takes **only the deterministic findings** and returns strictly structured output.
-
-### Interface
-- `--llm=mistral` (or `--llm=off`)
-- Reads `MISTRAL_API_KEY`
-- Adds `out/llm_enrichment.json` and merges into report sections.
-
-### Guardrails (must-have)
-- **Strict JSON-only output** (validate; if invalid → discard and continue)
-- **No hallucinated claims**:
-  - Require the model to cite `evidence_refs` that point to your evidence entries
-  - If uncertain, it must put items into `unknowns[]`
-- **Redaction**:
-  - Strip secrets and overly-large code blobs
-  - Send summaries + small evidence snippets, not whole repos
-- **Caching**:
-  - Hash of `findings.json` → cached enrichment to avoid repeat costs
-
-Acceptance criteria:
-- With a valid key: report includes an "LLM insights" section per top finding.
-- Without a key: report still builds, clearly shows "LLM disabled".
+### Rules to Implement
+1. **CPU hotpath dominance** - Top N functions consuming >70% cumulative time
+2. **Allocation churn** - High mallocgc/memmove/bytes.growSlice patterns
+3. **JSON hotspots** - encoding/json decode/encode in top functions
+4. **String churn** - strings.Builder, bytes.Buffer, regexp in hot paths
+5. **GC pressure** - runtime.gcBgMarkWorker, runtime.gcAssistAlloc
+6. **Mutex contention** - sync.(*Mutex).Lock with high contention
 
 ---
 
-## Phase 4 — Report Generator Polish (this is what sells the demo)
+## Phase 3 — LLM Enrichment via Mistral API
 
-Generate three outputs every run:
+Add optional enrichment that takes deterministic findings and returns structured insights.
 
-1) **`report.html`** (primary demo artifact)
-   - Summary: repo, ref, runtime, top bottleneck cards
-   - Findings list: sortable by severity/impact/confidence
-   - Each finding: evidence tables + expandable stacks + (optional) LLM narrative
-   - Footer: reproducibility info (command line, versions)
+### Guardrails (Critical)
+- **Strict JSON validation** - Discard invalid responses
+- **Evidence citations** - Require `evidence_refs` in responses
+- **Redaction** - Strip secrets, limit code snippets to 200 chars
+- **Caching** - Hash findings.json → cache insights
 
-2) **`report.md`** (for GitHub issue/comment)
-   - Short summary + top findings + bullet fixes
-   - Links/paths to the evidence artifacts
-
-3) **`findings.json`** (machine-readable contract)
-
-Acceptance criteria:
-- Opening `report.html` looks clean and understandable to a non-expert in <60 seconds.
-
----
-
-## Phase 5 — Demo Kit (make it easy to show live)
-
-- Add `./demo.sh` (or `make demo`) that runs the golden path on a **pinned** repo/ref.
-- Commit `demo-output/` with one known-good output (so the UI can be shown even offline).
-- Add README "Demo in 30 seconds":
-  - install
-  - run demo
-  - open report
-
-Acceptance criteria:
-- New person can reproduce the demo without asking questions.
+### Implementation
+```go
+func (g *InsightsGenerator) GenerateInsights(ctx context.Context, findings *model.FindingsBundle) (*model.InsightsBundle, error) {
+    // Build prompt with redacted findings
+    // Call Mistral API with structured prompt
+    // Validate JSON response strictly
+    // Return insights or disabled bundle
+}
+```
 
 ---
 
-## Phase 6 — Tests (so you can move fast safely)
+## Quick Verification Checklist
 
-- Unit tests:
-  - pprof parsing wrappers
-  - each rule emits expected finding fields
-- Snapshot (golden) tests:
-  - `findings.json` stable ordering
-  - `report.md` stable text blocks
-- E2E test:
-  - run `triageprof demo` against a tiny fixture repo (or minimal internal test module)
-  - assert files exist + basic invariants
-
-Acceptance criteria:
-- CI (or local `go test ./...`) catches regressions in schema/report.
+- [x] Phase 0: Repo hygiene complete
+- [ ] Phase 1: `triageprof demo` command works
+- [ ] Phase 2: Deterministic analyzer produces findings.json
+- [ ] Phase 3: LLM enrichment works with API key
+- [ ] Phase 4: HTML report looks professional
+- [ ] Phase 5: Demo kit with pinned repo works
 
 ---
 
-## Phase 7 — Small "Nice" Extras (only if time remains)
+## Immediate Next Action
 
-- `triageprof serve --dir out/` to open a local report viewer (optional).
-- "Compare two runs" (baseline vs current) for a single benchmark (simple diff in findings).
-- Export a `github_issue.md` template file.
+**Start Phase 1**: Implement `triageprof demo` command with repo cloning, benchmark detection, and profile collection.
 
----
-
-## Backlog (post-MVP, do not block the demo)
-
-- Plugin SDK hardening + compatibility matrix
-- Support more profilers/languages (keep as skeleton only for now)
-- Advanced callgraph/dominator visualizations
-- CI integration (GitHub Actions) and regression thresholds
+Expected time: 4-8 hours for basic implementation + tests.
