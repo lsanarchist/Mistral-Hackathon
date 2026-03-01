@@ -96,6 +96,10 @@ func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth b
 	mux.HandleFunc("/plugins", s.handlePlugins)
 	mux.HandleFunc("/plugins/capabilities", s.handlePluginCapabilities)
 	mux.HandleFunc("/plugins/health", s.handlePluginHealth)
+	mux.HandleFunc("/plugins/marketplace", s.handlePluginMarketplace)
+	mux.HandleFunc("/plugins/install", s.handleInstallPlugin)
+	mux.HandleFunc("/plugins/update", s.handleUpdatePlugin)
+	mux.HandleFunc("/plugins/uninstall", s.handleUninstallPlugin)
 	
 	// Add auth endpoints if enabled
 	if enableAuth {
@@ -601,6 +605,187 @@ func (s *WebSocketServer) handlePluginHealth(w http.ResponseWriter, r *http.Requ
 		"health": s.pluginHealth,
 		"timestamp": time.Now().Unix(),
 	})
+}
+
+// handlePluginMarketplace handles plugin marketplace requests
+func (s *WebSocketServer) handlePluginMarketplace(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// Demo marketplace data - in a real implementation, this would fetch from a remote marketplace
+	marketplacePlugins := []map[string]interface{}{
+		{
+			"name": "go-pprof-http",
+			"version": "0.1.0",
+			"installed": s.isPluginInstalled("go-pprof-http"),
+			"description": "Go pprof HTTP plugin for collecting profiles from Go applications",
+			"author": "Mistral Hackathon",
+			"capabilities": map[string]interface{}{
+				"targets": []string{"url"},
+				"profiles": []string{"cpu", "heap", "mutex", "block", "goroutine"},
+			},
+		},
+		{
+			"name": "node-inspector",
+			"version": "0.1.0",
+			"installed": s.isPluginInstalled("node-inspector"),
+			"description": "Node.js inspector plugin for profiling Node.js applications",
+			"author": "Mistral Hackathon",
+			"capabilities": map[string]interface{}{
+				"targets": []string{"url"},
+				"profiles": []string{"cpu", "heap"},
+			},
+		},
+		{
+			"name": "python-cprofile",
+			"version": "0.1.0",
+			"installed": s.isPluginInstalled("python-cprofile"),
+			"description": "Python cProfile plugin for profiling Python applications",
+			"author": "Mistral Hackathon",
+			"capabilities": map[string]interface{}{
+				"targets": []string{"url"},
+				"profiles": []string{"cpu", "memory"},
+			},
+		},
+		{
+			"name": "ruby-stackprof",
+			"version": "0.1.0",
+			"installed": s.isPluginInstalled("ruby-stackprof"),
+			"description": "Ruby stackprof plugin for profiling Ruby applications",
+			"author": "Mistral Hackathon",
+			"capabilities": map[string]interface{}{
+				"targets": []string{"url"},
+				"profiles": []string{"cpu", "memory", "object_allocation"},
+			},
+		},
+		{
+			"name": "java-jfr",
+			"version": "0.1.0",
+			"installed": s.isPluginInstalled("java-jfr"),
+			"description": "Java Flight Recorder plugin for profiling Java applications",
+			"author": "Mistral Hackathon",
+			"capabilities": map[string]interface{}{
+				"targets": []string{"url", "file"},
+				"profiles": []string{"cpu", "memory", "gc", "locks"},
+			},
+		},
+		{
+			"name": "dotnet-profiler",
+			"version": "0.1.0",
+			"installed": s.isPluginInstalled("dotnet-profiler"),
+			"description": ".NET profiler for profiling C# applications",
+			"author": "Mistral Hackathon",
+			"capabilities": map[string]interface{}{
+				"targets": []string{"url"},
+				"profiles": []string{"cpu", "memory", "gc"},
+			},
+		},
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"plugins": marketplacePlugins,
+		"count": len(marketplacePlugins),
+	})
+}
+
+// handleInstallPlugin handles plugin installation requests
+func (s *WebSocketServer) handleInstallPlugin(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// Parse request body
+	var request struct {
+		PluginName string `json:"pluginName"`
+		URL        string `json:"url,omitempty"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http.Error(w, fmt.Sprintf("Invalid request: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	if request.PluginName == "" && request.URL == "" {
+		http.Error(w, "Plugin name or URL is required", http.StatusBadRequest)
+		return
+	}
+
+	// In a real implementation, this would download and install the plugin
+	// For demo purposes, we'll simulate a successful installation
+	time.Sleep(1 * time.Second)
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"message": fmt.Sprintf("Plugin %s installed successfully", request.PluginName),
+		"pluginName": request.PluginName,
+	})
+}
+
+// handleUpdatePlugin handles plugin update requests
+func (s *WebSocketServer) handleUpdatePlugin(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// Parse request body
+	var request struct {
+		PluginName string `json:"pluginName"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http.Error(w, fmt.Sprintf("Invalid request: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	if request.PluginName == "" {
+		http.Error(w, "Plugin name is required", http.StatusBadRequest)
+		return
+	}
+
+	// In a real implementation, this would update the plugin
+	// For demo purposes, we'll simulate a successful update
+	time.Sleep(1 * time.Second)
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"message": fmt.Sprintf("Plugin %s updated successfully", request.PluginName),
+		"pluginName": request.PluginName,
+	})
+}
+
+// handleUninstallPlugin handles plugin uninstallation requests
+func (s *WebSocketServer) handleUninstallPlugin(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	// Parse request body
+	var request struct {
+		PluginName string `json:"pluginName"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http.Error(w, fmt.Sprintf("Invalid request: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	if request.PluginName == "" {
+		http.Error(w, "Plugin name is required", http.StatusBadRequest)
+		return
+	}
+
+	// In a real implementation, this would uninstall the plugin
+	// For demo purposes, we'll simulate a successful uninstallation
+	time.Sleep(1 * time.Second)
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"message": fmt.Sprintf("Plugin %s uninstalled successfully", request.PluginName),
+		"pluginName": request.PluginName,
+	})
+}
+
+// isPluginInstalled checks if a plugin is installed
+func (s *WebSocketServer) isPluginInstalled(pluginName string) bool {
+	for _, manifest := range s.pluginManifests {
+		if manifest.Name == pluginName {
+			return true
+		}
+	}
+	return false
 }
 
 // countSeverity counts findings by severity level

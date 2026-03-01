@@ -26,7 +26,7 @@ func main() {
 		fmt.Println("  collect --plugin <name> --target-url <url> --duration <sec> --out <path>")
 		fmt.Println("  analyze --in <bundle.json> --out <findings.json> --top <N> [--callgraph --callgraph-depth <depth>] [--regression --baseline <path>]")
 		fmt.Println("  report --in <findings.json> --out <report.md|json> --output markdown|json")
-		fmt.Println("  llm --bundle <bundle.json> --findings <findings.json> --out <insights.json> [--model <model>] [--timeout <sec>] [--dry-run]")
+		fmt.Println("  llm --bundle <bundle.json> --findings <findings.json> --out <insights.json> [--provider <provider>] [--model <model>] [--timeout <sec>] [--dry-run]")
 		fmt.Println("  run --plugin <name> --target-url <url> --duration <sec> --outdir <dir>")
 		fmt.Println("  run --plugin <name> --target-type python --target-command <cmd> --duration <sec> --outdir <dir>")
 		fmt.Println("  run --plugin <name> --target-type node --target-command <cmd> --duration <sec> --outdir <dir>")
@@ -34,7 +34,8 @@ func main() {
 		fmt.Println("  websocket --findings <findings.json> [--insights <insights.json>] [--port <port>] [--data-dir <dir>] [--compression]")
 		fmt.Println("\nLLM Options for 'run' command:")
 		fmt.Println("  --llm (enable LLM insights)")
-		fmt.Println("  --llm-model <model> (default: devstral-small-latest)")
+		fmt.Println("  --llm-provider <provider> (mistral, openai - default: mistral)")
+		fmt.Println("  --llm-model <model> (default: provider-specific)")
 		fmt.Println("  --llm-timeout <seconds> (default: 20)")
 		fmt.Println("  --llm-max-chars <chars> (default: 12000)")
 		fmt.Println("  --llm-dry-run (print prompt without API call)")
@@ -271,7 +272,8 @@ func runRunCommand(pipeline *core.Pipeline) {
 	duration := flagSet.Int("duration", 15, "Duration in seconds")
 	outDir := flagSet.String("outdir", "", "Output directory")
 	llmEnabled := flagSet.Bool("llm", false, "Enable LLM insights")
-	llmModel := flagSet.String("llm-model", "devstral-small-latest", "Mistral model name")
+	llmProvider := flagSet.String("llm-provider", "mistral", "LLM provider (mistral, openai)")
+	llmModel := flagSet.String("llm-model", "", "Model name (provider-specific default if empty)")
 	llmTimeout := flagSet.Int("llm-timeout", 20, "LLM API timeout in seconds")
 	llmMaxChars := flagSet.Int("llm-max-chars", 12000, "Max prompt characters")
 	llmDryRun := flagSet.Bool("llm-dry-run", false, "Dry run - save prompt without API call")
@@ -303,8 +305,39 @@ func runRunCommand(pipeline *core.Pipeline) {
 
 	// Configure LLM if enabled
 	if *llmEnabled {
-		apiKey := os.Getenv("MISTRAL_API_KEY")
-		pipeline.WithLLM(apiKey, *llmModel, *llmTimeout, 4096, *llmMaxChars, *llmDryRun)
+		// Get API key based on provider
+		apiKey := ""
+		apiKeyEnv := "MISTRAL_API_KEY"
+		if *llmProvider == "openai" {
+			apiKeyEnv = "OPENAI_API_KEY"
+		}
+		apiKey = os.Getenv(apiKeyEnv)
+		
+		// Set default model if not specified
+		if *llmModel == "" {
+			if *llmProvider == "openai" {
+				llmModel = flagSet.String("llm-model", "gpt-3.5-turbo", "OpenAI model name")
+			} else {
+				llmModel = flagSet.String("llm-model", "devstral-small-latest", "Mistral model name")
+			}
+		}
+		
+		// Create provider config
+		config := llm.ProviderConfig{
+			ProviderName: *llmProvider,
+			Model:        *llmModel,
+			APIKey:       apiKey,
+			Timeout:      time.Duration(*llmTimeout) * time.Second,
+			MaxResponse:  4096,
+			MaxPrompt:    *llmMaxChars,
+			DryRun:       *llmDryRun,
+		}
+		
+		_, err := pipeline.WithLLMWithProvider(config)
+		if err != nil {
+			fmt.Printf("Failed to configure LLM: %v\n", err)
+			os.Exit(1)
+		}
 	}
 
 	var err error
@@ -327,7 +360,8 @@ func runLLMCommand() {
 	bundlePath := flagSet.String("bundle", "", "Input bundle path")
 	findingsPath := flagSet.String("findings", "", "Input findings path")
 	outPath := flagSet.String("out", "", "Output insights path")
-	llmModel := flagSet.String("model", "devstral-small-latest", "Mistral model name")
+	provider := flagSet.String("provider", "mistral", "LLM provider (mistral, openai)")
+	llmModel := flagSet.String("model", "", "Model name (provider-specific default if empty)")
 	timeout := flagSet.Int("timeout", 20, "API timeout in seconds")
 	maxResponse := flagSet.Int("max-response", 4096, "Max response tokens")
 	maxPromptChars := flagSet.Int("max-prompt-chars", 12000, "Max prompt characters")
@@ -365,15 +399,45 @@ func runLLMCommand() {
 		os.Exit(1)
 	}
 
-	// Get API key from environment
-	apiKey := os.Getenv("MISTRAL_API_KEY")
+	// Get API key from environment based on provider
+	apiKey := ""
+	apiKeyEnv := "MISTRAL_API_KEY"
+	if *provider == "openai" {
+		apiKeyEnv = "OPENAI_API_KEY"
+	}
+	
+	apiKey = os.Getenv(apiKeyEnv)
 	if apiKey == "" && !*dryRun {
-		fmt.Println("MISTRAL_API_KEY environment variable not set")
+		fmt.Printf("%s environment variable not set\n", apiKeyEnv)
 		os.Exit(1)
 	}
 
-	// Create insights generator
-	generator := llm.NewInsightsGenerator(apiKey, *llmModel, *timeout, *maxResponse, *maxPromptChars, *dryRun)
+	// Set default model if not specified
+	if *llmModel == "" {
+		if *provider == "openai" {
+			llmModel = flagSet.String("model", "gpt-3.5-turbo", "OpenAI model name")
+		} else {
+			llmModel = flagSet.String("model", "devstral-small-latest", "Mistral model name")
+		}
+	}
+
+	// Create provider config
+	config := llm.ProviderConfig{
+		ProviderName: *provider,
+		Model:        *llmModel,
+		APIKey:       apiKey,
+		Timeout:      time.Duration(*timeout) * time.Second,
+		MaxResponse:  *maxResponse,
+		MaxPrompt:    *maxPromptChars,
+		DryRun:       *dryRun,
+	}
+
+	// Create insights generator with specific provider
+	generator, err := llm.NewInsightsGeneratorWithProvider(config)
+	if err != nil {
+		fmt.Printf("Failed to create insights generator: %v\n", err)
+		os.Exit(1)
+	}
 
 	ctx := context.Background()
 	insights, err := generator.GenerateInsights(ctx, &profileBundle, &findingsBundle)

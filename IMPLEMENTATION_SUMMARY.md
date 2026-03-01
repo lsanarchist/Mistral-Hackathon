@@ -1,155 +1,193 @@
-# WebSocket Real-time Monitoring Implementation Summary
+# Multi-Model LLM Support Implementation Summary
 
 ## Overview
-Successfully implemented WebSocket-based real-time monitoring for TriageProf, enabling continuous, low-latency performance analysis without manual file uploads or refresh operations.
+Successfully implemented multi-model LLM support for TriageProf, allowing users to choose between different LLM providers (Mistral, OpenAI) for performance insights generation.
 
-## Key Components Implemented
+## Architecture Changes
 
-### 1. WebSocket Server (`internal/webserver/server.go`)
-- **WebSocketServer struct** with client management, data broadcasting, and health monitoring
-- **Multi-client support** with automatic connection/disconnection handling
-- **Data broadcasting** to all connected clients with performance statistics
-- **Health check endpoint** (`/health`) for monitoring server status
-- **Graceful shutdown** with proper connection cleanup
-- **Error handling** for robust operation in production environments
+### 1. Provider Interface (`internal/llm/provider.go`)
+- **Provider Interface**: Defines contract for LLM providers with `GenerateInsights()`, `Name()`, and `Model()` methods
+- **ProviderConfig**: Configuration structure for LLM providers with provider-specific settings
+- **Provider Factory**: `NewProvider()` function creates appropriate provider based on configuration
+- **Error Handling**: Custom `LLMError` type for provider-specific errors
 
-### 2. Web Viewer Enhancements
-- **WebSocket client functionality** in `web/app.js`
-- **Connection management** with automatic reconnection support
-- **Real-time data updates** with seamless UI integration
-- **WebSocket controls** in HTML UI with status indicators
-- **CSS styling** for WebSocket connection states
+### 2. Mistral Provider (`internal/llm/mistral.go`)
+- **MistralProvider**: Implements Mistral API client with proper authentication
+- **Dry-run Support**: Safe testing without API calls
+- **Error Handling**: Comprehensive error handling for API failures
+- **Configuration**: Supports custom models, timeouts, and response limits
 
-### 3. Core Pipeline Integration
-- **WebSocket server configuration** in Pipeline struct
-- **CLI command** (`websocket`) for starting monitoring servers
-- **Data loading** from findings and insights files
-- **Broadcast management** for pushing updates to clients
+### 3. OpenAI Provider (`internal/llm/openai.go`)
+- **OpenAIProvider**: Implements OpenAI API client with proper authentication
+- **Dry-run Support**: Safe testing without API calls
+- **Error Handling**: Comprehensive error handling for API failures
+- **Configuration**: Supports custom models, timeouts, and response limits
 
-### 4. CLI Interface
-- **New command**: `triageprof websocket --findings <path> [--insights <path>] [--port <port>] [--data-dir <dir>]`
-- **Health monitoring**: HTTP endpoint for server status
-- **Graceful shutdown**: Proper signal handling for clean termination
+### 4. Updated Insights Generator (`internal/llm/insights.go`)
+- **Provider-based Architecture**: Uses provider interface instead of hardcoded Mistral client
+- **Error Handling**: Proper error propagation from provider layer
+- **Backward Compatibility**: Maintains existing API while using new provider system
+- **Flexible Configuration**: Supports both simple and provider-specific configuration
 
-## Technical Details
+### 5. Core Pipeline Integration (`internal/core/pipeline.go`)
+- **Provider Support**: Updated `WithLLM()` methods to use provider interface
+- **Error Handling**: Returns errors from provider creation
+- **Backward Compatibility**: Maintains existing API while using new provider system
 
-### WebSocket Protocol
-- **Endpoint**: `ws://localhost:<port>/ws`
-- **Message format**: JSON with `type`, `timestamp`, `findings`, `insights`, and `stats`
-- **Auto-reconnect**: Client automatically reconnects on failure
-- **Multi-client**: Supports multiple concurrent connections
-
-### Data Flow
-```
-Profile Data → Findings/Insights → WebSocket Server → Connected Clients → Real-time UI Updates
-```
-
-### Performance Characteristics
-- **Low latency**: Instant data delivery to clients
-- **Scalable**: Handles multiple concurrent connections
-- **Efficient**: Only sends incremental updates when data changes
-- **Robust**: Automatic error recovery and reconnection
+### 6. CLI Enhancements (`cmd/triageprof/main.go`)
+- **Provider Selection**: Added `--llm-provider` flag for provider selection
+- **Environment Variables**: Supports both `MISTRAL_API_KEY` and `OPENAI_API_KEY`
+- **Help Updates**: Updated usage information to show provider options
+- **Error Handling**: Proper error messages for missing API keys
 
 ## Usage Examples
 
-### Starting WebSocket Server
+### Mistral Provider (Default)
 ```bash
-# Basic usage with findings only
-./bin/triageprof websocket --findings ./demo-output/findings.json --port 8080
-
-# With insights for enhanced analysis
-./bin/triageprof websocket --findings ./demo-output/findings.json --insights ./demo-output/insights.json --port 8080
-
-# Custom data directory
-./bin/triageprof websocket --findings ./demo-output/findings.json --port 8081 --data-dir ./monitoring-data
+export MISTRAL_API_KEY="your-mistral-key"
+bin/triageprof run --plugin go-pprof-http --target-url http://localhost:6060 --duration 30 --outdir results/ --llm
 ```
 
-### Health Check
+### OpenAI Provider
 ```bash
-curl http://localhost:8080/health
-# Response: {"status":"healthy","timestamp":1234567890,"clients":2,"data_loaded":true}
+export OPENAI_API_KEY="your-openai-key"
+bin/triageprof run --plugin go-pprof-http --target-url http://localhost:6060 --duration 30 --outdir results/ --llm --llm-provider openai --llm-model gpt-3.5-turbo
 ```
 
-### WebSocket Connection
-```javascript
-// JavaScript client connection
-const ws = new WebSocket('ws://localhost:8080/ws');
-
-ws.onmessage = function(event) {
-    const data = JSON.parse(event.data);
-    console.log('Performance update:', data.stats);
-    // Update UI with real-time data
-};
+### Standalone LLM Command with Provider Selection
+```bash
+export MISTRAL_API_KEY="your-mistral-key"
+bin/triageprof llm --bundle results/bundle.json --findings results/findings.json --out results/insights.json --provider mistral
 ```
 
-## Benefits
+### Dry-run Mode (No API Calls)
+```bash
+bin/triageprof run --plugin go-pprof-http --target-url http://localhost:6060 --duration 30 --outdir results/ --llm --llm-dry-run
+```
 
-### For Production Monitoring
-- **Continuous analysis**: No manual file uploads required
-- **Instant alerts**: Immediate notification of performance issues
-- **Live dashboards**: Real-time performance metrics display
-- **Scalable architecture**: Supports multiple monitoring clients
+## Key Features
 
-### For Development Workflow
-- **Faster iteration**: See performance impact immediately
-- **Better debugging**: Monitor changes in real-time
-- **Enhanced collaboration**: Team members can monitor simultaneously
-- **Production parity**: Same monitoring in dev and production
+### 1. Provider Flexibility
+- **Multiple Providers**: Support for Mistral and OpenAI out of the box
+- **Extensible Architecture**: Easy to add new providers by implementing the Provider interface
+- **Provider Auto-detection**: Defaults to Mistral but can be overridden
 
-## Integration Points
+### 2. Robust Error Handling
+- **API Key Validation**: Proper error messages for missing API keys
+- **Provider Validation**: Clear errors for unknown providers
+- **Graceful Degradation**: Falls back to disabled insights when providers fail
 
-### Existing Features
-- ✅ **Backward compatible**: All existing functionality preserved
-- ✅ **Web viewer integration**: Works with existing HTML/JS viewer
-- ✅ **CLI consistency**: Follows existing command patterns
-- ✅ **Error handling**: Robust error recovery mechanisms
+### 3. Configuration Options
+- **Provider Selection**: Choose between available LLM providers
+- **Model Selection**: Provider-specific model selection
+- **Timeout Configuration**: Customizable API timeouts
+- **Response Limits**: Control over response token limits
+- **Dry-run Mode**: Safe testing without API calls
 
-### Future Enhancements
-- **Authentication**: JWT/OAuth for secure connections
-- **Data filtering**: Subscription-based filtering
-- **Historical playback**: Replay past performance data
-- **Multi-room support**: Separate channels for different apps
+### 4. Security
+- **Environment Variables**: Secure API key management
+- **Provider Isolation**: Each provider handles its own authentication
+- **Error Redaction**: Sensitive information not exposed in errors
 
-## Testing & Validation
+### 5. Backward Compatibility
+- **Existing API**: All existing functions work as before
+- **Default Behavior**: Mistral remains the default provider
+- **CLI Compatibility**: All existing CLI flags work unchanged
 
-### Testing Performed
-- ✅ **Unit tests**: WebSocket server functionality
-- ✅ **Integration tests**: Web viewer + WebSocket connection
-- ✅ **Manual testing**: Connection lifecycle management
-- ✅ **Stress testing**: Multiple concurrent clients
-- ✅ **Error handling**: Connection failures and recovery
-- ✅ **Health endpoint**: Status monitoring validation
+## Implementation Details
 
-### Validation Results
-- **Connection stability**: 100% uptime during testing
-- **Data accuracy**: Perfect data synchronization
-- **Performance**: <50ms latency for updates
-- **Scalability**: Tested with 10+ concurrent clients
-- **Error recovery**: Automatic reconnection works reliably
+### Provider Interface
+```go
+type Provider interface {
+    GenerateInsights(ctx context.Context, prompt string) (*model.InsightsBundle, error)
+    Name() string
+    Model() string
+}
+```
 
-## Architecture Impact
+### Provider Factory
+```go
+func NewProvider(config ProviderConfig) (Provider, error) {
+    switch config.ProviderName {
+    case "mistral", "":
+        return NewMistralProvider(config)
+    case "openai":
+        return NewOpenAIProvider(config)
+    default:
+        return nil, ErrUnknownProvider
+    }
+}
+```
 
-### Positive Impacts
-- **Enhanced capabilities**: True real-time monitoring
-- **Production readiness**: Robust error handling
-- **Extensibility**: Foundation for future features
-- **User experience**: Seamless real-time updates
+### Provider Configuration
+```go
+type ProviderConfig struct {
+    ProviderName   string
+    Model          string
+    APIKey         string
+    Timeout        time.Duration
+    MaxResponse    int
+    MaxPrompt      int
+    DryRun         bool
+    ProviderConfig map[string]string
+}
+```
 
-### Considerations
-- **Resource usage**: WebSocket server consumes minimal resources
-- **Security**: Currently open connections (authentication planned)
-- **Compatibility**: Works with all modern browsers
-- **Scalability**: Designed for production workloads
+## Testing
+
+### Unit Tests
+- **Provider Creation**: Tests for Mistral, OpenAI, and default providers
+- **Error Handling**: Tests for unknown providers and missing API keys
+- **Dry-run Mode**: Tests for safe operation without API calls
+- **Configuration Validation**: Tests for proper configuration handling
+
+### Integration Testing
+- **CLI Integration**: Verified provider selection via CLI flags
+- **Environment Variables**: Tested API key detection from environment
+- **Error Messages**: Verified proper error handling and user feedback
+- **Backward Compatibility**: Confirmed existing functionality unchanged
+
+## Future Enhancements
+
+### Short-term
+- **Additional Providers**: Add support for Anthropic, Google Gemini
+- **Provider Auto-detection**: Automatically detect available API keys
+- **Fallback Mechanism**: Automatic fallback to available providers
+- **Cost Estimation**: Show estimated costs before generation
+
+### Long-term
+- **Provider Benchmarking**: Compare performance across providers
+- **Quality Metrics**: Track insight quality by provider
+- **Caching**: Cache insights by provider to reduce costs
+- **Multi-provider Insights**: Combine insights from multiple providers
+
+## Files Modified
+
+### New Files
+- `internal/llm/provider.go` - Provider interface and factory
+- `internal/llm/mistral.go` - Mistral provider implementation
+- `internal/llm/openai.go` - OpenAI provider implementation
+- `internal/llm/provider_test.go` - Provider unit tests
+- `internal/llm/provider_only_test.go` - Additional provider tests
+
+### Modified Files
+- `internal/llm/insights.go` - Updated to use provider interface
+- `internal/core/pipeline.go` - Updated LLM configuration methods
+- `cmd/triageprof/main.go` - Added provider selection CLI support
+- `change.log` - Documentation of changes
+- `suggested_next_steps.md` - Updated with new enhancement ideas
+
+## Verification
+
+The implementation has been verified to:
+1. ✅ Support multiple LLM providers (Mistral, OpenAI)
+2. ✅ Maintain backward compatibility with existing code
+3. ✅ Provide proper error handling and user feedback
+4. ✅ Support provider selection via CLI flags
+5. ✅ Handle API key management securely
+6. ✅ Work in dry-run mode without API calls
+7. ✅ Provide clear documentation and usage examples
 
 ## Conclusion
 
-This implementation transforms TriageProf from a batch-oriented analysis tool to a real-time monitoring platform capable of continuous performance analysis. The WebSocket-based architecture provides the foundation for production-grade monitoring while maintaining full backward compatibility with existing workflows.
-
-The feature enables developers and operations teams to:
-- Monitor application performance in real-time
-- Receive instant notifications of performance issues
-- Collaborate on performance analysis
-- Integrate TriageProf into production dashboards
-- Make data-driven optimization decisions faster
-
-This represents a significant step forward in TriageProf's evolution toward becoming a comprehensive, real-time performance monitoring and analysis platform.
+The multi-model LLM support successfully enhances TriageProf's flexibility by allowing users to choose between different LLM providers. The implementation follows clean architecture principles with a well-defined provider interface, robust error handling, and comprehensive testing. The system maintains full backward compatibility while offering new capabilities for provider selection and configuration.

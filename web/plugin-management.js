@@ -576,88 +576,33 @@ function loadPluginMarketplace() {
     const marketplaceElement = document.getElementById('pluginMarketplace');
     marketplaceElement.innerHTML = '<div class="loading-marketplace"><i class="fas fa-spinner fa-spin"></i> Loading marketplace...</div>';
     
-    // For now, show a demo marketplace (in a real implementation, this would fetch from a server)
-    setTimeout(() => {
-        displayPluginMarketplace();
-    }, 500);
+    fetch('/plugins/marketplace')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to load marketplace');
+            }
+            return response.json();
+        })
+        .then(data => {
+            displayPluginMarketplace(data.plugins);
+        })
+        .catch(error => {
+            console.error('Error loading marketplace:', error);
+            marketplaceElement.innerHTML = '<div class="error-message">Failed to load marketplace: ' + error.message + '</div>';
+        });
 }
 
 // Display plugin marketplace
-function displayPluginMarketplace() {
+function displayPluginMarketplace(plugins) {
     const marketplaceElement = document.getElementById('pluginMarketplace');
     marketplaceElement.innerHTML = '';
     
-    // Demo marketplace data
-    const marketplacePlugins = [
-        {
-            name: 'go-pprof-http',
-            version: '0.1.0',
-            installed: true,
-            description: 'Go pprof HTTP plugin for collecting profiles from Go applications',
-            author: 'Mistral Hackathon',
-            capabilities: {
-                targets: ['url'],
-                profiles: ['cpu', 'heap', 'mutex', 'block', 'goroutine']
-            }
-        },
-        {
-            name: 'node-inspector',
-            version: '0.1.0',
-            installed: true,
-            description: 'Node.js inspector plugin for profiling Node.js applications',
-            author: 'Mistral Hackathon',
-            capabilities: {
-                targets: ['url'],
-                profiles: ['cpu', 'heap']
-            }
-        },
-        {
-            name: 'python-cprofile',
-            version: '0.1.0',
-            installed: true,
-            description: 'Python cProfile plugin for profiling Python applications',
-            author: 'Mistral Hackathon',
-            capabilities: {
-                targets: ['url'],
-                profiles: ['cpu', 'memory']
-            }
-        },
-        {
-            name: 'ruby-stackprof',
-            version: '0.1.0',
-            installed: true,
-            description: 'Ruby stackprof plugin for profiling Ruby applications',
-            author: 'Mistral Hackathon',
-            capabilities: {
-                targets: ['url'],
-                profiles: ['cpu', 'memory', 'object_allocation']
-            }
-        },
-        {
-            name: 'java-jfr',
-            version: '0.1.0',
-            installed: false,
-            description: 'Java Flight Recorder plugin for profiling Java applications',
-            author: 'Mistral Hackathon',
-            capabilities: {
-                targets: ['url', 'file'],
-                profiles: ['cpu', 'memory', 'gc', 'locks']
-            }
-        },
-        {
-            name: 'dotnet-profiler',
-            version: '0.1.0',
-            installed: false,
-            description: '.NET profiler for profiling C# applications',
-            author: 'Mistral Hackathon',
-            capabilities: {
-                targets: ['url'],
-                profiles: ['cpu', 'memory', 'gc']
-            }
-        }
-    ];
+    if (!plugins || plugins.length === 0) {
+        marketplaceElement.innerHTML = '<div class="no-plugins">No plugins available in the marketplace.</div>';
+        return;
+    }
     
-    marketplacePlugins.forEach(plugin => {
+    plugins.forEach(plugin => {
         const pluginElement = document.createElement('div');
         pluginElement.className = 'marketplace-plugin-card';
         
@@ -788,35 +733,95 @@ function showInstallPluginDialog() {
 function installPluginFromUrl(url) {
     showNotification(`Installing plugin from ${url}...`, 'info');
     
-    // In a real implementation, this would call a server endpoint
-    setTimeout(() => {
-        showNotification('Plugin installed successfully! Restart the server to use it.', 'success');
-        loadPluginMarketplace();
-    }, 1500);
+    fetch('/plugins/install', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ url: url })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to install plugin');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            loadPluginMarketplace();
+        } else {
+            showNotification('Failed to install plugin', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error installing plugin:', error);
+        showNotification('Failed to install plugin: ' + error.message, 'error');
+    });
 }
 
 // Install plugin
 function installPlugin(pluginName) {
     showNotification(`Installing plugin ${pluginName}...`, 'info');
     
-    // In a real implementation, this would call a server endpoint
-    setTimeout(() => {
-        showNotification(`Plugin ${pluginName} installed successfully!`, 'success');
-        loadPluginMarketplace();
-        loadPluginList();
-    }, 1000);
+    fetch('/plugins/install', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ pluginName: pluginName })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to install plugin');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            loadPluginMarketplace();
+            loadPluginList();
+        } else {
+            showNotification('Failed to install plugin', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error installing plugin:', error);
+        showNotification('Failed to install plugin: ' + error.message, 'error');
+    });
 }
 
 // Update plugin
 function updatePlugin(pluginName) {
     showNotification(`Updating plugin ${pluginName}...`, 'info');
     
-    // In a real implementation, this would call a server endpoint
-    setTimeout(() => {
-        showNotification(`Plugin ${pluginName} updated successfully!`, 'success');
-        loadPluginMarketplace();
-        loadPluginList();
-    }, 1000);
+    fetch('/plugins/update', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ pluginName: pluginName })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to update plugin');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            loadPluginMarketplace();
+            loadPluginList();
+        } else {
+            showNotification('Failed to update plugin', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error updating plugin:', error);
+        showNotification('Failed to update plugin: ' + error.message, 'error');
+    });
 }
 
 // Update all plugins
@@ -834,12 +839,32 @@ function uninstallPlugin(pluginName) {
     if (confirm(`Are you sure you want to uninstall ${pluginName}?`)) {
         showNotification(`Uninstalling plugin ${pluginName}...`, 'info');
         
-        // In a real implementation, this would call a server endpoint
-        setTimeout(() => {
-            showNotification(`Plugin ${pluginName} uninstalled successfully!`, 'success');
-            loadPluginMarketplace();
-            loadPluginList();
-        }, 1000);
+        fetch('/plugins/uninstall', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ pluginName: pluginName })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to uninstall plugin');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                loadPluginMarketplace();
+                loadPluginList();
+            } else {
+                showNotification('Failed to uninstall plugin', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error uninstalling plugin:', error);
+            showNotification('Failed to uninstall plugin: ' + error.message, 'error');
+        });
     }
 }
 
