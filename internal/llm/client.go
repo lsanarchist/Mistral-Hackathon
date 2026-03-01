@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"path/filepath"
 	"regexp"
@@ -135,6 +136,7 @@ func (p *PromptBuilder) buildFindingsSummary() string {
 	sections = append(sections, "=== ANALYSIS CONTEXT ===")
 	sections = append(sections, "You are an expert performance engineer analyzing profiling data.")
 	sections = append(sections, "Provide deep technical analysis with actionable insights.")
+	sections = append(sections, "Focus on production-grade recommendations with concrete implementation details.")
 	sections = append(sections, "")
 	sections = append(sections, "=== ANALYSIS REQUIREMENTS ===")
 	sections = append(sections, "For each finding, provide:")
@@ -144,6 +146,8 @@ func (p *PromptBuilder) buildFindingsSummary() string {
 	sections = append(sections, "4. Next measurements: Specific metrics to validate fixes")
 	sections = append(sections, "5. Caveats: Limitations and assumptions of the analysis")
 	sections = append(sections, "6. Confidence score: 0-100 based on evidence quality")
+	sections = append(sections, "7. Performance impact: Quantitative estimate of improvement potential")
+	sections = append(sections, "8. Implementation complexity: Low/Medium/High with justification")
 	sections = append(sections, "")
 	sections = append(sections, "=== EXECUTIVE SUMMARY REQUIREMENTS ===")
 	sections = append(sections, "Also provide:")
@@ -152,6 +156,7 @@ func (p *PromptBuilder) buildFindingsSummary() string {
 	sections = append(sections, "- Top 3 action items: Prioritized recommendations with effort estimates")
 	sections = append(sections, "- Key themes: Patterns and common issues across findings")
 	sections = append(sections, "- Performance categories: Distribution of issues by type")
+	sections = append(sections, "- ROI analysis: Cost-benefit assessment of proposed fixes")
 	sections = append(sections, "")
 	sections = append(sections, "=== OUTPUT FORMAT REQUIREMENTS ===")
 	sections = append(sections, "- Use JSON format with the exact schema provided")
@@ -159,6 +164,21 @@ func (p *PromptBuilder) buildFindingsSummary() string {
 	sections = append(sections, "- Provide code examples where applicable")
 	sections = append(sections, "- Reference specific functions and files from the evidence")
 	sections = append(sections, "- Use appropriate confidence scores based on evidence quality")
+	sections = append(sections, "- Include quantitative metrics and benchmarks where possible")
+	sections = append(sections, "- Prioritize recommendations based on impact vs effort")
+
+	// Add technical deep dive section
+	sections = append(sections, "")
+	sections = append(sections, "=== TECHNICAL DEEP DIVE ===")
+	sections = append(sections, "Provide advanced analysis including:")
+	sections = append(sections, "- Memory allocation patterns and optimization opportunities")
+	sections = append(sections, "- CPU utilization breakdown by function and goroutine")
+	sections = append(sections, "- Blocking operations and synchronization bottlenecks")
+	sections = append(sections, "- Cache efficiency and data locality analysis")
+	sections = append(sections, "- Algorithm complexity analysis and optimization suggestions")
+	sections = append(sections, "- Concurrency patterns and parallelization opportunities")
+	sections = append(sections, "- I/O patterns and optimization strategies")
+	sections = append(sections, "- Garbage collection pressure and memory management")
 
 	// Per-finding details (limit to top 5)
 	findingsCount := len(p.Findings.Findings)
@@ -175,8 +195,15 @@ func (p *PromptBuilder) buildFindingsSummary() string {
 		sections = append(sections, fmt.Sprintf("Severity: %s", finding.Severity))
 		sections = append(sections, fmt.Sprintf("Score: %d", finding.Score))
 
+		// Add finding context
+		sections = append(sections, "")
+		sections = append(sections, "Context:")
+		sections = append(sections, "This finding represents a performance bottleneck that requires attention.")
+		sections = append(sections, "Analyze the technical details and provide specific, actionable recommendations.")
+
 		// Top stack frames (redacted and limited)
 		if len(finding.Top) > 0 {
+			sections = append(sections, "")
 			sections = append(sections, "Top Hotspots:")
 			hotspotsCount := len(finding.Top)
 			if hotspotsCount > 10 {
@@ -194,6 +221,54 @@ func (p *PromptBuilder) buildFindingsSummary() string {
 		// Evidence (redacted)
 		if finding.Evidence.ProfileType != "" {
 			sections = append(sections, fmt.Sprintf("Evidence: %s profile", finding.Evidence.ProfileType))
+		}
+
+		// Add callgraph analysis if available
+		if len(finding.Callgraph) > 0 {
+			sections = append(sections, "")
+			sections = append(sections, "Callgraph Analysis:")
+			callgraphCount := len(finding.Callgraph)
+			if callgraphCount > 5 {
+				callgraphCount = 5
+			}
+			for j := 0; j < callgraphCount; j++ {
+				node := finding.Callgraph[j]
+				p.addCallgraphNode(&sections, node, 0)
+			}
+		}
+
+		// Add allocation analysis if available
+		if finding.AllocationAnalysis != nil {
+			sections = append(sections, "")
+			sections = append(sections, "Allocation Analysis:")
+			sections = append(sections, fmt.Sprintf("  Total Allocations: %.2f", finding.AllocationAnalysis.TotalAllocations))
+			sections = append(sections, fmt.Sprintf("  Top Concentration: %.2f%%", finding.AllocationAnalysis.TopConcentration))
+			sections = append(sections, fmt.Sprintf("  Severity: %s", finding.AllocationAnalysis.Severity))
+			
+			if len(finding.AllocationAnalysis.Hotspots) > 0 {
+				hotspotsCount := len(finding.AllocationAnalysis.Hotspots)
+				if hotspotsCount > 5 {
+					hotspotsCount = 5
+				}
+				for j := 0; j < hotspotsCount; j++ {
+					hotspot := finding.AllocationAnalysis.Hotspots[j]
+					redactedFunc := p.redactFunctionName(hotspot.Function)
+					redactedFile := p.redactPath(hotspot.File)
+					sections = append(sections, fmt.Sprintf("  - %s (%s:%d) - count: %.2f, percent: %.2f%%", 
+						redactedFunc, redactedFile, hotspot.Line, hotspot.Count, hotspot.Percent))
+				}
+			}
+		}
+
+		// Add regression analysis if available
+		if finding.Regression != nil {
+			sections = append(sections, "")
+			sections = append(sections, "Regression Analysis:")
+			sections = append(sections, fmt.Sprintf("  Baseline Score: %d", finding.Regression.BaselineScore))
+			sections = append(sections, fmt.Sprintf("  Current Score: %d", finding.Regression.CurrentScore))
+			sections = append(sections, fmt.Sprintf("  Delta: %d (%.2f%%)", finding.Regression.Delta, finding.Regression.Percentage))
+			sections = append(sections, fmt.Sprintf("  Severity: %s", finding.Regression.Severity))
+			sections = append(sections, fmt.Sprintf("  Confidence: %d%%", finding.Regression.Confidence))
 		}
 	}
 
@@ -244,6 +319,30 @@ func (p *PromptBuilder) redactPath(path string) string {
 		return ""
 	}
 	return filepath.Base(path)
+}
+
+// addCallgraphNode adds a callgraph node and its children recursively
+func (p *PromptBuilder) addCallgraphNode(sections *[]string, node model.CallgraphNode, depth int) {
+	indent := ""
+	for i := 0; i <= depth; i++ {
+		indent += "  "
+	}
+
+	redactedFunc := p.redactFunctionName(node.Function)
+	redactedFile := p.redactPath(node.File)
+	*sections = append(*sections, fmt.Sprintf("%s- %s (%s:%d) - cum: %.2f%%, flat: %.2f%%", 
+		indent, redactedFunc, redactedFile, node.Line, node.Cum, node.Flat))
+
+	// Add children recursively (limit depth to avoid excessive output)
+	if depth < 3 && len(node.Children) > 0 {
+		childCount := len(node.Children)
+		if childCount > 5 {
+			childCount = 5
+		}
+		for i := 0; i < childCount; i++ {
+			p.addCallgraphNode(sections, node.Children[i], depth+1)
+		}
+	}
 }
 
 // redactFunctionName redacts sensitive info from function names
@@ -329,6 +428,10 @@ func (c *MistralClient) GenerateInsights(ctx context.Context, prompt string) (*m
 			{"role": "user", "content": prompt},
 		},
 		"max_tokens": c.MaxResponse,
+		"temperature": 0.2, // More deterministic responses for technical analysis
+		"top_p": 0.9,
+		"frequency_penalty": 0.0,
+		"presence_penalty": 0.0,
 	}
 
 	bodyBytes, err := json.Marshal(requestBody)
@@ -367,6 +470,7 @@ func (c *MistralClient) GenerateInsights(ctx context.Context, prompt string) (*m
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Authorization", "Bearer "+c.APIKey)
+	req.Header.Set("User-Agent", "TriageProf/1.0")
 
 	// Execute request
 	resp, err := c.HTTPClient.Do(req)
@@ -384,13 +488,16 @@ func (c *MistralClient) GenerateInsights(ctx context.Context, prompt string) (*m
 	
 	// Close response body
 	resp.Body.Close()
+	
+	// Log retry attempt
+	log.Printf("Mistral API attempt %d failed: %v, retrying...", attempt+1, err)
 	}
 
 	if insights != nil {
 		// Set metadata
 		insights.GeneratedAt = time.Now()
 		insights.Model = c.Model
-		insights.SchemaVersion = "1.0"
+		insights.SchemaVersion = "2.0" // Updated schema version
 		return insights, nil
 	}
 
