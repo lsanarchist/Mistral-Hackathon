@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,6 +14,7 @@ import (
 	"github.com/mistral-hackathon/triageprof/internal/model"
 	"github.com/mistral-hackathon/triageprof/internal/plugin"
 	"github.com/mistral-hackathon/triageprof/internal/report"
+	"github.com/mistral-hackathon/triageprof/internal/webserver"
 )
 
 // containsString checks if a string exists in a slice
@@ -30,6 +32,7 @@ type Pipeline struct {
 	analyzer      *analyzer.Analyzer
 	reporter      *report.Reporter
 	llmGenerator  *llm.InsightsGenerator
+	wsServer      *webserver.WebSocketServer
 }
 
 func NewPipeline(pluginDir string) *Pipeline {
@@ -45,6 +48,42 @@ func NewPipeline(pluginDir string) *Pipeline {
 func (p *Pipeline) WithLLM(apiKey, model string, timeout, maxResponse, maxPromptChars int, dryRun bool) *Pipeline {
 	p.llmGenerator = llm.NewInsightsGenerator(apiKey, model, timeout, maxResponse, maxPromptChars, dryRun)
 	return p
+}
+
+// WithWebSocketServer configures WebSocket server for real-time monitoring
+func (p *Pipeline) WithWebSocketServer(port int, dataDir string) {
+	p.wsServer = webserver.NewWebSocketServer(port, dataDir)
+}
+
+// StartWebSocketServer starts the WebSocket server
+func (p *Pipeline) StartWebSocketServer() error {
+	if p.wsServer == nil {
+		return fmt.Errorf("WebSocket server not configured")
+	}
+	return p.wsServer.Start()
+}
+
+// StopWebSocketServer stops the WebSocket server
+func (p *Pipeline) StopWebSocketServer() error {
+	if p.wsServer == nil {
+		return nil
+	}
+	return p.wsServer.Stop()
+}
+
+// LoadWebSocketData loads data into the WebSocket server
+func (p *Pipeline) LoadWebSocketData(findingsPath, insightsPath string) error {
+	if p.wsServer == nil {
+		return fmt.Errorf("WebSocket server not configured")
+	}
+	return p.wsServer.LoadData(findingsPath, insightsPath)
+}
+
+// BroadcastWebSocketData sends current data to all WebSocket clients
+func (p *Pipeline) BroadcastWebSocketData() {
+	if p.wsServer != nil {
+		p.wsServer.BroadcastData()
+	}
 }
 
 

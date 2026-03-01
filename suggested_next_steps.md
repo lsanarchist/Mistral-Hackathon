@@ -2,14 +2,7 @@
 
 ## Immediate Priorities
 
-### 1. **Enhanced Real-time Monitoring**
-- **Objective**: Extend the new auto-refresh capability to support live API endpoints
-- **Rationale**: Enable monitoring of running applications without manual file uploads
-- **Implementation**:
-  - Add WebSocket support for live data streaming
-  - Create API endpoints for real-time profile collection
-  - Implement server-sent events for push notifications
-  - Add live dashboard with streaming charts
+### IMPROVE WORKFLOW WITH MISTRAL API
 
 ### 2. **Advanced Plugin Discovery UI**
 - **Objective**: Create interactive plugin management interface
@@ -20,14 +13,7 @@
   - Plugin health/status monitoring
   - One-click plugin updates
 
-### 3. **Historical Analysis & Trends**
-- **Objective**: Add time-series analysis and historical comparison
-- **Rationale**: Enable tracking performance improvements over time
-- **Implementation**:
-  - Database backend for storing historical runs
-  - Trend analysis with statistical comparisons
-  - Regression detection algorithms
-  - Performance improvement tracking
+
 
 ## Feature Backlog
 
@@ -36,6 +22,13 @@
 - **Prompt templates**: Customizable prompt structures for different use cases
 - **Caching layer**: Cache insights for repeated analysis to reduce API costs
 - **Quality metrics**: Track insight usefulness and accuracy over time
+
+### **WebSocket Enhancements**
+- **Authentication**: Add JWT/OAuth support for secure WebSocket connections
+- **Data filtering**: Implement subscription-based data filtering by severity/category
+- **Historical playback**: Add ability to replay historical performance data
+- **Multi-room support**: Create separate WebSocket rooms for different applications
+- **Rate limiting**: Implement connection and message rate limiting
 
 ### **Web UI Improvements**
 - **Dark mode**: Add dark theme support
@@ -121,9 +114,9 @@
 
 ### **Architecture Decisions Needed**
 1. **Database backend**: SQL vs NoSQL for historical data
-2. **Real-time protocol**: WebSockets vs Server-Sent Events
+2. **Real-time protocol**: ✅ WebSockets implemented vs Server-Sent Events
 3. **Plugin distribution**: Centralized vs decentralized marketplace
-4. **Authentication**: User accounts vs API keys
+4. **Authentication**: User accounts vs API keys for WebSocket connections
 
 ### **Resource Allocation**
 - **Development**: 60% core features, 30% plugins, 10% documentation

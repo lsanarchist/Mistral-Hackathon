@@ -12,6 +12,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const refreshStatus = document.getElementById('refreshStatus');
     const lastRefreshTime = document.getElementById('lastRefreshTime');
     const refreshIntervalSelect = document.getElementById('refreshInterval');
+    const websocketControls = document.getElementById('websocketControls');
+    const connectWsBtn = document.getElementById('connectWsBtn');
+    const disconnectWsBtn = document.getElementById('disconnectWsBtn');
+    const wsStatus = document.getElementById('wsStatus');
+    const wsUrlInput = document.getElementById('wsUrlInput');
 
     let findingsData = null;
     let insightsData = null;
@@ -19,6 +24,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let refreshIntervalId = null;
     let currentFiles = null;
     let isRefreshing = false;
+    let websocket = null;
+    let isWebSocketConnected = false;
 
     // Set up file input trigger
     loadBtn.addEventListener('click', function() {
@@ -60,6 +67,13 @@ document.addEventListener('DOMContentLoaded', function() {
     startRefreshBtn.addEventListener('click', startAutoRefresh);
     stopRefreshBtn.addEventListener('click', stopAutoRefresh);
     refreshNowBtn.addEventListener('click', refreshNow);
+
+    // Set up WebSocket controls
+    if (websocketControls) {
+        connectWsBtn.addEventListener('click', connectWebSocket);
+        disconnectWsBtn.addEventListener('click', disconnectWebSocket);
+        websocketControls.style.display = 'block';
+    }
 
     function processFiles(files) {
         const promises = [];
@@ -186,6 +200,97 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 isRefreshing = false;
             }, 500);
+        }
+    }
+
+    // WebSocket connection functions
+    function connectWebSocket() {
+        const wsUrl = wsUrlInput.value.trim() || 'ws://localhost:8080/ws';
+        
+        if (isWebSocketConnected) {
+            showError('Already connected to WebSocket');
+            return;
+        }
+
+        try {
+            websocket = new WebSocket(wsUrl);
+            
+            websocket.onopen = function() {
+                isWebSocketConnected = true;
+                wsStatus.textContent = 'WebSocket: Connected';
+                wsStatus.className = 'ws-connected';
+                connectWsBtn.style.display = 'none';
+                disconnectWsBtn.style.display = 'inline-block';
+                
+                // Show refresh controls for WebSocket mode
+                refreshControls.style.display = 'block';
+                
+                console.log('WebSocket connected to', wsUrl);
+            };
+
+            websocket.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    
+                    if (data.type === 'data_update') {
+                        // Update data from WebSocket
+                        findingsData = data.findings;
+                        insightsData = data.insights;
+                        allFindings = findingsData.findings || [];
+                        
+                        // Update last refresh time
+                        updateLastRefreshTime();
+                        
+                        // Render the data
+                        renderData();
+                        
+                        // Update WebSocket stats
+                        updateWebSocketStats(data.stats);
+                    }
+                } catch (err) {
+                    console.error('Error processing WebSocket message:', err);
+                }
+            };
+
+            websocket.onclose = function() {
+                isWebSocketConnected = false;
+                wsStatus.textContent = 'WebSocket: Disconnected';
+                wsStatus.className = 'ws-disconnected';
+                connectWsBtn.style.display = 'inline-block';
+                disconnectWsBtn.style.display = 'none';
+                console.log('WebSocket disconnected');
+            };
+
+            websocket.onerror = function(error) {
+                console.error('WebSocket error:', error);
+                showError('WebSocket connection error: ' + error.message);
+            };
+
+        } catch (err) {
+            showError('Failed to connect to WebSocket: ' + err.message);
+        }
+    }
+
+    function disconnectWebSocket() {
+        if (websocket && isWebSocketConnected) {
+            websocket.close();
+            websocket = null;
+            isWebSocketConnected = false;
+        }
+    }
+
+    function updateWebSocketStats(stats) {
+        if (stats) {
+            // Update quick stats from WebSocket data
+            document.getElementById('totalFindings').textContent = stats.total_findings || '0';
+            document.getElementById('criticalFindings').textContent = stats.critical_count || '0';
+            document.getElementById('highFindings').textContent = stats.high_count || '0';
+            document.getElementById('avgScore').textContent = (stats.performance_score || 0).toFixed(1);
+            
+            // Update last refresh time
+            if (stats.last_updated) {
+                lastRefreshTime.textContent = 'Last updated: ' + stats.last_updated;
+            }
         }
     }
 

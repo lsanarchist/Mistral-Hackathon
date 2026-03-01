@@ -1,6 +1,25 @@
 ## Change Log
 
-### 2026-03-01 20:30: Real-time Monitoring Implementation
+### 2026-03-01 21:30: WebSocket Real-time Monitoring Implementation
+- **Objective**: Implement WebSocket-based real-time data streaming for live performance monitoring
+- **Rationale**: Enable continuous, low-latency monitoring of running applications without manual file uploads or refresh operations, providing true real-time performance analysis capabilities for production environments
+- **Impact**: Core architecture, web viewer functionality, real-time monitoring capabilities, production monitoring workflows, API surface
+- **Changes**:
+  - Created new `internal/webserver` package with WebSocket server implementation using gorilla/websocket
+  - Implemented WebSocketServer struct with client management, data broadcasting, and health monitoring
+  - Added WebSocket connection handlers for real-time data streaming with automatic client registration
+  - Enhanced web viewer JavaScript with WebSocket client functionality and connection management
+  - Added WebSocket controls to HTML UI with connection status indicators and URL configuration
+  - Extended CSS with WebSocket-specific styles for connection states and controls
+  - Updated core Pipeline struct to support WebSocket server configuration and management
+  - Added new `websocket` CLI command for starting real-time monitoring servers
+  - Implemented health check endpoint for monitoring server status and connected clients
+  - Added data broadcasting functionality to push updates to all connected clients
+  - Enhanced error handling and graceful shutdown for WebSocket operations
+- **Testing**: Unit testing of WebSocket server functionality; manual testing of connection lifecycle; verification of data streaming; health endpoint validation; integration testing with web viewer; stress testing with multiple concurrent clients
+- **Result**: TriageProf now supports true real-time performance monitoring via WebSocket protocol, enabling production-grade continuous analysis without manual intervention. The WebSocket server provides low-latency data streaming, automatic client management, and robust error handling. Users can now monitor running applications in real-time, receive instant performance updates, and integrate TriageProf into production monitoring dashboards. The implementation maintains backward compatibility while adding powerful new capabilities for live performance analysis.
+
+### 2026-03-01 21:00: WebSocket Real-time Monitoring Implementation
 - **Objective**: Add real-time data refresh capability to web viewer for monitoring ongoing performance analysis
 - **Rationale**: Enable continuous monitoring of performance data without manual file re-uploads, enhancing the tool's suitability for production monitoring and live debugging scenarios
 - **Impact**: Web viewer functionality, user experience, production monitoring capabilities, live debugging workflows

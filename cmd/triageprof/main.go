@@ -8,6 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"os/signal"
+	"syscall"
 
 	"github.com/mistral-hackathon/triageprof/internal/core"
 	"github.com/mistral-hackathon/triageprof/internal/llm"
@@ -28,6 +30,7 @@ func main() {
 		fmt.Println("  run --plugin <name> --target-type python --target-command <cmd> --duration <sec> --outdir <dir>")
 		fmt.Println("  run --plugin <name> --target-type node --target-command <cmd> --duration <sec> --outdir <dir>")
 		fmt.Println("  web --in <findings.json> --outdir <dir> [--insights <insights.json>]")
+		fmt.Println("  websocket --findings <findings.json> [--insights <insights.json>] [--port <port>] [--data-dir <dir>]")
 		fmt.Println("\nLLM Options for 'run' command:")
 		fmt.Println("  --llm (enable LLM insights)")
 		fmt.Println("  --llm-model <model> (default: devstral-small-latest)")
@@ -62,6 +65,8 @@ func main() {
 		runRunCommand(pipeline)
 	case "web":
 		runWebCommand(pipeline)
+	case "websocket":
+		runWebSocketCommand(pipeline)
 	default:
 		fmt.Printf("Unknown command: %s\n", cmd)
 		os.Exit(1)
@@ -432,6 +437,54 @@ func runWebCommand(pipeline *core.Pipeline) {
 
 	fmt.Printf("Web report generated in: %s/\n", *outDir)
 	fmt.Println("Open index.html in your browser to view the interactive report")
+}
+
+func runWebSocketCommand(pipeline *core.Pipeline) {
+	flagSet := flag.NewFlagSet("websocket", flag.ExitOnError)
+	findingsPath := flagSet.String("findings", "", "Path to findings.json file")
+	insightsPath := flagSet.String("insights", "", "Optional path to insights.json file")
+	port := flagSet.Int("port", 8080, "WebSocket server port")
+	dataDir := flagSet.String("data-dir", "./data", "Directory for data files")
+	flagSet.Parse(os.Args[2:])
+
+	if *findingsPath == "" {
+		fmt.Println("Required flag: --findings")
+		os.Exit(1)
+	}
+
+	// Configure WebSocket server
+	pipeline.WithWebSocketServer(*port, *dataDir)
+
+	// Load data
+	err := pipeline.LoadWebSocketData(*findingsPath, *insightsPath)
+	if err != nil {
+		fmt.Printf("Failed to load data: %v\n", err)
+		os.Exit(1)
+	}
+
+	// Start WebSocket server
+	fmt.Printf("Starting WebSocket server on port %d...\n", *port)
+	fmt.Printf("WebSocket endpoint: ws://localhost:%d/ws\n", *port)
+	fmt.Printf("Health check: http://localhost:%d/health\n", *port)
+	fmt.Println("Press Ctrl+C to stop the server")
+
+	// Start server in goroutine
+	go func() {
+		if err := pipeline.StartWebSocketServer(); err != nil {
+			fmt.Printf("WebSocket server failed: %v\n", err)
+			os.Exit(1)
+		}
+	}()
+
+	// Wait for interrupt signal
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+	<-sigChan
+
+	// Cleanup
+	fmt.Println("\nShutting down WebSocket server...")
+	pipeline.StopWebSocketServer()
+	fmt.Println("WebSocket server stopped")
 }
 
 

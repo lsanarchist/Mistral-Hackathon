@@ -163,6 +163,51 @@ h1 {
     transform: translate(-50%, -50%);
     z-index: 1000;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+
+/* WebSocket Controls */
+.websocket-controls {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: var(--light-gray);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--medium-gray);
+}
+
+.websocket-status {
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: var(--dark-gray);
+}
+
+.ws-connected {
+    color: var(--success-color);
+}
+
+.ws-disconnected {
+    color: var(--danger-color);
+}
+
+.websocket-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+}
+
+.websocket-buttons input {
+    padding: 8px 12px;
+    border: 1px solid var(--medium-gray);
+    border-radius: var(--border-radius);
+    font-size: 0.95rem;
+    flex-grow: 1;
+    max-width: 300px;
+}
+
+.websocket-buttons input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
     font-weight: 600;
     display: flex;
     align-items: center;

@@ -39,6 +39,18 @@
                     </select>
                 </div>
             </div>
+            
+            <!-- WebSocket Controls -->
+            <div class="websocket-controls" id="websocketControls" style="display: none;">
+                <div class="websocket-status">
+                    <span id="wsStatus">WebSocket: Disconnected</span>
+                </div>
+                <div class="websocket-buttons">
+                    <input type="text" id="wsUrlInput" placeholder="ws://localhost:8080/ws" value="ws://localhost:8080/ws">
+                    <button id="connectWsBtn" class="btn success"><i class="fas fa-plug"></i> Connect</button>
+                    <button id="disconnectWsBtn" class="btn danger" style="display: none;"><i class="fas fa-unlink"></i> Disconnect</button>
+                </div>
+            </div>
         </div>
         
         <div id="loading" class="loading" style="display: none;">
