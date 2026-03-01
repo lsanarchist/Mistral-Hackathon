@@ -27,9 +27,9 @@ func main() {
 		fmt.Println("  analyze --in <bundle.json> --out <findings.json> --top <N> [--callgraph --callgraph-depth <depth>] [--regression --baseline <path>]")
 		fmt.Println("  report --in <findings.json> --out <report.md|json> --output markdown|json")
 		fmt.Println("  llm --bundle <bundle.json> --findings <findings.json> --out <insights.json> [--provider <provider>] [--model <model>] [--timeout <sec>] [--dry-run]")
-		fmt.Println("  run --plugin <name> --target-url <url> --duration <sec> --outdir <dir>")
-		fmt.Println("  run --plugin <name> --target-type python --target-command <cmd> --duration <sec> --outdir <dir>")
-		fmt.Println("  run --plugin <name> --target-type node --target-command <cmd> --duration <sec> --outdir <dir>")
+		fmt.Println("  run --plugin <name> --target-url <url> --duration <sec> --outdir <dir> [--websocket-port <port>] [--websocket-auth] [--websocket-compression]")
+		fmt.Println("  run --plugin <name> --target-type python --target-command <cmd> --duration <sec> --outdir <dir> [--websocket-port <port>] [--websocket-auth] [--websocket-compression]")
+		fmt.Println("  run --plugin <name> --target-type node --target-command <cmd> --duration <sec> --outdir <dir> [--websocket-port <port>] [--websocket-auth] [--websocket-compression]")
 		fmt.Println("  web --in <findings.json> --outdir <dir> [--insights <insights.json>]")
 		fmt.Println("  websocket --findings <findings.json> [--insights <insights.json>] [--port <port>] [--data-dir <dir>] [--compression]")
 		fmt.Println("\nLLM Options for 'run' command:")
@@ -277,6 +277,9 @@ func runRunCommand(pipeline *core.Pipeline) {
 	llmTimeout := flagSet.Int("llm-timeout", 20, "LLM API timeout in seconds")
 	llmMaxChars := flagSet.Int("llm-max-chars", 12000, "Max prompt characters")
 	llmDryRun := flagSet.Bool("llm-dry-run", false, "Dry run - save prompt without API call")
+	websocketPort := flagSet.Int("websocket-port", 0, "WebSocket server port (0 to disable)")
+	websocketAuth := flagSet.Bool("websocket-auth", false, "Enable WebSocket authentication")
+	websocketCompression := flagSet.Bool("websocket-compression", false, "Enable WebSocket message compression")
 	flagSet.Parse(os.Args[2:])
 
 	if *pluginName == "" || *outDir == "" {
@@ -337,6 +340,22 @@ func runRunCommand(pipeline *core.Pipeline) {
 		if err != nil {
 			fmt.Printf("Failed to configure LLM: %v\n", err)
 			os.Exit(1)
+		}
+	}
+
+	// Configure WebSocket server if port is specified
+	if *websocketPort > 0 {
+		pipeline.WithWebSocketServer(*websocketPort, *outDir, *websocketAuth, *websocketCompression)
+		fmt.Printf("WebSocket server enabled on port %d\n", *websocketPort)
+		if *websocketCompression {
+			fmt.Println("WebSocket compression: ENABLED")
+		} else {
+			fmt.Println("WebSocket compression: DISABLED")
+		}
+		if *websocketAuth {
+			fmt.Println("WebSocket authentication: ENABLED")
+		} else {
+			fmt.Println("WebSocket authentication: DISABLED")
 		}
 	}
 

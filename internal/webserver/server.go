@@ -38,6 +38,8 @@ type WebSocketServer struct {
 	authEnabled     bool
 	jwtSecretKey    string
 	compressionEnabled bool
+	compressionLevel int
+	compressionThreshold int
 	performanceHistory []PerformanceSnapshot
 	historyMu       sync.Mutex
 	maxHistorySize  int
@@ -86,6 +88,15 @@ func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth b
 		EnableCompression: enableCompression,
 	}
 
+	// Configure compression settings if enabled
+	compressionLevel := 0
+	compressionThreshold := 0
+	if enableCompression {
+		// Use optimal compression level for performance data
+		compressionLevel = 6 // Balanced compression level (0-9, where 9 is max compression)
+		compressionThreshold = 256 // Compress messages larger than 256 bytes
+	}
+
 	// Generate JWT secret key if auth is enabled
 	jwtSecretKey := ""
 	if enableAuth {
@@ -104,6 +115,8 @@ func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth b
 		authEnabled:     enableAuth,
 		jwtSecretKey:    jwtSecretKey,
 		compressionEnabled: enableCompression,
+		compressionLevel: compressionLevel,
+		compressionThreshold: compressionThreshold,
 		performanceHistory: make([]PerformanceSnapshot, 0),
 		maxHistorySize:  100, // Keep last 100 snapshots
 	}
@@ -122,6 +135,7 @@ func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth b
 	mux.HandleFunc("/performance/history", s.handlePerformanceHistory)
 	mux.HandleFunc("/performance/analysis", s.handlePerformanceAnalysis)
 	mux.HandleFunc("/plugins/performance", s.handlePluginPerformance)
+	mux.HandleFunc("/compression/info", s.handleCompressionInfo)
 	
 	// Add auth endpoints if enabled
 	if enableAuth {
@@ -216,6 +230,7 @@ func (s *WebSocketServer) BroadcastData() {
 			"performance_score":   s.findings.Summary.OverallScore,
 			"connected_clients":   len(s.clients),
 			"auth_enabled":        s.authEnabled,
+			"compression":         s.GetCompressionInfo(),
 		},
 		"history": s.getPerformanceHistory(),
 		"pluginPerformance": s.getPluginPerformanceSummary(),
@@ -391,6 +406,16 @@ func (s *WebSocketServer) GetClientCount() int {
 	s.clientsMu.Lock()
 	defer s.clientsMu.Unlock()
 	return len(s.clients)
+}
+
+// GetCompressionInfo returns compression configuration information
+func (s *WebSocketServer) GetCompressionInfo() map[string]interface{} {
+	return map[string]interface{}{
+		"enabled":           s.compressionEnabled,
+		"level":            s.compressionLevel,
+		"threshold":        s.compressionThreshold,
+		"description":      "WebSocket message compression reduces bandwidth usage for large performance data messages",
+	}
 }
 
 // handleWebSocket handles WebSocket connections
@@ -999,6 +1024,18 @@ func (s *WebSocketServer) handlePluginPerformance(w http.ResponseWriter, r *http
 		"count":  len(pluginStats),
 		"timestamp": time.Now().Unix(),
 	})
+}
+
+// handleCompressionInfo handles compression information requests
+func (s *WebSocketServer) handleCompressionInfo(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	compressionInfo := s.GetCompressionInfo()
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(compressionInfo)
 }
 
 // handlePerformanceHistory handles performance history requests

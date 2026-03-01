@@ -13,6 +13,70 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestWebSocketCompressionDisabled(t *testing.T) {
+	// Create WebSocket server with compression disabled
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false)
+	defer server.Stop()
+
+	// Test compression info endpoint
+	req := httptest.NewRequest("GET", "/compression/info", nil)
+	w := httptest.NewRecorder()
+
+	server.handleCompressionInfo(w, req)
+
+	resp := w.Result()
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var compressionInfo map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&compressionInfo); err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, false, compressionInfo["enabled"])
+	assert.Contains(t, compressionInfo, "level")
+	assert.Contains(t, compressionInfo, "threshold")
+	assert.Contains(t, compressionInfo, "description")
+}
+
+func TestWebSocketCompressionEnabled(t *testing.T) {
+	// Create WebSocket server with compression enabled
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, true)
+	defer server.Stop()
+
+	// Test compression info endpoint
+	req := httptest.NewRequest("GET", "/compression/info", nil)
+	w := httptest.NewRecorder()
+
+	server.handleCompressionInfo(w, req)
+
+	resp := w.Result()
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var compressionInfo map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&compressionInfo); err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, true, compressionInfo["enabled"])
+	assert.Equal(t, float64(6), compressionInfo["level"])
+	assert.Equal(t, float64(256), compressionInfo["threshold"])
+	assert.Contains(t, compressionInfo, "description")
+}
+
+func TestWebSocketCompressionMethodNotAllowed(t *testing.T) {
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false)
+	defer server.Stop()
+
+	// Test POST method (should not be allowed)
+	req := httptest.NewRequest("POST", "/compression/info", nil)
+	w := httptest.NewRecorder()
+
+	server.handleCompressionInfo(w, req)
+
+	resp := w.Result()
+	assert.Equal(t, http.StatusMethodNotAllowed, resp.StatusCode)
+}
+
 func TestPluginMarketplaceEndpoint(t *testing.T) {
 	// Create WebSocket server
 	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false)
