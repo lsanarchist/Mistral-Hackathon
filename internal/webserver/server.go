@@ -4,13 +4,16 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"log"
+	"math"
 	"net/http"
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -48,6 +51,10 @@ type WebSocketServer struct {
 	messageQueue    []interface{}
 	queueMu         sync.Mutex
 	batchTimer      *time.Timer
+	performanceAlerts []PerformanceAlert
+	alertsMu        sync.Mutex
+	performanceAnnotations []PerformanceAnnotation
+	annotationsMu   sync.Mutex
 }
 
 // PerformanceSnapshot represents a historical performance data point
@@ -60,6 +67,27 @@ type PerformanceSnapshot struct {
 	LowCount        int       `json:"low_count"`
 	TotalFindings   int       `json:"total_findings"`
 	ClientCount     int       `json:"client_count"`
+	Annotations     []string `json:"annotations,omitempty"`
+}
+
+// PerformanceAlert represents a configurable alert threshold
+type PerformanceAlert struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Metric      string `json:"metric"` // critical, high, medium, low, score
+	Threshold   int    `json:"threshold"`
+	Comparator  string `json:"comparator"` // ">", "<", "=="
+	Active      bool   `json:"active"`
+	LastTriggered *time.Time `json:"last_triggered,omitempty"`
+}
+
+// PerformanceAnnotation represents a user-added annotation
+type PerformanceAnnotation struct {
+	ID        string    `json:"id"`
+	Timestamp time.Time `json:"timestamp"`
+	Title     string    `json:"title"`
+	Content   string    `json:"content"`
+	Type      string    `json:"type"` // deployment, incident, note
 }
 
 // JWTClaims represents the JWT token claims
@@ -77,7 +105,7 @@ type PluginHealth struct {
 }
 
 // NewWebSocketServer creates a new WebSocket server instance
-func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth bool, enableCompression bool, enableBatching bool, batchInterval time.Duration) *WebSocketServer {
+func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth bool, enableCompression bool, enableBatching bool, batchInterval time.Duration, alertsConfig []PerformanceAlert) *WebSocketServer {
 	mux := http.NewServeMux()
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
@@ -127,6 +155,8 @@ func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth b
 		batchingEnabled:  enableBatching,
 		batchInterval:   batchInterval,
 		messageQueue:    make([]interface{}, 0),
+		performanceAlerts: alertsConfig,
+		performanceAnnotations: make([]PerformanceAnnotation, 0),
 	}
 
 	// Initialize batching if enabled
@@ -147,6 +177,10 @@ func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth b
 	mux.HandleFunc("/plugins/uninstall", s.handleUninstallPlugin)
 	mux.HandleFunc("/performance/history", s.handlePerformanceHistory)
 	mux.HandleFunc("/performance/analysis", s.handlePerformanceAnalysis)
+	mux.HandleFunc("/performance/alerts", s.handlePerformanceAlerts)
+	mux.HandleFunc("/performance/annotations", s.handlePerformanceAnnotations)
+	mux.HandleFunc("/performance/export", s.handlePerformanceExport)
+	mux.HandleFunc("/performance/compare", s.handlePerformanceCompare)
 	mux.HandleFunc("/plugins/performance", s.handlePluginPerformance)
 	mux.HandleFunc("/compression/info", s.handleCompressionInfo)
 	mux.HandleFunc("/batching/info", s.handleBatchingInfo)
@@ -335,6 +369,8 @@ func (s *WebSocketServer) BroadcastData() {
 		},
 		"history": s.getPerformanceHistory(),
 		"pluginPerformance": s.getPluginPerformanceSummary(),
+		"alerts": s.getActiveAlerts(),
+		"annotations": s.getRecentAnnotations(),
 	}
 
 	// Use batching if enabled, otherwise send immediately
@@ -372,6 +408,45 @@ func (s *WebSocketServer) getPerformanceHistory() []PerformanceSnapshot {
 	historyCopy := make([]PerformanceSnapshot, len(s.performanceHistory))
 	copy(historyCopy, s.performanceHistory)
 	return historyCopy
+}
+
+// getActiveAlerts returns active alerts that have been triggered
+func (s *WebSocketServer) getActiveAlerts() []PerformanceAlert {
+	s.alertsMu.Lock()
+	defer s.alertsMu.Unlock()
+	
+	var activeAlerts []PerformanceAlert
+	now := time.Now()
+	
+	for _, alert := range s.performanceAlerts {
+		if alert.Active && alert.LastTriggered != nil && now.Sub(*alert.LastTriggered) <= time.Hour {
+			activeAlerts = append(activeAlerts, alert)
+		}
+	}
+	
+	return activeAlerts
+}
+
+// getRecentAnnotations returns recent annotations (last 24 hours)
+func (s *WebSocketServer) getRecentAnnotations() []PerformanceAnnotation {
+	s.annotationsMu.Lock()
+	defer s.annotationsMu.Unlock()
+	
+	var recentAnnotations []PerformanceAnnotation
+	now := time.Now()
+	
+	for _, annotation := range s.performanceAnnotations {
+		if now.Sub(annotation.Timestamp) <= 24*time.Hour {
+			recentAnnotations = append(recentAnnotations, annotation)
+		}
+	}
+	
+	// Sort by timestamp (newest first)
+	sort.Slice(recentAnnotations, func(i, j int) bool {
+		return recentAnnotations[i].Timestamp.After(recentAnnotations[j].Timestamp)
+	})
+	
+	return recentAnnotations
 }
 
 // getPluginPerformanceSummary returns a summary of plugin performance for broadcasting
@@ -504,6 +579,55 @@ func (s *WebSocketServer) recordPerformanceSnapshot() {
 	// Enforce max history size
 	if len(s.performanceHistory) > s.maxHistorySize {
 		s.performanceHistory = s.performanceHistory[len(s.performanceHistory)-s.maxHistorySize:]
+	}
+	
+	// Check performance alerts
+	s.checkPerformanceAlerts(snapshot)
+}
+
+// checkPerformanceAlerts checks if any alerts should be triggered
+func (s *WebSocketServer) checkPerformanceAlerts(snapshot PerformanceSnapshot) {
+	s.alertsMu.Lock()
+	defer s.alertsMu.Unlock()
+	
+	for i, alert := range s.performanceAlerts {
+		if !alert.Active {
+			continue
+		}
+		
+		var currentValue int
+		switch alert.Metric {
+		case "critical":
+			currentValue = snapshot.CriticalCount
+		case "high":
+			currentValue = snapshot.HighCount
+		case "medium":
+			currentValue = snapshot.MediumCount
+		case "low":
+			currentValue = snapshot.LowCount
+		case "score":
+			currentValue = snapshot.OverallScore
+		default:
+			continue
+		}
+		
+		var shouldTrigger bool
+		switch alert.Comparator {
+		case ">":
+			shouldTrigger = currentValue > alert.Threshold
+		case "<":
+			shouldTrigger = currentValue < alert.Threshold
+		case "==":
+			shouldTrigger = currentValue == alert.Threshold
+		default:
+			continue
+		}
+		
+		if shouldTrigger {
+			now := time.Now()
+			s.performanceAlerts[i].LastTriggered = &now
+			log.Printf("Performance alert triggered: %s (%s %s %d)", alert.Name, alert.Metric, alert.Comparator, alert.Threshold)
+		}
 	}
 }
 
@@ -1374,4 +1498,358 @@ func countSeverity(findings []model.Finding, severity string) int {
 		}
 	}
 	return count
+}
+
+// handlePerformanceAlerts handles performance alert configuration
+func (s *WebSocketServer) handlePerformanceAlerts(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		s.alertsMu.Lock()
+		defer s.alertsMu.Unlock()
+		
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(s.performanceAlerts)
+		return
+	}
+	
+	if r.Method == http.MethodPost {
+		var alert PerformanceAlert
+		if err := json.NewDecoder(r.Body).Decode(&alert); err != nil {
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+		
+		// Generate ID if not provided
+		if alert.ID == "" {
+			alert.ID = generateUUID()
+		}
+		
+		s.alertsMu.Lock()
+		defer s.alertsMu.Unlock()
+		
+		// Check if alert exists and update, or add new
+		found := false
+		for i, existing := range s.performanceAlerts {
+			if existing.ID == alert.ID {
+				s.performanceAlerts[i] = alert
+				found = true
+				break
+			}
+		}
+		
+		if !found {
+			s.performanceAlerts = append(s.performanceAlerts, alert)
+		}
+		
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(alert)
+		return
+	}
+	
+	if r.Method == http.MethodDelete {
+		id := r.URL.Query().Get("id")
+		if id == "" {
+			http.Error(w, "Missing alert ID", http.StatusBadRequest)
+			return
+		}
+		
+		s.alertsMu.Lock()
+		defer s.alertsMu.Unlock()
+		
+		for i, alert := range s.performanceAlerts {
+			if alert.ID == id {
+				s.performanceAlerts = append(s.performanceAlerts[:i], s.performanceAlerts[i+1:]...)
+				w.WriteHeader(http.StatusNoContent)
+				return
+			}
+		}
+		
+		http.Error(w, "Alert not found", http.StatusNotFound)
+	}
+}
+
+// handlePerformanceAnnotations handles performance annotations
+func (s *WebSocketServer) handlePerformanceAnnotations(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		s.annotationsMu.Lock()
+		defer s.annotationsMu.Unlock()
+		
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(s.performanceAnnotations)
+		return
+	}
+	
+	if r.Method == http.MethodPost {
+		var annotation PerformanceAnnotation
+		if err := json.NewDecoder(r.Body).Decode(&annotation); err != nil {
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+		
+		// Set timestamp if not provided
+		if annotation.Timestamp.IsZero() {
+			annotation.Timestamp = time.Now()
+		}
+		
+		// Generate ID if not provided
+		if annotation.ID == "" {
+			annotation.ID = generateUUID()
+		}
+		
+		s.annotationsMu.Lock()
+		defer s.annotationsMu.Unlock()
+		
+		s.performanceAnnotations = append(s.performanceAnnotations, annotation)
+		
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(annotation)
+		return
+	}
+	
+	if r.Method == http.MethodDelete {
+		id := r.URL.Query().Get("id")
+		if id == "" {
+			http.Error(w, "Missing annotation ID", http.StatusBadRequest)
+			return
+		}
+		
+		s.annotationsMu.Lock()
+		defer s.annotationsMu.Unlock()
+		
+		for i, annotation := range s.performanceAnnotations {
+			if annotation.ID == id {
+				s.performanceAnnotations = append(s.performanceAnnotations[:i], s.performanceAnnotations[i+1:]...)
+				w.WriteHeader(http.StatusNoContent)
+				return
+			}
+		}
+		
+		http.Error(w, "Annotation not found", http.StatusNotFound)
+	}
+}
+
+// handlePerformanceExport handles performance data export
+func (s *WebSocketServer) handlePerformanceExport(w http.ResponseWriter, r *http.Request) {
+	format := r.URL.Query().Get("format")
+	if format == "" {
+		format = "json"
+	}
+	
+	startTime := r.URL.Query().Get("start")
+	endTime := r.URL.Query().Get("end")
+	
+	var filteredHistory []PerformanceSnapshot
+	
+	s.historyMu.Lock()
+	defer s.historyMu.Unlock()
+	
+	// Filter by time range if specified
+	if startTime != "" || endTime != "" {
+		start, err1 := time.Parse(time.RFC3339, startTime)
+		end, err2 := time.Parse(time.RFC3339, endTime)
+		
+		if err1 == nil && err2 == nil {
+			for _, snapshot := range s.performanceHistory {
+				if (snapshot.Timestamp.After(start) || snapshot.Timestamp.Equal(start)) &&
+				   (snapshot.Timestamp.Before(end) || snapshot.Timestamp.Equal(end)) {
+					filteredHistory = append(filteredHistory, snapshot)
+				}
+			}
+		} else {
+			// If time parsing fails, use all history
+			filteredHistory = append(filteredHistory, s.performanceHistory...)
+		}
+	} else {
+		filteredHistory = append(filteredHistory, s.performanceHistory...)
+	}
+	
+	// Add annotations to snapshots
+	s.annotationsMu.Lock()
+	for i, snapshot := range filteredHistory {
+		var snapshotAnnotations []string
+		for _, annotation := range s.performanceAnnotations {
+			// Check if annotation timestamp is close to snapshot timestamp (within 1 minute)
+			if math.Abs(float64(snapshot.Timestamp.Sub(annotation.Timestamp))) <= float64(time.Minute) {
+				snapshotAnnotations = append(snapshotAnnotations, fmt.Sprintf("%s: %s", annotation.Type, annotation.Title))
+			}
+		}
+		filteredHistory[i].Annotations = snapshotAnnotations
+	}
+	s.annotationsMu.Unlock()
+	
+	// Export based on format
+	if format == "csv" {
+		w.Header().Set("Content-Type", "text/csv")
+		w.Header().Set("Content-Disposition", "attachment; filename=performance_export.csv")
+		
+		writer := csv.NewWriter(w)
+		defer writer.Flush()
+		
+		// Write header
+		header := []string{"Timestamp", "Overall Score", "Critical", "High", "Medium", "Low", "Total Findings", "Client Count", "Annotations"}
+		if err := writer.Write(header); err != nil {
+			log.Printf("Error writing CSV header: %v", err)
+			return
+		}
+		
+		// Write data
+		for _, snapshot := range filteredHistory {
+			row := []string{
+				snapshot.Timestamp.Format(time.RFC3339),
+				strconv.Itoa(snapshot.OverallScore),
+				strconv.Itoa(snapshot.CriticalCount),
+				strconv.Itoa(snapshot.HighCount),
+				strconv.Itoa(snapshot.MediumCount),
+				strconv.Itoa(snapshot.LowCount),
+				strconv.Itoa(snapshot.TotalFindings),
+				strconv.Itoa(snapshot.ClientCount),
+				strings.Join(snapshot.Annotations, "; "),
+			}
+			if err := writer.Write(row); err != nil {
+				log.Printf("Error writing CSV row: %v", err)
+				return
+			}
+		}
+	} else {
+		// Default to JSON
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Content-Disposition", "attachment; filename=performance_export.json")
+		json.NewEncoder(w).Encode(filteredHistory)
+	}
+}
+
+// handlePerformanceCompare handles multi-application performance comparison
+func (s *WebSocketServer) handlePerformanceCompare(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	
+	var request struct {
+		Applications []struct {
+			Name string `json:"name"`
+			Data []PerformanceSnapshot `json:"data"`
+		} `json:"applications"`
+		Metrics []string `json:"metrics"`
+	}
+	
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	
+	if len(request.Applications) < 2 {
+		http.Error(w, "At least 2 applications required for comparison", http.StatusBadRequest)
+		return
+	}
+	
+	// Default metrics if not specified
+	if len(request.Metrics) == 0 {
+		request.Metrics = []string{"overall_score", "critical_count", "high_count", "total_findings"}
+	}
+	
+	// Calculate averages for each application
+	result := make(map[string]map[string]float64)
+	
+	for _, app := range request.Applications {
+		appMetrics := make(map[string]float64)
+		
+		for _, metric := range request.Metrics {
+			sum := 0.0
+			count := 0
+			
+			for _, snapshot := range app.Data {
+				switch metric {
+				case "overall_score":
+					sum += float64(snapshot.OverallScore)
+				case "critical_count":
+					sum += float64(snapshot.CriticalCount)
+				case "high_count":
+					sum += float64(snapshot.HighCount)
+				case "medium_count":
+					sum += float64(snapshot.MediumCount)
+				case "low_count":
+					sum += float64(snapshot.LowCount)
+				case "total_findings":
+					sum += float64(snapshot.TotalFindings)
+				case "client_count":
+					sum += float64(snapshot.ClientCount)
+				}
+				count++
+			}
+			
+			if count > 0 {
+				appMetrics[metric] = sum / float64(count)
+			} else {
+				appMetrics[metric] = 0
+			}
+		}
+		
+		result[app.Name] = appMetrics
+	}
+	
+	// Add comparison analysis
+	analysis := make(map[string]interface{})
+	
+	// Find best and worst performers for each metric
+	for _, metric := range request.Metrics {
+		bestApp := ""
+		bestValue := -1.0
+		worstApp := ""
+		worstValue := -1.0
+		
+		for appName, appMetrics := range result {
+			if bestApp == "" || appMetrics[metric] > bestValue {
+				bestApp = appName
+				bestValue = appMetrics[metric]
+			}
+			if worstApp == "" || appMetrics[metric] < worstValue || worstValue == -1.0 {
+				worstApp = appName
+				worstValue = appMetrics[metric]
+			}
+		}
+		
+		analysis[metric] = map[string]interface{}{
+			"best":  map[string]interface{}{"app": bestApp, "value": bestValue},
+			"worst": map[string]interface{}{"app": worstApp, "value": worstValue},
+		}
+	}
+	
+	response := map[string]interface{}{
+		"applications": result,
+		"analysis":     analysis,
+		"metrics":      request.Metrics,
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+// generateUUID generates a simple UUID for IDs
+func generateUUID() string {
+	b := make([]byte, 16)
+	if _, err := rand.Read(b); err != nil {
+		return fmt.Sprintf("%d", time.Now().UnixNano())
+	}
+	return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:16])
+}
+
+// LoadPerformanceAlertsFromFile loads performance alerts from a JSON file
+func LoadPerformanceAlertsFromFile(filePath string) ([]PerformanceAlert, error) {
+	if filePath == "" {
+		return nil, nil
+	}
+	
+	fileContent, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read alerts file: %w", err)
+	}
+	
+	var alerts []PerformanceAlert
+	if err := json.Unmarshal(fileContent, &alerts); err != nil {
+		return nil, fmt.Errorf("failed to parse alerts file: %w", err)
+	}
+	
+	return alerts, nil
 }

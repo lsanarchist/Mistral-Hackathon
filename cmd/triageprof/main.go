@@ -282,6 +282,7 @@ func runRunCommand(pipeline *core.Pipeline) {
 	websocketCompression := flagSet.Bool("websocket-compression", false, "Enable WebSocket message compression")
 	websocketBatching := flagSet.Bool("websocket-batching", false, "Enable WebSocket message batching")
 	websocketBatchInterval := flagSet.Int("websocket-batch-interval", 100, "WebSocket batch interval in milliseconds")
+	performanceAlerts := flagSet.String("performance-alerts", "", "Performance alert configuration file (JSON)")
 	flagSet.Parse(os.Args[2:])
 
 	if *pluginName == "" || *outDir == "" {
@@ -349,6 +350,9 @@ func runRunCommand(pipeline *core.Pipeline) {
 	if *websocketPort > 0 {
 		batchInterval := time.Duration(*websocketBatchInterval) * time.Millisecond
 		pipeline.WithWebSocketServer(*websocketPort, *outDir, *websocketAuth, *websocketCompression, *websocketBatching, batchInterval)
+		if *performanceAlerts != "" {
+			pipeline.WithPerformanceAlerts(*performanceAlerts)
+		}
 		fmt.Printf("WebSocket server enabled on port %d\n", *websocketPort)
 		if *websocketCompression {
 			fmt.Println("WebSocket compression: ENABLED")

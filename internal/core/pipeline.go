@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -33,6 +34,7 @@ type Pipeline struct {
 	reporter      *report.Reporter
 	llmGenerator  *llm.InsightsGenerator
 	wsServer      *webserver.WebSocketServer
+	alertsConfigFile string
 }
 
 func NewPipeline(pluginDir string) *Pipeline {
@@ -49,6 +51,12 @@ func (p *Pipeline) WithLLM(apiKey, model string, timeout, maxResponse, maxPrompt
 	var err error
 	p.llmGenerator, err = llm.NewInsightsGenerator(apiKey, model, timeout, maxResponse, maxPromptChars, dryRun)
 	return p, err
+}
+
+// WithPerformanceAlerts configures performance alerts from a JSON file
+func (p *Pipeline) WithPerformanceAlerts(alertsFile string) *Pipeline {
+	p.alertsConfigFile = alertsFile
+	return p
 }
 
 // WithLLMWithProvider configures LLM insights generation with a specific provider
@@ -88,7 +96,14 @@ func (p *Pipeline) WithWebSocketServer(port int, dataDir string, enableAuth bool
 	if p.pluginManager != nil {
 		pluginDir = p.pluginManager.PluginDir
 	}
-	p.wsServer = webserver.NewWebSocketServer(port, dataDir, pluginDir, enableAuth, enableCompression, enableBatching, batchInterval)
+	
+	// Load performance alerts if configured
+	alertsConfig, err := webserver.LoadPerformanceAlertsFromFile(p.alertsConfigFile)
+	if err != nil {
+		log.Printf("Warning: Failed to load performance alerts: %v", err)
+	}
+	
+	p.wsServer = webserver.NewWebSocketServer(port, dataDir, pluginDir, enableAuth, enableCompression, enableBatching, batchInterval, alertsConfig)
 }
 
 // WithWebSocketAutoRefresh configures auto-refresh interval for WebSocket server

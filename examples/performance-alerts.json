@@ -1,0 +1,26 @@
+[
+  {
+    "id": "critical-alert",
+    "name": "High Critical Issues Alert",
+    "metric": "critical",
+    "threshold": 5,
+    "comparator": ">",
+    "active": true
+  },
+  {
+    "id": "score-alert",
+    "name": "Low Performance Score Alert",
+    "metric": "score",
+    "threshold": 50,
+    "comparator": "<",
+    "active": true
+  },
+  {
+    "id": "high-issues-alert",
+    "name": "High Severity Issues Alert",
+    "metric": "high",
+    "threshold": 10,
+    "comparator": ">=",
+    "active": true
+  }
+]

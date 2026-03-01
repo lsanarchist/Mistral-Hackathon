@@ -1,6 +1,30 @@
 ## Change Log
 
 ### 2026-03-01
+- **Objective**: Implement Performance Dashboard Enhancements with custom time ranges, export functionality, alerts, and multi-application comparison
+- **Rationale**: Enhance performance monitoring capabilities to provide better insights, historical analysis, and cross-application comparison for improved decision making
+- **Impact**: WebSocket server, web UI, performance tracking, data analysis, CLI interface
+- **Changes**:
+  - Added `PerformanceAlert` struct for configurable alert thresholds with metrics (critical, high, medium, low, score), comparators (> < ==), and activation status
+  - Added `PerformanceAnnotation` struct for user-added annotations with timestamp, title, content, and type (deployment, incident, note)
+  - Enhanced `PerformanceSnapshot` struct with annotations field for historical context
+  - Added performance alerts and annotations fields to `WebSocketServer` struct with proper synchronization
+  - Implemented `/performance/alerts` endpoint for CRUD operations on performance alerts
+  - Implemented `/performance/annotations` endpoint for CRUD operations on performance annotations
+  - Implemented `/performance/export` endpoint supporting JSON and CSV formats with time range filtering
+  - Implemented `/performance/compare` endpoint for multi-application performance comparison with automatic analysis
+  - Added `LoadPerformanceAlertsFromFile()` function for loading alerts from JSON configuration files
+  - Enhanced `recordPerformanceSnapshot()` to trigger alert checks on new snapshots
+  - Added `checkPerformanceAlerts()` method to evaluate alerts against current performance metrics
+  - Added `getActiveAlerts()` and `getRecentAnnotations()` methods for WebSocket broadcasting
+  - Updated WebSocket broadcast payload to include alerts and annotations in real-time updates
+  - Added CLI flag `--performance-alerts` for specifying alerts configuration file
+  - Updated `WithPerformanceAlerts()` method in pipeline for alerts configuration
+  - Added comprehensive unit tests for all new functionality including alert triggering, annotation management, export formats, and comparison analysis
+- **Testing**: Unit tests for all new endpoints, alert triggering logic, annotation management, export functionality, and comparison analysis
+- **Result**: Users can now configure performance alerts that trigger on specific conditions, add annotations for deployments/incidents, export performance data in multiple formats with custom time ranges, and compare performance across multiple applications with automatic best/worst analysis
+
+### 2026-03-01
 - **Objective**: Implement WebSocket Client Reconnection with Exponential Backoff for improved reliability
 - **Rationale**: Enhance WebSocket connection resilience in unstable network conditions by automatically reconnecting with exponential backoff, providing a more robust real-time monitoring experience
 - **Impact**: Web UI, WebSocket client, real-time monitoring, user experience
