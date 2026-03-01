@@ -1,5 +1,23 @@
 # Change Log
 
+### 2024-03-01: Phase 0 — Repo Hygiene ✅ COMPLETED
+- **Objective**: Clean up repository for focused Go MVP demo
+- **Rationale**: Narrow scope to Go for initial demo, remove distractions, ensure LLM safety
+- **Impact**: Repository structure, documentation, build system
+- **Changes**:
+  - ✅ **Narrow scope to Go**: Moved non-Go examples (node, python, ruby) to `examples/_archive/`
+  - ✅ **LLM safety**: Verified LLM is disabled by default (llmGenerator nil)
+  - ✅ **Remote API only**: Confirmed no local ML implementations exist
+  - ✅ **Documentation cleanup**: Simplified README.md to focus on Go MVP
+  - ✅ **Build fixes**: Fixed WebSocket server compilation issues (Phase 6 features)
+  - ✅ **Import cleanup**: Resolved math/rand vs crypto/rand conflicts
+  - ✅ **Updated suggested_next_steps.md**: Marked Phase 0 as completed
+- **Testing**: 
+  - ✅ `go build` succeeds for main binary and plugins
+  - ✅ `./bin/triageprof plugins list` works correctly
+  - ✅ Basic functionality verified
+- **Result**: Repository is now "demo clean" and ready for Phase 1 implementation. Focused on Go pprof with optional remote LLM insights.
+
 ### 2026-03-01 08:30: WebSocket Connection Quality Dashboard Advanced Enhancements Phase 5 ✅ COMPLETED
 - **Objective**: Implement advanced AI/ML capabilities with deep learning for enhanced anomaly detection, correlation analysis, predictive maintenance, and automated root cause analysis
 - **Rationale**: Provide state-of-the-art connection quality monitoring with advanced predictive capabilities and systemic issue detection

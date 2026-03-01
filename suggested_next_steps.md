@@ -1,44 +1,44 @@
 # Suggested Next Steps — TriageProf Demo-Grade MVP (Go pprof + Mistral API)
 
-> Goal: **one command → a “wow” report**.
+> Goal: **one command → a "wow" report**.
 > `triageprof demo --repo <url> [--ref <commit>] --out out/`  
 > Outputs: `report.html` + `report.md` + `findings.json` (+ raw pprof artifacts).
 
 ---
 
-## Definition of Done (what “MVP demo” means)
+## Definition of Done (what "MVP demo" means)
 
-- Works on a **real Go open-source repo** that has benchmarks (or produces a clear “no benchmarks found” report).
+- Works on a **real Go open-source repo** that has benchmarks (or produces a clear "no benchmarks found" report).
 - Produces a **clean HTML report** with:
   - Top 3–5 bottlenecks (ranked)
   - Evidence (pprof top funcs + stacks + file:line when available)
   - Actionable fix guidance (deterministic rules + optional LLM enrichment)
 - **LLM is optional**:
-  - If Mistral API is configured → adds “why / how to fix / trade-offs”
+  - If Mistral API is configured → adds "why / how to fix / trade-offs"
   - If not configured / API fails → report still builds, just without LLM sections
 - Output is **reproducible** (pinned repo ref + stable schema + snapshot tests).
 
 ---
 
-## Phase 0 — Repo Hygiene (make the project “demo clean”)
+## ✅ Phase 0 — Repo Hygiene (COMPLETED)
 
-- **Narrow scope to Go for MVP**
-  - Move non-Go examples to `examples/_archive/` (keep history, stop confusing the demo).
-  - Keep only `examples/go/` and one pinned demo repo.
-- **Delete/disable local-ML paths**
-  - Keep LLM only as **remote API calls** (Mistral).
-  - Ensure `--llm=off` is the default safe path.
-- **Docs cleanup**
-  - Replace the current `suggested_next_steps.md` with this document (no merge-conflict markers, no “COMPLETED” noise).
-
-Acceptance criteria:
-- `go test ./...` passes; `triageprof --help` is readable; repo looks focused.
+- **Narrow scope to Go for MVP** ✅
+  - Moved non-Go examples to `examples/_archive/` (kept history)
+  - Kept only `examples/demo-server/` and Go-focused demo
+- **Delete/disable local-ML paths** ✅
+  - No local ML implementations found - already remote API only
+- **LLM is optional and safe** ✅
+  - `--llm=off` is the default (llmGenerator nil by default)
+  - Remote API calls only (Mistral/OpenAI)
+- **Docs cleanup** ✅
+  - Simplified README.md to focus on Go MVP
+  - Removed merge-conflict markers and noise
 
 ---
 
 ## Phase 1 — Golden Path CLI: `triageprof demo`
 
-Implement a single “golden” command that does everything:
+Implement a single "golden" command that does everything:
 
 - **Inputs**
   - `--repo` (git URL or local path)
@@ -108,8 +108,8 @@ Add an enrichment stage that takes **only the deterministic findings** and retur
   - Hash of `findings.json` → cached enrichment to avoid repeat costs
 
 Acceptance criteria:
-- With a valid key: report includes an “LLM insights” section per top finding.
-- Without a key: report still builds, clearly shows “LLM disabled”.
+- With a valid key: report includes an "LLM insights" section per top finding.
+- Without a key: report still builds, clearly shows "LLM disabled".
 
 ---
 
@@ -138,7 +138,7 @@ Acceptance criteria:
 
 - Add `./demo.sh` (or `make demo`) that runs the golden path on a **pinned** repo/ref.
 - Commit `demo-output/` with one known-good output (so the UI can be shown even offline).
-- Add README “Demo in 30 seconds”:
+- Add README "Demo in 30 seconds":
   - install
   - run demo
   - open report
@@ -165,10 +165,10 @@ Acceptance criteria:
 
 ---
 
-## Phase 7 — Small “Nice” Extras (only if time remains)
+## Phase 7 — Small "Nice" Extras (only if time remains)
 
 - `triageprof serve --dir out/` to open a local report viewer (optional).
-- “Compare two runs” (baseline vs current) for a single benchmark (simple diff in findings).
+- "Compare two runs" (baseline vs current) for a single benchmark (simple diff in findings).
 - Export a `github_issue.md` template file.
 
 ---

@@ -2,7 +2,6 @@ package webserver
 
 import (
 	"context"
-	"crypto/rand"
 	"encoding/base64"
 	"encoding/csv"
 	"encoding/json"
@@ -10,6 +9,7 @@ import (
 	"hash/fnv"
 	"log"
 	"math"
+	"math/rand"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -18,6 +18,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	crand "crypto/rand"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/websocket"
@@ -3427,7 +3429,7 @@ func (s *WebSocketServer) getQualityPredictionsPhase4() map[string]interface{} {
 func generateUUID() string {
 	// Simple UUID generation for demo purposes
 	b := make([]byte, 16)
-	_, err := rand.Read(b)
+	_, err := crand.Read(b)
 	if err != nil {
 		return "uuid-" + strconv.FormatInt(timeNow().UnixNano(), 10)
 	}
@@ -4025,7 +4027,7 @@ func (s *WebSocketServer) handleWebSocket(w http.ResponseWriter, r *http.Request
 // generateJWTSecretKey generates a cryptographically secure random secret key
 func generateJWTSecretKey() string {
 	bytes := make([]byte, 32)
-	if _, err := rand.Read(bytes); err != nil {
+	if _, err := crand.Read(bytes); err != nil {
 		// Fallback to timestamp-based secret if crypto/rand fails
 		return fmt.Sprintf("triageprof-jwt-secret-%d", time.Now().UnixNano())
 	}
@@ -4034,7 +4036,7 @@ func generateJWTSecretKey() string {
 
 func generateClientID() string {
 	key := make([]byte, 8)
-	if _, err := rand.Read(key); err != nil {
+	if _, err := crand.Read(key); err != nil {
 		log.Printf("Failed to generate client ID, using timestamp fallback: %v", err)
 		return fmt.Sprintf("client-%d", time.Now().UnixNano())
 	}
@@ -4043,7 +4045,7 @@ func generateClientID() string {
 
 func generateAlertID() string {
 	key := make([]byte, 6)
-	if _, err := rand.Read(key); err != nil {
+	if _, err := crand.Read(key); err != nil {
 		log.Printf("Failed to generate alert ID, using timestamp fallback: %v", err)
 		return fmt.Sprintf("alert-%d", time.Now().UnixNano())
 	}
@@ -6901,8 +6903,11 @@ func (s *WebSocketServer) predictFutureAnomalyWithDeepLearningPhase6(stat *WebSo
 	// Generate Phase 6 enhanced mitigation suggestion
 	mitigation := s.generateMitigationSuggestionPhase6(anomalyType)
 	
+	// Generate root cause for predictive insights
+	rootCause := s.analyzeAnomalyRootCausePhase6(stat, anomalyType)
+
 	// Generate Phase 6 enhanced predictive insights
-	insights := s.generatePredictiveInsightsPhase6(stat, anomalyType)
+	insights := s.generatePredictiveInsightsPhase6(stat, anomalyType, rootCause)
 	
 	return map[string]interface{}{
 		"prediction_id":     fmt.Sprintf("pred-%s-%d", stat.ClientID, time.Now().Unix()),
@@ -7172,7 +7177,7 @@ func (s *WebSocketServer) performAnomalyCorrelationDetectionPhase6() map[string]
 	// Simulate finding correlations between different anomaly types
 	correlationTypes := []string{"latency_packet_loss", "latency_score", "packet_loss_score"}
 	
-	for _, corrType := range correlationTypes {
+	for range correlationTypes {
 		// Simulate correlation strength
 		correlationStrength := 0.7 + (rand.Float64() * 0.2)
 		

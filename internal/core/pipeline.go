@@ -42,6 +42,7 @@ type Pipeline struct {
 	advancedMLEnabled       bool
 	phase4FeaturesEnabled  bool
 	phase5FeaturesEnabled  bool
+	phase6FeaturesEnabled  bool
 }
 
 func NewPipeline(pluginDir string) *Pipeline {
@@ -110,7 +111,7 @@ func (p *Pipeline) WithWebSocketServer(port int, dataDir string, enableAuth bool
 		log.Printf("Warning: Failed to load performance alerts: %v", err)
 	}
 	
-	p.wsServer = webserver.NewWebSocketServer(port, dataDir, pluginDir, enableAuth, enableCompression, enableBatching, batchInterval, p.connectionQualityEnabled, alertsConfig, p.connectionQualityAlerts, p.connectionQualityConfig, p.mlModelEnabled, p.advancedMLEnabled, p.phase4FeaturesEnabled, p.phase5FeaturesEnabled)
+	p.wsServer = webserver.NewWebSocketServer(port, dataDir, pluginDir, enableAuth, enableCompression, enableBatching, batchInterval, p.connectionQualityEnabled, alertsConfig, p.connectionQualityAlerts, p.connectionQualityConfig, p.mlModelEnabled, p.advancedMLEnabled, p.phase4FeaturesEnabled, p.phase5FeaturesEnabled, p.phase6FeaturesEnabled)
 }
 
 // WithWebSocketAutoRefresh configures auto-refresh interval for WebSocket server
@@ -153,6 +154,11 @@ func (p *Pipeline) WithWebSocketPhase4Features(enabled bool) {
 // WithWebSocketPhase5Features enables Phase 5 advanced features for WebSocket connections
 func (p *Pipeline) WithWebSocketPhase5Features(enabled bool) {
 	p.phase5FeaturesEnabled = enabled
+}
+
+// WithWebSocketPhase6Features enables Phase 6 advanced features for WebSocket connections
+func (p *Pipeline) WithWebSocketPhase6Features(enabled bool) {
+	p.phase6FeaturesEnabled = enabled
 }
 
 // StartWebSocketServer starts the WebSocket server
