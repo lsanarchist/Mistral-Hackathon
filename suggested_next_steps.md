@@ -11,6 +11,13 @@
 
 ### ✅ IMPLEMENT WEBSOCKET JWT AUTHENTICATION - COMPLETED
 
+### JWT Authentication Enhancements
+- **Role-based access control**: Implement different permission levels (viewer, editor, admin)
+- **Token refresh**: Add token refresh endpoint for long-lived sessions
+- **Multi-factor authentication**: Add MFA support for enhanced security
+- **API key rotation**: Implement automatic key rotation for better security
+- **Rate limiting**: Add rate limiting to authentication endpoints
+
 ### 2. **Advanced Plugin Discovery UI**
 - **Objective**: Create interactive plugin management interface
 - **Rationale**: Make plugin system more visible and accessible to users
