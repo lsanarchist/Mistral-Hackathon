@@ -50,6 +50,18 @@ func (p *Pipeline) WithLLM(apiKey, model string, timeout, maxResponse, maxPrompt
 	return p
 }
 
+// WithLLMWithCache configures LLM insights generation with caching
+func (p *Pipeline) WithLLMWithCache(apiKey, model string, timeout, maxResponse, maxPromptChars int, dryRun bool, cacheConfig llm.CacheConfig) *Pipeline {
+	p.llmGenerator = llm.NewInsightsGeneratorWithCache(apiKey, model, timeout, maxResponse, maxPromptChars, dryRun, cacheConfig)
+	return p
+}
+
+// WithLLMWithCacheAndRetries configures LLM insights generation with caching and retries
+func (p *Pipeline) WithLLMWithCacheAndRetries(apiKey, model string, timeout, maxResponse, maxPromptChars, maxRetries, retryDelaySec int, dryRun bool, cacheConfig llm.CacheConfig) *Pipeline {
+	p.llmGenerator = llm.NewInsightsGeneratorWithCacheAndRetries(apiKey, model, timeout, maxResponse, maxPromptChars, maxRetries, retryDelaySec, dryRun, cacheConfig)
+	return p
+}
+
 // WithWebSocketServer configures WebSocket server for real-time monitoring
 func (p *Pipeline) WithWebSocketServer(port int, dataDir string, enableAuth bool, enableCompression bool) {
 	// Use the plugin directory from the pipeline's plugin manager
@@ -487,4 +499,20 @@ func (p *Pipeline) GenerateWebReport(ctx context.Context, findingsPath, outDir s
 
 	indexPath := filepath.Join(outDir, "index.html")
 	return os.WriteFile(indexPath, []byte(indexHTML), 0644)
+}
+
+// GetCacheStats returns cache statistics if caching is enabled
+func (p *Pipeline) GetCacheStats() (llm.CacheStats, bool) {
+	if p.llmGenerator != nil && p.llmGenerator.Cache != nil {
+		return p.llmGenerator.Cache.GetCacheStats(), true
+	}
+	return llm.CacheStats{}, false
+}
+
+// ClearLLMCache clears the LLM insights cache if caching is enabled
+func (p *Pipeline) ClearLLMCache() error {
+	if p.llmGenerator != nil && p.llmGenerator.Cache != nil {
+		return p.llmGenerator.Cache.ClearCache()
+	}
+	return nil
 }
