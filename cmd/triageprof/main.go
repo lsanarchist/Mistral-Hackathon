@@ -312,6 +312,7 @@ func runRunCommand(pipeline *core.Pipeline) {
 	websocketAdaptiveUpdates := flagSet.Bool("websocket-adaptive-updates", true, "Enable adaptive updates based on connection quality")
 	websocketBandwidthThrottling := flagSet.Bool("websocket-bandwidth-throttling", true, "Enable bandwidth throttling based on connection quality")
 	websocketMLModel := flagSet.Bool("websocket-ml-model", false, "Enable ML-based anomaly detection for WebSocket connections")
+	websocketAdvancedML := flagSet.Bool("websocket-advanced-ml", false, "Enable advanced ML features (root cause analysis, predictions, correlations)")
 	performanceAlerts := flagSet.String("performance-alerts", "", "Performance alert configuration file (JSON)")
 	flagSet.Parse(os.Args[2:])
 
@@ -416,6 +417,7 @@ func runRunCommand(pipeline *core.Pipeline) {
 		
 		// Configure ML-based anomaly detection
 		pipeline.WithWebSocketMLModel(*websocketMLModel)
+		pipeline.WithWebSocketAdvancedML(*websocketAdvancedML)
 		
 		if *performanceAlerts != "" {
 			pipeline.WithPerformanceAlerts(*performanceAlerts)

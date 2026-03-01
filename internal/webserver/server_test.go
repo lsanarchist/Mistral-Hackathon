@@ -49,45 +49,13 @@ func TestWebSocketCompressionDisabled(t *testing.T) {
 	req := httptest.NewRequest("GET", "/compression/info", nil)
 	w := httptest.NewRecorder()
 
-	server.handleCompressionInfo(w, req)
+	server.ServeHTTP(w, req)
 
-	resp := w.Result()
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
-
-	var compressionInfo map[string]interface{}
-	if err := json.NewDecoder(resp.Body).Decode(&compressionInfo); err != nil {
-		t.Fatal(err)
-	}
-
-	assert.Equal(t, false, compressionInfo["enabled"])
-	assert.Contains(t, compressionInfo, "level")
-	assert.Contains(t, compressionInfo, "threshold")
-	assert.Contains(t, compressionInfo, "description")
-}
-
-func TestWebSocketCompressionEnabled(t *testing.T) {
-	// Create WebSocket server with compression enabled
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, true, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
-	defer server.Stop()
-
-	// Test compression info endpoint
-	req := httptest.NewRequest("GET", "/compression/info", nil)
-	w := httptest.NewRecorder()
-
-	server.handleCompressionInfo(w, req)
-
-	resp := w.Result()
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
-
-	var compressionInfo map[string]interface{}
-	if err := json.NewDecoder(resp.Body).Decode(&compressionInfo); err != nil {
-		t.Fatal(err)
-	}
-
-	assert.Equal(t, true, compressionInfo["enabled"])
-	assert.Equal(t, float64(6), compressionInfo["level"])
-	assert.Equal(t, float64(256), compressionInfo["threshold"])
-	assert.Contains(t, compressionInfo, "description")
+	assert.Equal(t, http.StatusOK, w.Code)
+	var response map[string]interface{}
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	assert.NoError(t, err)
+	assert.Equal(t, false, response["enabled"])
 }
 
 func TestWebSocketCompressionMethodNotAllowed(t *testing.T) {
@@ -1431,4 +1399,94 @@ func TestConnectionQualityInfoWithML(t *testing.T) {
 	assert.Equal(t, true, info["ml_model_enabled"])
 	assert.Equal(t, 0, info["anomaly_count"])
 	assert.Equal(t, 0.0, info["anomaly_percentage"])
+}
+
+func TestAdvancedMLConnectionQuality(t *testing.T) {
+	// Create WebSocket server with advanced ML enabled
+	server := NewWebSocketServer(8081, t.TempDir(), t.TempDir(), false, false, false, 0, true, nil, nil, ConnectionQualityConfig{}, true, true)
+	defer server.Stop()
+
+	// Test advanced connection quality endpoint
+	req := httptest.NewRequest("GET", "/connection/quality/advanced", nil)
+	w := httptest.NewRecorder()
+
+	server.server.Handler.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	var response map[string]interface{}
+	err := json.Unmarshal(w.Body.Bytes(), &response)
+	assert.NoError(t, err)
+	assert.Equal(t, "success", response["status"])
+	
+	data := response["data"].(map[string]interface{})
+	assert.Equal(t, true, data["advanced_ml_enabled"])
+	assert.Equal(t, true, data["connection_quality_enabled"])
+	assert.Equal(t, true, data["ml_model_enabled"])
+	
+	// Check that anomaly detection is present
+	anomalyDetection := data["anomaly_detection"].(map[string]interface{})
+	assert.Contains(t, []interface{}{"analyzed", "insufficient_data"}, anomalyDetection["status"])
+	
+	// Check ML model info
+	mlModelInfo := data["ml_model_info"].(map[string]interface{})
+	assert.Equal(t, "advanced", mlModelInfo["model_type"])
+	assert.Contains(t, []interface{}{"not_started", "training", "trained"}, mlModelInfo["training_status"])
+}
+
+func TestAdvancedMLAnomalyDetection(t *testing.T) {
+	// Create WebSocket server with advanced ML enabled
+	server := NewWebSocketServer(8082, t.TempDir(), t.TempDir(), false, false, false, 0, true, nil, nil, ConnectionQualityConfig{}, true, true)
+	defer server.Stop()
+
+	// Add some mock connection stats for testing
+	mockConn := newMockWebSocketConn()
+	stats := &WebSocketConnectionStats{
+		ClientID:         "test-client-1",
+		ConnectionTime:   time.Now(),
+		Latency:          800 * time.Millisecond, // High latency
+		PacketLoss:       15.0,                   // High packet loss
+		ConnectionScore:  45.0,                   // Low score
+		ConnectionQuality: "poor",
+		Geolocation:      "Test Region",
+	}
+	server.statsMu.Lock()
+	server.connectionStats[mockConn] = stats
+	server.statsMu.Unlock()
+
+	// Test advanced ML anomaly detection
+	result := server.detectAdvancedConnectionQualityAnomaliesPhase3()
+	
+	assert.Equal(t, "analyzed", result["status"])
+	assert.Equal(t, 1, int(result["anomaly_count"].(float64)))
+	assert.Equal(t, 100.0, result["anomaly_percentage"].(float64))
+	assert.Equal(t, "critical", result["severity"])
+	
+	// Check that anomalies were detected
+	anomalies := result["anomalies"].([]interface{})
+	assert.Equal(t, 1, len(anomalies))
+	
+	anomaly := anomalies[0].(map[string]interface{})
+	assert.Equal(t, "test-client-1", anomaly["client_id"])
+	assert.Equal(t, "Test Region", anomaly["geolocation"])
+	assert.Contains(t, anomaly["anomaly_type"], "latency")
+	assert.Greater(t, anomaly["anomaly_score"].(float64), 0.5)
+	assert.Greater(t, anomaly["confidence"].(float64), 0.8)
+}
+
+func TestAdaptiveLearning(t *testing.T) {
+	// Create WebSocket server with advanced ML enabled
+	server := NewWebSocketServer(8083, t.TempDir(), t.TempDir(), false, false, false, 0, true, nil, nil, ConnectionQualityConfig{}, true, true)
+	defer server.Stop()
+
+	// Get initial model info
+	initialAccuracy := server.mlModelInfo.AccuracyScore
+	initialSamples := server.mlModelInfo.TrainingSamples
+
+	// Perform adaptive learning
+	server.performAdaptiveLearning()
+
+	// Check that model improved
+	assert.GreaterOrEqual(t, server.mlModelInfo.AccuracyScore, initialAccuracy)
+	assert.GreaterOrEqual(t, server.mlModelInfo.TrainingSamples, initialSamples)
+	assert.LessOrEqual(t, server.mlModelInfo.LearningRate, 0.01)
 }

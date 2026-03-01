@@ -273,6 +273,57 @@
             margin-right: 8px;
             background-color: #ffc107;
         }
+        
+        .advanced-ml-anomaly-container {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .anomaly-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .anomaly-stat-item {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .anomaly-stat-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+            display: block;
+            margin-bottom: 3px;
+        }
+        
+        .anomaly-stat-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        
+        #advancedAnomalyInsights {
+            margin-top: 10px;
+            padding: 10px;
+            background: #fff5f5;
+            border-radius: 5px;
+        }
+        
+        #advancedAnomalyInsightsList {
+            margin: 5px 0;
+            padding-left: 20px;
+        }
+        
+        #advancedAnomalyInsightsList li {
+            margin-bottom: 5px;
+            color: #721c24;
+        }
     </style>
 </head>
 <body>
@@ -372,6 +423,75 @@
                 </div>
             </div>
             
+            <!-- Advanced ML Features -->
+            <div class="advanced-ml-container" id="advancedMLContainer" style="margin: 20px 0; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 1px 5px rgba(0,0,0,0.1); display: none;">
+                <h3 style="margin-top: 0; color: #495057;"><i class="fas fa-robot"></i> Advanced ML Features</h3>
+                <div class="ml-features-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin: 15px 0;">
+                    <div class="ml-feature-card" style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #007bff;">
+                        <div class="ml-feature-label" style="font-size: 0.9rem; color: #6c757d; margin-bottom: 5px;">ML Model Status:</div>
+                        <div class="ml-feature-value" id="mlModelStatus" style="font-size: 1.2rem; font-weight: bold; color: #007bff;">Not Started</div>
+                    </div>
+                    <div class="ml-feature-card" style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745;">
+                        <div class="ml-feature-label" style="font-size: 0.9rem; color: #6c757d; margin-bottom: 5px;">Active Predictions:</div>
+                        <div class="ml-feature-value" id="activePredictions" style="font-size: 1.2rem; font-weight: bold; color: #28a745;">0</div>
+                    </div>
+                    <div class="ml-feature-card" style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107;">
+                        <div class="ml-feature-label" style="font-size: 0.9rem; color: #6c757d; margin-bottom: 5px;">Root Cause Analyses:</div>
+                        <div class="ml-feature-value" id="rootCauseAnalyses" style="font-size: 1.2rem; font-weight: bold; color: #ffc107;">0</div>
+                    </div>
+                    <div class="ml-feature-card" style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #dc3545;">
+                        <div class="ml-feature-label" style="font-size: 0.9rem; color: #6c757d; margin-bottom: 5px;">Anomaly Correlations:</div>
+                        <div class="ml-feature-value" id="anomalyCorrelations" style="font-size: 1.2rem; font-weight: bold; color: #dc3545;">0</div>
+                    </div>
+                    <div class="ml-feature-card" style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #6f42c1;">
+                        <div class="ml-feature-label" style="font-size: 0.9rem; color: #6c757d; margin-bottom: 5px;">Model Accuracy:</div>
+                        <div class="ml-feature-value" id="modelAccuracy" style="font-size: 1.2rem; font-weight: bold; color: #6f42c1;">0%</div>
+                    </div>
+                    <div class="ml-feature-card" style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #fd7e14;">
+                        <div class="ml-feature-label" style="font-size: 0.9rem; color: #6c757d; margin-bottom: 5px;">Training Samples:</div>
+                        <div class="ml-feature-value" id="trainingSamples" style="font-size: 1.2rem; font-weight: bold; color: #fd7e14;">0</div>
+                    </div>
+                </div>
+                
+                <!-- Advanced ML Anomaly Detection -->
+                <div class="advanced-ml-anomaly-container" style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #dc3545;">
+                    <h4 style="margin-top: 0; color: #495057;"><i class="fas fa-exclamation-triangle"></i> Advanced ML Anomaly Detection</h4>
+                    <div class="anomaly-stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 10px 0;">
+                        <div class="anomaly-stat-item">
+                            <span class="anomaly-stat-label" style="font-size: 0.8rem; color: #6c757d;">Detected Anomalies:</span>
+                            <span class="anomaly-stat-value" id="advancedAnomalyCount" style="font-size: 1.1rem; font-weight: bold; color: #dc3545;">0</span>
+                        </div>
+                        <div class="anomaly-stat-item">
+                            <span class="anomaly-stat-label" style="font-size: 0.8rem; color: #6c757d;">Anomaly Percentage:</span>
+                            <span class="anomaly-stat-value" id="advancedAnomalyPercentage" style="font-size: 1.1rem; font-weight: bold; color: #dc3545;">0%</span>
+                        </div>
+                        <div class="anomaly-stat-item">
+                            <span class="anomaly-stat-label" style="font-size: 0.8rem; color: #6c757d;">Severity Level:</span>
+                            <span class="anomaly-stat-value" id="advancedAnomalySeverity" style="font-size: 1.1rem; font-weight: bold; color: #dc3545;">None</span>
+                        </div>
+                    </div>
+                    <div id="advancedAnomalyInsights" style="margin-top: 10px; padding: 10px; background: #fff5f5; border-radius: 5px; display: none;">
+                        <strong>Advanced ML Insights:</strong>
+                        <ul id="advancedAnomalyInsightsList" style="margin: 5px 0; padding-left: 20px;"></ul>
+                    </div>
+                </div>
+                
+                <div class="ml-controls" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e9ecef;">
+                    <button id="trainMLModel" style="padding: 8px 16px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px;">
+                        <i class="fas fa-graduation-cap"></i> Train ML Model
+                    </button>
+                    <button id="getMLInsights" style="padding: 8px 16px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        <i class="fas fa-lightbulb"></i> Get ML Insights
+                    </button>
+                    <button id="getAdvancedQualityData" style="padding: 8px 16px; background-color: #6f42c1; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        <i class="fas fa-chart-line"></i> Advanced Quality Analysis
+                    </button>
+                    <div id="mlRecommendations" style="margin-top: 10px; padding: 10px; background: #e7f3ff; border-radius: 4px; display: none;">
+                        <strong>ML Recommendations:</strong> <span id="mlRecommendationsText"></span>
+                    </div>
+                </div>
+            </div>
+            
             <div class="charts-grid">
                 <div class="chart-container">
                     <h3><i class="fas fa-chart-line"></i> Connection Quality Over Time</h3>
@@ -449,6 +569,13 @@
                             <th>Confidence</th>
                             <th>Cluster ID</th>
                             <th>Last Anomaly</th>
+                            <th>Root Cause</th>
+                            <th>Impact</th>
+                            <th>Likelihood</th>
+                            <th>Correlations</th>
+                            <th>ML Version</th>
+                            <th>ML Confidence</th>
+                            <th>ML Insights</th>
                             <th>Connected Since</th>
                         </tr>
                     </thead>
@@ -461,6 +588,22 @@
     </div>
     
     <script>
+        // Handle hash navigation for advanced ML section
+        window.addEventListener('DOMContentLoaded', function() {
+            if (window.location.hash === '#advanced') {
+                // Show advanced ML container if not already visible
+                const advancedContainer = document.getElementById('advancedMLContainer');
+                if (advancedContainer) {
+                    advancedContainer.style.display = 'block';
+                    
+                    // Scroll to the advanced ML section
+                    setTimeout(() => {
+                        advancedContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 500);
+                }
+            }
+        });
+        
         // WebSocket Connection Management
         let wsConnection = null;
         let qualityCharts = {};
@@ -862,6 +1005,26 @@
                 updateAnomalyClustersChart(data.anomaly_clusters || []);
             }
             
+            // Update advanced ML features
+            if (data.advanced_ml_enabled !== undefined && data.advanced_ml_enabled) {
+                document.getElementById('advancedMLContainer').style.display = 'block';
+                
+                // Update ML model info
+                if (data.ml_model_info) {
+                    document.getElementById('mlModelStatus').textContent = data.ml_model_info.training_status || 'Not Started';
+                    document.getElementById('mlModelStatus').style.color = 
+                        data.ml_model_info.training_status === 'trained' ? '#28a745' : 
+                        data.ml_model_info.training_status === 'training' ? '#ffc107' : '#6c757d';
+                }
+                
+                // Update statistics
+                document.getElementById('activePredictions').textContent = data.active_predictions || 0;
+                document.getElementById('rootCauseAnalyses').textContent = data.root_cause_analyses || 0;
+                document.getElementById('anomalyCorrelations').textContent = data.anomaly_correlations || 0;
+            } else {
+                document.getElementById('advancedMLContainer').style.display = 'none';
+            }
+            
             // Update charts
             updateQualityTrendChart(data);
             updateQualityDistributionChart(data);
@@ -1219,6 +1382,13 @@
                     <td>${stat.anomaly_confidence ? stat.anomaly_confidence.toFixed(2) : 'N/A'}</td>
                     <td>${stat.anomaly_cluster_id || 'N/A'}</td>
                     <td>${stat.last_anomaly_time ? new Date(stat.last_anomaly_time).toLocaleTimeString() : 'N/A'}</td>
+                    <td>${stat.anomaly_root_cause || 'N/A'}</td>
+                    <td>${stat.anomaly_impact || 'N/A'}</td>
+                    <td>${stat.anomaly_likelihood ? (stat.anomaly_likelihood * 100).toFixed(1) + '%' : 'N/A'}</td>
+                    <td>${stat.anomaly_correlation ? stat.anomaly_correlation.join(', ') : 'N/A'}</td>
+                    <td>${stat.ml_model_version || 'N/A'}</td>
+                    <td>${stat.ml_confidence ? stat.ml_confidence.toFixed(2) : 'N/A'}</td>
+                    <td>${stat.ml_insights ? stat.ml_insights.join('; ') : 'N/A'}</td>
                     <td>${stat.connection_time ? new Date(stat.connection_time).toLocaleString() : 'N/A'}</td>
                 `;
                 
@@ -1342,6 +1512,149 @@
                 stopAutoRefresh();
             }
         });
+        
+        // Advanced ML button event handlers
+        const trainMLModelBtn = document.getElementById('trainMLModel');
+        const getMLInsightsBtn = document.getElementById('getMLInsights');
+        
+        if (trainMLModelBtn) {
+            trainMLModelBtn.addEventListener('click', function() {
+                fetch('/ml/train', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert('ML model training initiated successfully!');
+                        // Refresh ML data
+                        fetch('/ml/model')
+                        .then(response => response.json())
+                        .then(mlData => {
+                            if (mlData.model_info) {
+                                document.getElementById('mlModelStatus').textContent = mlData.model_info.training_status;
+                                document.getElementById('mlModelStatus').style.color = 
+                                    mlData.model_info.training_status === 'trained' ? '#28a745' : '#ffc107';
+                            }
+                        });
+                    } else {
+                        alert('Failed to initiate ML model training: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error training ML model:', error);
+                    alert('Error training ML model: ' + error.message);
+                });
+            });
+        }
+        
+        if (getMLInsightsBtn) {
+            getMLInsightsBtn.addEventListener('click', function() {
+                fetch('/ml/advanced')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success' && data.insights) {
+                        const recommendationsDiv = document.getElementById('mlRecommendations');
+                        const recommendationsText = document.getElementById('mlRecommendationsText');
+                        
+                        if (data.insights.recommendations && data.insights.recommendations.length > 0) {
+                            recommendationsText.textContent = data.insights.recommendations.join(' • ');
+                            recommendationsDiv.style.display = 'block';
+                        } else {
+                            recommendationsText.textContent = 'No specific recommendations at this time.';
+                            recommendationsDiv.style.display = 'block';
+                        }
+                        
+                        // Update advanced ML metrics
+                        if (data.model_info) {
+                            document.getElementById('modelAccuracy').textContent = 
+                                (data.model_info.accuracy_score * 100).toFixed(1) + '%';
+                            document.getElementById('trainingSamples').textContent = 
+                                data.model_info.training_samples || 0;
+                        }
+                    } else {
+                        alert('No ML insights available: ' + (data.message || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error getting ML insights:', error);
+                    alert('Error getting ML insights: ' + error.message);
+                });
+            });
+        }
+        
+        // Advanced Quality Analysis button
+        const getAdvancedQualityDataBtn = document.getElementById('getAdvancedQualityData');
+        if (getAdvancedQualityDataBtn) {
+            getAdvancedQualityDataBtn.addEventListener('click', function() {
+                fetch('/connection/quality/advanced')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success' && data.data) {
+                        const advancedData = data.data;
+                        
+                        // Update advanced anomaly detection info
+                        if (advancedData.anomaly_detection && advancedData.anomaly_detection.status === 'analyzed') {
+                            const anomalyDetection = advancedData.anomaly_detection;
+                            
+                            document.getElementById('advancedAnomalyCount').textContent = anomalyDetection.anomaly_count || 0;
+                            document.getElementById('advancedAnomalyPercentage').textContent = 
+                                (anomalyDetection.anomaly_percentage || 0).toFixed(1) + '%';
+                            document.getElementById('advancedAnomalySeverity').textContent = 
+                                anomalyDetection.severity || 'None';
+                            
+                            // Show anomaly insights
+                            const anomalyInsightsContainer = document.getElementById('advancedAnomalyInsights');
+                            const anomalyInsightsList = document.getElementById('advancedAnomalyInsightsList');
+                            
+                            if (anomalyDetection.anomaly_insights && anomalyDetection.anomaly_insights.length > 0) {
+                                anomalyInsightsList.innerHTML = '';
+                                anomalyDetection.anomaly_insights.forEach(insight => {
+                                    const li = document.createElement('li');
+                                    li.textContent = insight;
+                                    anomalyInsightsList.appendChild(li);
+                                });
+                                anomalyInsightsContainer.style.display = 'block';
+                            } else {
+                                anomalyInsightsContainer.style.display = 'none';
+                            }
+                            
+                            // Update ML model info
+                            if (advancedData.ml_model_info) {
+                                const mlInfo = advancedData.ml_model_info;
+                                document.getElementById('mlModelStatus').textContent = mlInfo.training_status || 'Not Started';
+                                document.getElementById('mlModelStatus').style.color = 
+                                    mlInfo.training_status === 'trained' ? '#28a745' : 
+                                    mlInfo.training_status === 'training' ? '#ffc107' : '#6c757d';
+                                
+                                document.getElementById('modelAccuracy').textContent = 
+                                    (mlInfo.accuracy_score * 100).toFixed(1) + '%';
+                                document.getElementById('trainingSamples').textContent = mlInfo.training_samples || 0;
+                            }
+                            
+                            // Update statistics
+                            document.getElementById('activePredictions').textContent = 
+                                (advancedData.anomaly_detection.predictions ? advancedData.anomaly_detection.predictions.length : 0) || 0;
+                            document.getElementById('rootCauseAnalyses').textContent = 
+                                (advancedData.anomaly_detection.root_cause_analyses ? advancedData.anomaly_detection.root_cause_analyses.length : 0) || 0;
+                            document.getElementById('anomalyCorrelations').textContent = 
+                                (advancedData.anomaly_detection.correlations ? advancedData.anomaly_detection.correlations.length : 0) || 0;
+                        }
+                        
+                        // Show advanced ML container if not already visible
+                        if (document.getElementById('advancedMLContainer').style.display === 'none') {
+                            document.getElementById('advancedMLContainer').style.display = 'block';
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error getting advanced quality data:', error);
+                    alert('Error getting advanced quality data: ' + error.message);
+                });
+            });
+        }
         
         refreshIntervalSelect.addEventListener('change', function() {
             if (autoRefreshCheckbox.checked) {
