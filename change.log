@@ -38,6 +38,25 @@
 - **Testing**: Unit tests for Phase 5 anomaly detection, correlation analysis, predictive maintenance, and adaptive learning; integration testing with WebSocket server; verification of CLI flag functionality
 - **Result**: Production-ready advanced ML capabilities for WebSocket connection quality monitoring with deep learning, predictive analytics, correlation detection, and automated insights. Users can now analyze connection quality with advanced AI/ML features, identify systemic issues through anomaly correlation, and get predictive maintenance recommendations for proactive network optimization.
 
+### 2026-03-01 14:30: Phase 1 — Golden Path CLI: `triageprof demo` ✅ COMPLETED
+- **Objective**: Implement the single "golden" command that does everything
+- **Rationale**: Provide a complete end-to-end demo experience with one command
+- **Impact**: CLI, core pipeline, demo workflow
+- **Changes**:
+  - ✅ **Added `demo` command** to `cmd/triageprof/main.go` with full implementation
+  - ✅ **Implemented repo cloning** with git support in `internal/core/demo.go`
+  - ✅ **Added benchmark detection** using `go test` patterns and file walking
+  - ✅ **Created profile collection** with proper pprof flags for CPU, heap, allocs, block, mutex
+  - ✅ **Generated run manifest** with metadata including benchmarks found, profiles generated, Go version
+  - ✅ **Fixed test paths** in `internal/core/pipeline_test.go` to use correct profile locations
+  - ✅ **Updated suggested_next_steps.md** to mark Phase 1 as completed
+- **Testing**: 
+  - ✅ `go build` succeeds for main binary
+  - ✅ `./bin/triageprof demo --repo <local-path> --out <dir>` works correctly
+  - ✅ Generates complete output: `run.json`, `bundle.json`, `findings.json`, `report.md`, and profile files
+  - ✅ Core pipeline tests pass
+- **Result**: Users can now run `triageprof demo --repo <repository> --out <directory>` to get a complete performance analysis with benchmarks, profiles, findings, and reports. The command handles local paths and git URLs, detects Go benchmarks automatically, collects all pprof profiles, and generates structured reports.
+
 ### 2026-03-01 06:45: WebSocket Connection Quality Dashboard Advanced Enhancements Phase 2 ✅ COMPLETED
 - **Objective**: Implement ML-based anomaly detection and advanced monitoring features
 - **Rationale**: Enhance WebSocket connection monitoring with machine learning capabilities for better anomaly detection, pattern recognition, and automated remediation

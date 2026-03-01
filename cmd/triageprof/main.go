@@ -57,6 +57,7 @@ func main() {
 		fmt.Println("  run --plugin <name> --target-type node --target-command <cmd> --duration <sec> --outdir <dir> [--websocket-port <port>] [--websocket-auth] [--websocket-compression] [--websocket-batching] [--websocket-batch-interval <ms>]")
 		fmt.Println("  web --in <findings.json> --outdir <dir> [--insights <insights.json>]")
 		fmt.Println("  websocket --findings <findings.json> [--insights <insights.json>] [--port <port>] [--data-dir <dir>] [--compression] [--batching] [--batch-interval <ms>] [--phase5]")
+		fmt.Println("  demo --repo <url> --out <dir> [--ref <branch/commit>] [--duration <sec>]")
 		fmt.Println("\nLLM Options for 'run' command:")
 		fmt.Println("  --llm (enable LLM insights)")
 		fmt.Println("  --llm-provider <provider> (mistral, openai - default: mistral)")
@@ -94,6 +95,8 @@ func main() {
 		runWebCommand(pipeline)
 	case "websocket":
 		runWebSocketCommand(pipeline)
+	case "demo":
+		runDemoCommand(pipeline)
 	default:
 		fmt.Printf("Unknown command: %s\n", cmd)
 		os.Exit(1)
@@ -747,6 +750,67 @@ func runWebSocketCommand(pipeline *core.Pipeline) {
 	fmt.Println("\nShutting down WebSocket server...")
 	pipeline.StopWebSocketServer()
 	fmt.Println("WebSocket server stopped")
+}
+
+func runDemoCommand(pipeline *core.Pipeline) {
+	flagSet := flag.NewFlagSet("demo", flag.ExitOnError)
+	repoURL := flagSet.String("repo", "", "Repository URL")
+	outDir := flagSet.String("out", "", "Output directory")
+	ref := flagSet.String("ref", "", "Branch, tag, or commit (optional)")
+	duration := flagSet.Int("duration", 15, "Benchmark duration in seconds")
+	flagSet.Parse(os.Args[2:])
+
+	if *repoURL == "" || *outDir == "" {
+		fmt.Println("Required flags: --repo, --out")
+		fmt.Println("Optional flags: --ref, --duration")
+		os.Exit(1)
+	}
+
+	ctx := context.Background()
+
+	fmt.Printf("🚀 Starting demo for repository: %s\n", *repoURL)
+	if *ref != "" {
+		fmt.Printf("📌 Using reference: %s\n", *ref)
+	}
+	fmt.Printf("⏱  Benchmark duration: %d seconds\n", *duration)
+	fmt.Printf("📁 Output directory: %s\n\n", *outDir)
+
+	// Run the demo workflow
+	manifest, err := pipeline.Demo(ctx, *repoURL, *ref, *outDir, *duration)
+	if err != nil {
+		fmt.Printf("❌ Demo failed: %v\n", err)
+		os.Exit(1)
+	}
+
+	// Save run manifest
+	manifestData, err := json.MarshalIndent(manifest, "", "  ")
+	if err != nil {
+		fmt.Printf("⚠️  Warning: failed to serialize run manifest: %v\n", err)
+	} else {
+		manifestPath := filepath.Join(*outDir, "run.json")
+		if err := os.WriteFile(manifestPath, manifestData, 0644); err != nil {
+			fmt.Printf("⚠️  Warning: failed to write run manifest: %v\n", err)
+		} else {
+			fmt.Printf("📋 Run manifest saved to: %s\n", manifestPath)
+		}
+	}
+
+	if manifest.Success {
+		fmt.Println("\n✅ Demo completed successfully!")
+		fmt.Printf("📊 Found %d benchmarks\n", len(manifest.Benchmarks))
+		fmt.Printf("📈 Generated %d profiles\n", len(manifest.Profiles))
+		fmt.Println("\n📄 Generated files:")
+		fmt.Printf("  📋 %s\n", filepath.Join(*outDir, "run.json"))
+		fmt.Printf("  📦 %s\n", filepath.Join(*outDir, "bundle.json"))
+		fmt.Printf("  🔍 %s\n", filepath.Join(*outDir, "findings.json"))
+		fmt.Printf("  📊 %s\n", filepath.Join(*outDir, "report.md"))
+		for _, profile := range manifest.Profiles {
+			fmt.Printf("  📈 %s\n", profile)
+		}
+	} else {
+		fmt.Printf("\n❌ Demo failed: %s\n", manifest.Error)
+		os.Exit(1)
+	}
 }
 
 

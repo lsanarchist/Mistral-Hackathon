@@ -23,7 +23,7 @@
 ## ✅ Phase 0 — Repo Hygiene (COMPLETED)
 
 - **Narrow scope to Go for MVP** ✅
-  - Moved non-Go examples to `examples/_archive/` (kept history)
+  - Moved non-Go examples (node, python, ruby) to `examples/_archive/`
   - Kept only `examples/demo-server/` and Go-focused demo
 - **Delete/disable local-ML paths** ✅
   - No local ML implementations found - already remote API only
@@ -33,6 +33,31 @@
 - **Docs cleanup** ✅
   - Simplified README.md to focus on Go MVP
   - Removed merge-conflict markers and noise
+
+## ✅ Phase 1 — Golden Path CLI: `triageprof demo` (COMPLETED)
+
+**NEXT PRIORITY**: Implement the single "golden" command that does everything.
+
+### Implementation Plan
+
+1. **Add `demo` command** to `cmd/triageprof/main.go` ✅
+2. **Implement repo cloning** with git support ✅
+3. **Add benchmark detection** using `go test` patterns ✅
+4. **Create profile collection** with proper pprof flags ✅
+5. **Generate run manifest** with metadata ✅
+
+### Acceptance Criteria
+- ✅ `triageprof demo --repo <repo> --out out/` produces `out/profiles/*` + `out/run.json`
+- ✅ Works with both local paths and git URLs
+- ✅ Handles benchmark detection gracefully
+- ✅ Generates complete reports and findings
+
+### Estimated Files to Modify
+- ✅ `cmd/triageprof/main.go` - Add demo command handler
+- ✅ `internal/core/demo.go` - Complete demo implementation
+- ✅ `internal/core/pipeline.go` - Add Demo() method integration
+- ✅ `internal/model/types.go` - Add RunManifest struct
+- ✅ `internal/core/pipeline_test.go` - Fix test paths
 
 ---
 
@@ -114,7 +139,7 @@ func (g *InsightsGenerator) GenerateInsights(ctx context.Context, findings *mode
 ## Quick Verification Checklist
 
 - [x] Phase 0: Repo hygiene complete
-- [ ] Phase 1: `triageprof demo` command works
+- [x] Phase 1: `triageprof demo` command works
 - [ ] Phase 2: Deterministic analyzer produces findings.json
 - [ ] Phase 3: LLM enrichment works with API key
 - [ ] Phase 4: HTML report looks professional
@@ -124,6 +149,6 @@ func (g *InsightsGenerator) GenerateInsights(ctx context.Context, findings *mode
 
 ## Immediate Next Action
 
-**Start Phase 1**: Implement `triageprof demo` command with repo cloning, benchmark detection, and profile collection.
+**Start Phase 2**: Implement deterministic analyzer that produces findings.json with stable schema and rules.
 
-Expected time: 4-8 hours for basic implementation + tests.
+Expected time: 6-12 hours for analyzer implementation + tests.

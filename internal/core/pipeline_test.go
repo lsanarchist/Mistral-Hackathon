@@ -80,7 +80,7 @@ func TestPipeline_Analyze(t *testing.T) {
 	require.NoError(t, os.WriteFile(bundlePath, bundleData, 0644))
 	
 	// Copy profile file to temp directory
-	srcProfile := "../../out/heap.pb.gz"
+	srcProfile := "../../out-demo/heap.pb.gz"
 	dstProfile := filepath.Join(tmpDir, "heap.pb.gz")
 	profileData, err := os.ReadFile(srcProfile)
 	require.NoError(t, err)
@@ -152,7 +152,7 @@ func TestPipeline_AnalyzeWithOptions(t *testing.T) {
 	require.NoError(t, os.WriteFile(bundlePath, bundleData, 0644))
 	
 	// Copy profile file to temp directory
-	srcProfile := "../../out/heap.pb.gz"
+	srcProfile := "../../out-demo/heap.pb.gz"
 	dstProfile := filepath.Join(tmpDir, "heap.pb.gz")
 	profileData, err := os.ReadFile(srcProfile)
 	require.NoError(t, err)
