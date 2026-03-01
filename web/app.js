@@ -17,6 +17,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const disconnectWsBtn = document.getElementById('disconnectWsBtn');
     const wsStatus = document.getElementById('wsStatus');
     const wsUrlInput = document.getElementById('wsUrlInput');
+    const wsTokenInput = document.getElementById('wsTokenInput');
+    const authControls = document.getElementById('authControls');
+    const generateTokenBtn = document.getElementById('generateTokenBtn');
 
     let findingsData = null;
     let insightsData = null;
@@ -72,6 +75,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if (websocketControls) {
         connectWsBtn.addEventListener('click', connectWebSocket);
         disconnectWsBtn.addEventListener('click', disconnectWebSocket);
+        
+        // Set up auth controls if available
+        if (authControls && generateTokenBtn) {
+            generateTokenBtn.addEventListener('click', generateToken);
+            authControls.style.display = 'block';
+        }
+        
         websocketControls.style.display = 'block';
     }
 
@@ -203,9 +213,58 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Token generation function
+    function generateToken() {
+        const username = prompt('Enter username:', 'demo-user');
+        const password = prompt('Enter password:', 'demo-password');
+        const role = prompt('Enter role (viewer/admin):', 'viewer');
+        
+        if (!username || !password) {
+            showError('Username and password are required');
+            return;
+        }
+        
+        // Extract base URL from WebSocket URL
+        let wsUrl = wsUrlInput.value.trim() || 'ws://localhost:8080/ws';
+        let httpUrl = wsUrl.replace('ws://', 'http://').replace('/ws', '');
+        
+        // Generate token via API
+        fetch(httpUrl + '/token', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password,
+                role: role
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Token generation failed: ' + response.statusText);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (wsTokenInput) {
+                wsTokenInput.value = data.token;
+            }
+            console.log('Token generated successfully:', data.token);
+            console.log('Expires in:', data.expires_in, 'seconds');
+            console.log('Username:', data.username);
+            console.log('Role:', data.role);
+        })
+        .catch(error => {
+            console.error('Error generating token:', error);
+            showError('Failed to generate token: ' + error.message);
+        });
+    }
+
     // WebSocket connection functions
     function connectWebSocket() {
         const wsUrl = wsUrlInput.value.trim() || 'ws://localhost:8080/ws';
+        const token = wsTokenInput ? wsTokenInput.value.trim() : '';
         
         if (isWebSocketConnected) {
             showError('Already connected to WebSocket');
@@ -213,7 +272,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         try {
-            websocket = new WebSocket(wsUrl);
+            // Add token to URL if provided
+            let finalUrl = wsUrl;
+            if (token) {
+                const separator = wsUrl.includes('?') ? '&' : '?';
+                finalUrl = wsUrl + separator + 'token=' + encodeURIComponent(token);
+            }
+
+            websocket = new WebSocket(finalUrl);
             
             websocket.onopen = function() {
                 isWebSocketConnected = true;
@@ -225,7 +291,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Show refresh controls for WebSocket mode
                 refreshControls.style.display = 'block';
                 
-                console.log('WebSocket connected to', wsUrl);
+                // Show WebSocket stats section
+                const websocketStatsSection = document.getElementById('websocketStatsSection');
+                if (websocketStatsSection) {
+                    websocketStatsSection.style.display = 'block';
+                }
+                
+                console.log('WebSocket connected to', finalUrl);
             };
 
             websocket.onmessage = function(event) {
@@ -246,6 +318,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         // Update WebSocket stats
                         updateWebSocketStats(data.stats);
+                        
+                        // Show notification for live updates
+                        showLiveUpdateNotification();
                     }
                 } catch (err) {
                     console.error('Error processing WebSocket message:', err);
@@ -258,6 +333,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 wsStatus.className = 'ws-disconnected';
                 connectWsBtn.style.display = 'inline-block';
                 disconnectWsBtn.style.display = 'none';
+                
+                // Hide WebSocket stats section
+                const websocketStatsSection = document.getElementById('websocketStatsSection');
+                if (websocketStatsSection) {
+                    websocketStatsSection.style.display = 'none';
+                }
+                
                 console.log('WebSocket disconnected');
             };
 
@@ -287,11 +369,38 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('highFindings').textContent = stats.high_count || '0';
             document.getElementById('avgScore').textContent = (stats.performance_score || 0).toFixed(1);
             
+            // Update WebSocket-specific stats
+            document.getElementById('criticalFindingsWs').textContent = stats.critical_count || '0';
+            document.getElementById('highFindingsWs').textContent = stats.high_count || '0';
+            document.getElementById('mediumFindingsWs').textContent = stats.medium_count || '0';
+            document.getElementById('lowFindingsWs').textContent = stats.low_count || '0';
+            document.getElementById('performanceScoreWs').textContent = stats.performance_score || '0';
+            
+            // Update client count
+            const clientCountEl = document.getElementById('clientCount');
+            if (clientCountEl) {
+                clientCountEl.textContent = stats.connected_clients || '0';
+            }
+            
             // Update last refresh time
             if (stats.last_updated) {
                 lastRefreshTime.textContent = 'Last updated: ' + stats.last_updated;
             }
         }
+    }
+    
+    function showLiveUpdateNotification() {
+        const notification = document.createElement('div');
+        notification.className = 'live-update-notification';
+        notification.textContent = '🔄 Live update received';
+        
+        document.body.appendChild(notification);
+        
+        // Remove notification after 3 seconds
+        setTimeout(function() {
+            notification.remove();
+        }, 3000);
+    }
     }
 
     function showError(message) {

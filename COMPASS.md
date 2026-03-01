@@ -93,9 +93,16 @@ Plugins are separate executables, discovered via manifests, and communicate with
    - Test coverage and validation
    - Performance optimization
 
-4. **Cool web page of results**
+4. **Cool web page of results with real-time monitoring**
 
 5. **Make more clear where each plugin-module lives**
+
+6. **Enhanced WebSocket Real-time Monitoring** ✅
+- **Live data streaming** with periodic auto-refresh
+- **Enhanced WebSocket stats dashboard** with client count and severity breakdown
+- **Real-time notifications** for data updates
+- **Improved WebSocket protocol** with comprehensive statistics
+- **Auto-refresh configuration** via CLI flags
 
 ## Decision Log
 
@@ -153,6 +160,21 @@ Plugins are separate executables, discovered via manifests, and communicate with
   - Added LLM command for standalone insights generation
 - **Testing**: Integration tests for full pipeline with LLM
 - **Result**: End-to-end LLM integration with optional insights generation
+
+### 2026-02-28 17:00: Enhanced WebSocket Real-time Monitoring
+- **Objective**: Implement live data streaming and enhanced real-time monitoring
+- **Changes**:
+  - Added `StartAutoRefresh()` method to WebSocket server for periodic updates
+  - Enhanced `BroadcastData()` with comprehensive statistics including client count
+  - Added `UpdateData()` method for dynamic data updates
+  - Implemented `GetClientCount()` for monitoring connected clients
+  - Enhanced WebSocket stats display in web viewer with severity breakdown
+  - Added real-time update notifications with slide-in animations
+  - Updated CLI with `--auto-refresh` flag for configurable update intervals
+  - Added comprehensive WebSocket server tests
+  - Enhanced WebSocket protocol with detailed performance metrics
+- **Testing**: Unit tests for WebSocket server, integration tests for real-time updates
+- **Result**: Production-ready real-time monitoring with live data streaming, enhanced UI, and comprehensive statistics
 
 ---
 

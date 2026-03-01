@@ -27,7 +27,7 @@ type WebSocketServer struct {
 }
 
 // NewWebSocketServer creates a new WebSocket server instance
-func NewWebSocketServer(port int, dataDir string) *WebSocketServer {
+func NewWebSocketServer(port int, dataDir string, enableAuth bool) *WebSocketServer {
 	mux := http.NewServeMux()
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
@@ -135,8 +135,10 @@ func (s *WebSocketServer) BroadcastData() {
 			"critical_count":      countSeverity(s.findings.Findings, "critical"),
 			"high_count":          countSeverity(s.findings.Findings, "high"),
 			"medium_count":        countSeverity(s.findings.Findings, "medium"),
+			"low_count":           countSeverity(s.findings.Findings, "low"),
 			"last_updated":        s.lastUpdate.Format(time.RFC3339),
 			"performance_score":   s.findings.Summary.OverallScore,
+			"connected_clients":   len(s.clients),
 		},
 	}
 
@@ -148,6 +150,46 @@ func (s *WebSocketServer) BroadcastData() {
 			delete(s.clients, client)
 		}
 	}
+}
+
+// StartAutoRefresh enables periodic data broadcasting
+func (s *WebSocketServer) StartAutoRefresh(interval time.Duration) {
+	go func() {
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+		
+		for {
+			select {
+			case <-ticker.C:
+				s.BroadcastData()
+			}
+		}
+	}()
+}
+
+// UpdateData updates the server's data and broadcasts to clients
+func (s *WebSocketServer) UpdateData(findings *model.FindingsBundle, insights *model.InsightsBundle) {
+	s.clientsMu.Lock()
+	
+	if findings != nil {
+		s.findings = findings
+	}
+	if insights != nil {
+		s.insights = insights
+	}
+	s.lastUpdate = time.Now()
+	
+	s.clientsMu.Unlock()
+	
+	// Broadcast updated data immediately (outside the lock to avoid deadlock)
+	s.BroadcastData()
+}
+
+// GetClientCount returns the number of connected clients
+func (s *WebSocketServer) GetClientCount() int {
+	s.clientsMu.Lock()
+	defer s.clientsMu.Unlock()
+	return len(s.clients)
 }
 
 // handleWebSocket handles WebSocket connections
@@ -197,6 +239,7 @@ func (s *WebSocketServer) handleHealth(w http.ResponseWriter, r *http.Request) {
 		"timestamp": time.Now().Unix(),
 		"clients":   len(s.clients),
 		"data_loaded": s.findings != nil,
+		"auth_enabled": false,
 	})
 }
 

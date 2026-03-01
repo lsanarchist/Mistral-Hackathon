@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 	"os/signal"
 	"syscall"
 
@@ -445,6 +446,7 @@ func runWebSocketCommand(pipeline *core.Pipeline) {
 	insightsPath := flagSet.String("insights", "", "Optional path to insights.json file")
 	port := flagSet.Int("port", 8080, "WebSocket server port")
 	dataDir := flagSet.String("data-dir", "./data", "Directory for data files")
+	autoRefresh := flagSet.Int("auto-refresh", 0, "Auto-refresh interval in seconds (0 to disable)")
 	flagSet.Parse(os.Args[2:])
 
 	if *findingsPath == "" {
@@ -453,7 +455,13 @@ func runWebSocketCommand(pipeline *core.Pipeline) {
 	}
 
 	// Configure WebSocket server
-	pipeline.WithWebSocketServer(*port, *dataDir)
+	pipeline.WithWebSocketServer(*port, *dataDir, false)
+
+	// Configure auto-refresh if enabled
+	if *autoRefresh > 0 {
+		pipeline.WithWebSocketAutoRefresh(time.Duration(*autoRefresh) * time.Second)
+		fmt.Printf("Auto-refresh enabled: %d seconds\n", *autoRefresh)
+	}
 
 	// Load data
 	err := pipeline.LoadWebSocketData(*findingsPath, *insightsPath)
@@ -466,6 +474,7 @@ func runWebSocketCommand(pipeline *core.Pipeline) {
 	fmt.Printf("Starting WebSocket server on port %d...\n", *port)
 	fmt.Printf("WebSocket endpoint: ws://localhost:%d/ws\n", *port)
 	fmt.Printf("Health check: http://localhost:%d/health\n", *port)
+	fmt.Printf("Authentication: DISABLED (basic WebSocket connections)\n")
 	fmt.Println("Press Ctrl+C to stop the server")
 
 	// Start server in goroutine

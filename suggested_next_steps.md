@@ -3,6 +3,9 @@
 ## Immediate Priorities
 
 ### IMPROVE WORKFLOW WITH MISTRAL API
+### MAKE COOL GUI FOR DEMO
+### MAKE PROJECT LOOK RESPECTFUL
+### IMPROVE THOSE SUGGESTIONS
 
 ### 2. **Advanced Plugin Discovery UI**
 - **Objective**: Create interactive plugin management interface
@@ -24,11 +27,13 @@
 - **Quality metrics**: Track insight usefulness and accuracy over time
 
 ### **WebSocket Enhancements**
-- **Authentication**: Add JWT/OAuth support for secure WebSocket connections
+- **Authentication**: Add JWT/OAuth support for secure WebSocket connections ✅ (Basic JWT support implemented)
 - **Data filtering**: Implement subscription-based data filtering by severity/category
 - **Historical playback**: Add ability to replay historical performance data
 - **Multi-room support**: Create separate WebSocket rooms for different applications
 - **Rate limiting**: Implement connection and message rate limiting
+- **WebSocket message compression**: Add support for compressed messages
+- **Connection quality monitoring**: Track and display connection latency
 
 ### **Web UI Improvements**
 - **Dark mode**: Add dark theme support

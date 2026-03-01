@@ -208,6 +208,116 @@ h1 {
     outline: none;
     border-color: var(--primary-color);
 }
+
+/* Authentication Controls */
+.auth-controls {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--medium-gray);
+}
+
+.auth-inputs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-inputs input {
+    padding: 8px 12px;
+    border: 1px solid var(--medium-gray);
+    border-radius: var(--border-radius);
+    flex: 1;
+    min-width: 150px;
+}
+
+.auth-inputs button {
+    padding: 8px 16px;
+}
+
+.auth-controls small {
+    display: block;
+    margin-top: 5px;
+    color: #666;
+    font-size: 0.85em;
+    text-align: center;
+}
+
+/* Live Update Notification */
+.live-update-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 12px 20px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    animation: slideIn 0.3s ease-out;
+    font-weight: 500;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* WebSocket Stats Enhancements */
+.websocket-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.stat-box {
+    background: var(--light-gray);
+    padding: 15px;
+    border-radius: var(--border-radius);
+    text-align: center;
+}
+
+.stat-box h4 {
+    font-size: 0.85rem;
+    color: var(--medium-gray);
+    margin: 0 0 8px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-box .value {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--dark-text);
+}
+
+.stat-box.critical .value {
+    color: var(--critical-color);
+}
+
+.stat-box.high .value {
+    color: var(--high-color);
+}
+
+.stat-box.medium .value {
+    color: var(--medium-color);
+}
+
+.stat-box.low .value {
+    color: var(--low-color);
+}
+
+.stat-box.clients .value {
+    color: var(--primary-color);
+}
     font-weight: 600;
     display: flex;
     align-items: center;

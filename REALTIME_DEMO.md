@@ -1,146 +1,221 @@
-# Real-time Monitoring Demo
+# Real-time Monitoring Demo Guide
 
-## Overview
+## Quick Start
 
-TriageProf now supports real-time monitoring with auto-refresh capability in the web viewer! This enables continuous performance analysis without manual file re-uploads.
-
-## Features
-
-### Auto-Refresh Controls
-- **Start Auto-Refresh**: Begin continuous monitoring with configurable intervals
-- **Stop Auto-Refresh**: Pause monitoring when needed
-- **Refresh Now**: Manual refresh at any time
-- **Interval Selection**: Choose refresh frequency (5s, 10s, 30s, 1m, 5m)
-
-### Visual Indicators
-- **Refresh Status**: Shows current monitoring state
-- **Last Refresh Time**: Displays timestamp of last data update
-- **Loading States**: Visual feedback during refresh operations
-
-## Usage
-
-### Basic Workflow
-
-1. **Load your analysis files**
-   ```bash
-   # Run your analysis first
-   bin/triageprof run --plugin go-pprof-http --target-url http://localhost:6060 --duration 30 --outdir results/
-   ```
-
-2. **Open the web viewer**
-   ```bash
-   # Serve the web directory
-   cd web && python3 -m http.server 8000
-   
-   # Open in browser
-   open http://localhost:8000
-   ```
-
-3. **Load your findings.json and insights.json files**
-   - Click "Load Results" button
-   - Select your findings.json and optionally insights.json
-   - Files will be processed and displayed
-
-4. **Start real-time monitoring**
-   - Click "Start Auto-Refresh" button
-   - Select your preferred refresh interval
-   - Watch as data updates automatically!
-
-### Monitoring Scenarios
-
-#### Production Monitoring
+### 1. Start the Demo Server
 ```bash
-# Continuous monitoring of production application
-while true; do
-    bin/triageprof run --plugin go-pprof-http --target-url http://production-app:6060 --duration 60 --outdir monitoring/
-    sleep 300  # Wait 5 minutes between collections
-    cp monitoring/findings.json monitoring/findings_latest.json
-    cp monitoring/insights.json monitoring/insights_latest.json
-done
+# Start the demo server in one terminal
+go run examples/demo-server/main.go &
+
+# Generate some load in another terminal
+./examples/load.sh &
 ```
 
-Then load `findings_latest.json` in the web viewer with auto-refresh enabled!
-
-#### Live Debugging
+### 2. Run TriageProf Analysis
 ```bash
-# Rapid monitoring during debugging session
-while true; do
-    bin/triageprof run --plugin go-pprof-http --target-url http://localhost:6060 --duration 10 --outdir debug/
-    sleep 15  # Quick refresh for debugging
-    cp debug/findings.json debug/findings_current.json
-    cp debug/insights.json debug/insights_current.json
-done
+# Run full analysis pipeline
+export MISTRAL_API_KEY="your-key-here"
+./bin/triageprof run --plugin go-pprof-http --target-url http://localhost:6060 --duration 30 --outdir demo-realtime --llm
 ```
 
-Load `findings_current.json` with 10-second auto-refresh for real-time debugging!
+### 3. Start WebSocket Server
+```bash
+# Start WebSocket server with the analysis results
+./bin/triageprof websocket --findings ./demo-realtime/findings.json --insights ./demo-realtime/insights.json --port 8080
+```
 
-## Screenshots
+### 4. Connect Web Viewer
+Open `web/index.html` in your browser and:
+1. Click "Connect" in the WebSocket controls
+2. Use default URL: `ws://localhost:8080/ws`
+3. Watch real-time performance updates!
 
-### Refresh Controls
-![Refresh Controls](https://via.placeholder.com/600x200/4a6fa5/ffffff?text=Refresh+Controls+Section)
+## Demo Script
 
-### Active Monitoring
-![Active Monitoring](https://via.placeholder.com/600x200/4ecdc4/ffffff?text=Auto-refresh+Active+with+Timestamp)
+### Full Demo Flow
+```bash
+#!/bin/bash
 
-### Loading State
-![Loading State](https://via.placeholder.com/600x200/ffe66d/ffffff?text=Refreshing+Data...)
+# Clean up any previous runs
+rm -rf demo-realtime
+pkill -f "demo-server" || true
+pkill -f "load.sh" || true
 
-## Technical Details
+# Start demo server
+echo "🚀 Starting demo server..."
+go run examples/demo-server/main.go > /dev/null 2>&1 &
+SERVER_PID=$!
+sleep 2
 
-### Implementation
-- **JavaScript**: Pure vanilla JS with no external dependencies
-- **State Management**: Clean separation of refresh state
-- **Error Handling**: Graceful degradation on failures
-- **Performance**: Minimal overhead during refresh operations
+# Generate load
+echo "📊 Generating load..."
+./examples/load.sh > /dev/null 2>&1 &
+LOAD_PID=$!
+sleep 5
 
-### Configuration Options
+# Run analysis
+echo "🔍 Running performance analysis..."
+export MISTRAL_API_KEY="your-key-here"
+./bin/triageprof run --plugin go-pprof-http --target-url http://localhost:6060 --duration 30 --outdir demo-realtime --llm
 
-| Interval | Use Case |
-|----------|----------|
-| 5 seconds | Rapid debugging, immediate feedback |
-| 10 seconds | Active monitoring, quick updates |
-| 30 seconds | Balanced monitoring, moderate load |
-| 1 minute | Production monitoring, reduced overhead |
-| 5 minutes | Long-term trends, minimal impact |
+# Start WebSocket server
+echo "🌐 Starting WebSocket server..."
+./bin/triageprof websocket --findings ./demo-realtime/findings.json --insights ./demo-realtime/insights.json --port 8080 > /dev/null 2>&1 &
+WS_PID=$!
+sleep 2
 
-### Browser Compatibility
-- ✅ Chrome 90+
-- ✅ Firefox 88+
-- ✅ Safari 14+
-- ✅ Edge 90+
+# Open web viewer
+echo "📱 Opening web viewer..."
+open web/index.html || xdg-open web/index.html
 
-## Benefits
+# Show demo info
+echo ""
+echo "🎯 Demo Ready!"
+echo "📊 WebSocket endpoint: ws://localhost:8080/ws"
+echo "🌡 Health check: http://localhost:8080/health"
+echo "📱 Web viewer: http://localhost:8080/web/index.html"
+echo ""
+echo "💡 Connect to WebSocket in the web viewer to see real-time updates!"
+echo ""
+echo "Press Ctrl+C to stop the demo..."
 
-### For Developers
-- **Immediate Feedback**: See performance changes instantly
-- **Continuous Monitoring**: Track optimizations in real-time
-- **Debugging Efficiency**: Rapid iteration during development
+# Wait for user to stop
+trap "kill $SERVER_PID $LOAD_PID $WS_PID 2>/dev/null; exit" INT
+wait
 
-### For Operations
-- **Production Visibility**: Monitor live applications continuously
-- **Trend Analysis**: Track performance over time
-- **Alerting**: Quickly identify performance regressions
+# Cleanup
+kill $SERVER_PID $LOAD_PID $WS_PID 2>/dev/null
+echo "🧹 Demo cleaned up"
+```
 
-### For Management
-- **Dashboard Views**: Always-up-to-date performance metrics
-- **Decision Support**: Real-time data for capacity planning
-- **ROI Tracking**: Monitor optimization impact immediately
+## WebSocket Features to Highlight
 
-## Future Enhancements
+### 1. Real-time Data Streaming
+- **Instant updates**: Performance metrics update immediately when data changes
+- **No refresh needed**: Data flows continuously without manual intervention
+- **Multi-client support**: Multiple team members can monitor simultaneously
 
-The real-time monitoring feature provides a foundation for future improvements:
+### 2. Connection Management
+- **Automatic reconnection**: Client reconnects automatically if connection drops
+- **Status indicators**: Visual feedback for connection state
+- **Error handling**: Graceful degradation on connection issues
 
-1. **Live API Integration**: Direct connection to running applications
-2. **WebSocket Support**: Push-based updates without polling
-3. **Alerting System**: Threshold-based notifications
-4. **Historical Trends**: Time-series data visualization
-5. **Multi-source Monitoring**: Aggregate data from multiple applications
+### 3. Performance Dashboard
+- **Live statistics**: Total findings, severity counts, performance scores
+- **Real-time charts**: Severity distribution and category breakdowns update dynamically
+- **AI insights**: LLM-generated analysis updates as new data arrives
 
-## Try It Now!
+### 4. Production Monitoring
+- **Health endpoint**: Monitor server status at `/health`
+- **Scalable architecture**: Handles multiple concurrent connections
+- **Low latency**: Updates delivered in milliseconds
 
-1. Build the latest version: `make build`
-2. Run your analysis: `bin/triageprof run --plugin go-pprof-http --target-url http://localhost:6060 --duration 30 --outdir results/`
-3. Open the web viewer: `cd web && python3 -m http.server 8000`
-4. Load your files and start auto-refresh!
+## Demo Talking Points
 
-Experience the power of real-time performance monitoring with TriageProf!
+### "Wow" Moments
+1. **Instant Connection**: "Watch how quickly the WebSocket connects and starts streaming data"
+2. **Live Updates**: "See the performance metrics update in real-time as the application runs"
+3. **Multi-client**: "Open multiple browser tabs - they all receive updates simultaneously"
+4. **No Refresh**: "Notice how the data updates without any page refreshes or manual intervention"
+
+### Key Benefits
+- **Production Ready**: "This isn't just a demo - it's production-grade monitoring"
+- **Collaborative**: "Entire teams can monitor performance together in real-time"
+- **Efficient**: "Low overhead means you can monitor continuously without performance impact"
+- **Extensible**: "The WebSocket API allows integration with any monitoring dashboard"
+
+### Technical Highlights
+- **WebSocket Protocol**: "Uses standard WebSocket protocol for maximum compatibility"
+- **JSON API**: "Clean JSON interface makes it easy to integrate with any client"
+- **Error Resilient**: "Automatic reconnection ensures monitoring continues even if there are network issues"
+- **Scalable**: "Designed to handle production workloads with multiple concurrent clients"
+
+## Troubleshooting
+
+### Common Issues
+
+**Port already in use**
+```bash
+# Find and kill process using port 8080
+lsof -i :8080
+kill -9 <PID>
+```
+
+**WebSocket connection fails**
+- Check server is running: `curl http://localhost:8080/health`
+- Verify WebSocket URL: `ws://localhost:8080/ws`
+- Check browser console for errors
+
+**No data appearing**
+- Ensure findings.json exists and is valid
+- Check WebSocket server logs for errors
+- Verify file paths in the websocket command
+
+## Advanced Demo Scenarios
+
+### 1. Multiple Applications
+```bash
+# Start multiple WebSocket servers on different ports
+./bin/triageprof websocket --findings app1-findings.json --port 8081 &
+./bin/triageprof websocket --findings app2-findings.json --port 8082 &
+
+# Connect different clients to different ports
+```
+
+### 2. Custom Dashboard Integration
+```javascript
+// Example: Connect WebSocket to custom dashboard
+const ws = new WebSocket('ws://localhost:8080/ws');
+
+ws.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+    
+    // Update custom dashboard elements
+    document.getElementById('critical-count').textContent = data.stats.critical_count;
+    document.getElementById('performance-score').textContent = data.stats.performance_score;
+    
+    // Trigger visual updates
+    updateCharts(data.findings);
+    updateAlerts(data.insights);
+};
+```
+
+### 3. Automated Monitoring Script
+```bash
+#!/bin/bash
+
+# Continuous monitoring script
+while true; do
+    # Run analysis
+    ./bin/triageprof run --plugin go-pprof-http --target-url http://localhost:6060 --duration 60 --outdir monitoring-latest
+    
+    # Restart WebSocket server with new data
+    pkill -f "websocket" || true
+    ./bin/triageprof websocket --findings ./monitoring-latest/findings.json --insights ./monitoring-latest/insights.json --port 8080 &
+    
+    # Wait before next cycle
+    sleep 300
+ done
+```
+
+## Success Metrics
+
+### Technical Validation
+- ✅ WebSocket server starts successfully
+- ✅ Health endpoint returns healthy status
+- ✅ Clients can connect and receive data
+- ✅ Real-time updates appear in web viewer
+- ✅ Multiple clients can connect simultaneously
+
+### Demo Experience
+- ✅ "Wow" reaction from audience
+- ✅ Clear understanding of real-time capabilities
+- ✅ Appreciation of production readiness
+- ✅ Interest in using for their own applications
+- ✅ Questions about integration and scaling
+
+## Conclusion
+
+This real-time monitoring demo showcases TriageProf's evolution from a batch analysis tool to a comprehensive performance monitoring platform. The WebSocket implementation provides the foundation for production-grade continuous analysis while maintaining the simplicity and ease-of-use that developers love.
+
+**Key Takeaway**: TriageProf now enables teams to monitor application performance in real-time, receive instant alerts about issues, and make data-driven optimization decisions faster than ever before.

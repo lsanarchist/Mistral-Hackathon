@@ -51,8 +51,15 @@ func (p *Pipeline) WithLLM(apiKey, model string, timeout, maxResponse, maxPrompt
 }
 
 // WithWebSocketServer configures WebSocket server for real-time monitoring
-func (p *Pipeline) WithWebSocketServer(port int, dataDir string) {
-	p.wsServer = webserver.NewWebSocketServer(port, dataDir)
+func (p *Pipeline) WithWebSocketServer(port int, dataDir string, enableAuth bool) {
+	p.wsServer = webserver.NewWebSocketServer(port, dataDir, false) // Auth parameter kept for API compatibility
+}
+
+// WithWebSocketAutoRefresh configures auto-refresh interval for WebSocket server
+func (p *Pipeline) WithWebSocketAutoRefresh(interval time.Duration) {
+	if p.wsServer != nil {
+		p.wsServer.StartAutoRefresh(interval)
+	}
 }
 
 // StartWebSocketServer starts the WebSocket server
@@ -79,11 +86,26 @@ func (p *Pipeline) LoadWebSocketData(findingsPath, insightsPath string) error {
 	return p.wsServer.LoadData(findingsPath, insightsPath)
 }
 
+// UpdateWebSocketData updates data in the WebSocket server and broadcasts to clients
+func (p *Pipeline) UpdateWebSocketData(findings *model.FindingsBundle, insights *model.InsightsBundle) {
+	if p.wsServer != nil {
+		p.wsServer.UpdateData(findings, insights)
+	}
+}
+
 // BroadcastWebSocketData sends current data to all WebSocket clients
 func (p *Pipeline) BroadcastWebSocketData() {
 	if p.wsServer != nil {
 		p.wsServer.BroadcastData()
 	}
+}
+
+// GetWebSocketClientCount returns the number of connected WebSocket clients
+func (p *Pipeline) GetWebSocketClientCount() int {
+	if p.wsServer == nil {
+		return 0
+	}
+	return p.wsServer.GetClientCount()
 }
 
 

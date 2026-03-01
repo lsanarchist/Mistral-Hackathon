@@ -50,6 +50,17 @@
                     <button id="connectWsBtn" class="btn success"><i class="fas fa-plug"></i> Connect</button>
                     <button id="disconnectWsBtn" class="btn danger" style="display: none;"><i class="fas fa-unlink"></i> Disconnect</button>
                 </div>
+                
+                <!-- Authentication Controls -->
+                <div class="auth-controls" id="authControls" style="display: none; margin-top: 10px;">
+                    <div class="auth-inputs">
+                        <input type="text" id="wsTokenInput" placeholder="JWT Token (optional)">
+                        <button id="generateTokenBtn" class="btn info"><i class="fas fa-key"></i> Generate Token</button>
+                    </div>
+                    <small style="color: #666; display: block; margin-top: 5px;">
+                        Note: Authentication is optional. If enabled on server, use the Generate Token button.
+                    </small>
+                </div>
             </div>
         </div>
         
@@ -130,6 +141,37 @@
                     <div class="stat-card">
                         <div class="stat-value" id="avgScore">0</div>
                         <div class="stat-label">Avg Score</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- WebSocket Stats Section (shown when WebSocket is connected) -->
+            <div class="websocket-stats-section" id="websocketStatsSection" style="display: none;">
+                <h2><i class="fas fa-satellite-dish"></i> Real-time Monitoring</h2>
+                <div class="websocket-stats" id="websocketStats">
+                    <div class="stat-box critical">
+                        <h4>Critical</h4>
+                        <div class="value" id="criticalFindingsWs">0</div>
+                    </div>
+                    <div class="stat-box high">
+                        <h4>High</h4>
+                        <div class="value" id="highFindingsWs">0</div>
+                    </div>
+                    <div class="stat-box medium">
+                        <h4>Medium</h4>
+                        <div class="value" id="mediumFindingsWs">0</div>
+                    </div>
+                    <div class="stat-box low">
+                        <h4>Low</h4>
+                        <div class="value" id="lowFindingsWs">0</div>
+                    </div>
+                    <div class="stat-box clients">
+                        <h4>Clients</h4>
+                        <div class="value" id="clientCount">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <h4>Score</h4>
+                        <div class="value" id="performanceScoreWs">0</div>
                     </div>
                 </div>
             </div>
