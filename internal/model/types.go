@@ -1,6 +1,72 @@
 package model
 
-import "time"
+import (
+	"errors"
+	"fmt"
+	"time"
+)
+
+// ErrorContext provides structured error information for better error handling
+type ErrorContext struct {
+	ErrorType    string `json:"errorType,omitempty"`
+	ErrorCode    string `json:"errorCode,omitempty"`
+	Message      string `json:"message"`
+	Details      string `json:"details,omitempty"`
+	Suggestion   string `json:"suggestion,omitempty"`
+	IsRecoverable bool   `json:"isRecoverable,omitempty"`
+}
+
+// Error types
+const (
+	ErrorTypeValidation   = "validation"
+	ErrorTypeIO           = "io"
+	ErrorTypeExecution    = "execution"
+	ErrorTypeNetwork      = "network"
+	ErrorTypeConfiguration = "configuration"
+	ErrorTypeDependency   = "dependency"
+)
+
+// Error codes
+const (
+	ErrorCodeGitCloneFailed       = "git_clone_failed"
+	ErrorCodeNoBenchmarksFound     = "no_benchmarks_found"
+	ErrorCodeBenchmarkExecution    = "benchmark_execution_failed"
+	ErrorCodeProfileCollection     = "profile_collection_failed"
+	ErrorCodeFileOperation         = "file_operation_failed"
+	ErrorCodeJSONParse             = "json_parse_failed"
+	ErrorCodeDependencyMissing     = "dependency_missing"
+	ErrorCodeInvalidConfiguration  = "invalid_configuration"
+	ErrorCodeNetworkRequestFailed  = "network_request_failed"
+	ErrorCodeTimeout               = "operation_timeout"
+)
+
+// NewErrorContext creates a new ErrorContext with the given parameters
+func NewErrorContext(errorType, errorCode, message, details, suggestion string, isRecoverable bool) ErrorContext {
+	return ErrorContext{
+		ErrorType:    errorType,
+		ErrorCode:    errorCode,
+		Message:      message,
+		Details:      details,
+		Suggestion:   suggestion,
+		IsRecoverable: isRecoverable,
+	}
+}
+
+// Error implements the error interface
+func (e ErrorContext) Error() string {
+	if e.Details == "" && e.Suggestion == "" {
+		return fmt.Sprintf("[%s:%s] %s", e.ErrorType, e.ErrorCode, e.Message)
+	}
+	return fmt.Sprintf("[%s:%s] %s\nDetails: %s\nSuggestion: %s", e.ErrorType, e.ErrorCode, e.Message, e.Details, e.Suggestion)
+}
+
+// Unwrap returns the underlying error if this wraps another error
+func (e ErrorContext) Unwrap() error {
+	if e.Details != "" {
+		return errors.New(e.Details)
+	}
+	return nil
+}
 
 type Target struct {
 	Type    string   `json:"type"`

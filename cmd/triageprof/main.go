@@ -782,6 +782,23 @@ func runDemoCommand(pipeline *core.Pipeline) {
 	manifest, err := pipeline.Demo(ctx, *repoURL, *ref, *outDir, *duration)
 	if err != nil {
 		fmt.Printf("❌ Demo failed: %v\n", err)
+
+		// Provide enhanced error information if available
+		if manifest != nil && manifest.ErrorContext != nil {
+			fmt.Printf("\n🔍 Error Details:\n")
+			fmt.Printf("   Type: [%s:%s]\n", manifest.ErrorContext.ErrorType, manifest.ErrorContext.ErrorCode)
+			fmt.Printf("   Message: %s\n", manifest.ErrorContext.Message)
+			if manifest.ErrorContext.Details != "" {
+				fmt.Printf("   Details: %s\n", manifest.ErrorContext.Details)
+			}
+			if manifest.ErrorContext.Suggestion != "" {
+				fmt.Printf("   💡 Suggestion: %s\n", manifest.ErrorContext.Suggestion)
+			}
+			if manifest.ErrorContext.IsRecoverable {
+				fmt.Printf("   🔄 This error is recoverable\n")
+			}
+		}
+		
 		os.Exit(1)
 	}
 
@@ -812,6 +829,23 @@ func runDemoCommand(pipeline *core.Pipeline) {
 		}
 	} else {
 		fmt.Printf("\n❌ Demo failed: %s\n", manifest.Error)
+		
+		// Provide enhanced error information if available
+		if manifest.ErrorContext != nil {
+			fmt.Printf("\n🔍 Error Details:\n")
+			fmt.Printf("   Type: [%s:%s]\n", manifest.ErrorContext.ErrorType, manifest.ErrorContext.ErrorCode)
+			fmt.Printf("   Message: %s\n", manifest.ErrorContext.Message)
+			if manifest.ErrorContext.Details != "" {
+				fmt.Printf("   Details: %s\n", manifest.ErrorContext.Details)
+			}
+			if manifest.ErrorContext.Suggestion != "" {
+				fmt.Printf("   💡 Suggestion: %s\n", manifest.ErrorContext.Suggestion)
+			}
+			if manifest.ErrorContext.IsRecoverable {
+				fmt.Printf("   🔄 This error is recoverable\n")
+			}
+		}
+		
 		os.Exit(1)
 	}
 }
@@ -842,6 +876,23 @@ func runDemoKitCommand(pipeline *core.Pipeline) {
 	manifest, err := pipeline.Demo(ctx, demoRepoPath, "", *outDir, *duration)
 	if err != nil {
 		fmt.Printf("❌ Demo kit failed: %v\n", err)
+		
+		// Provide enhanced error information if available
+		if manifest != nil && manifest.ErrorContext != nil {
+			fmt.Printf("\n🔍 Error Details:\n")
+			fmt.Printf("   Type: [%s:%s]\n", manifest.ErrorContext.ErrorType, manifest.ErrorContext.ErrorCode)
+			fmt.Printf("   Message: %s\n", manifest.ErrorContext.Message)
+			if manifest.ErrorContext.Details != "" {
+				fmt.Printf("   Details: %s\n", manifest.ErrorContext.Details)
+			}
+			if manifest.ErrorContext.Suggestion != "" {
+				fmt.Printf("   💡 Suggestion: %s\n", manifest.ErrorContext.Suggestion)
+			}
+			if manifest.ErrorContext.IsRecoverable {
+				fmt.Printf("   🔄 This error is recoverable\n")
+			}
+		}
+		
 		os.Exit(1)
 	}
 
@@ -886,6 +937,23 @@ func runDemoKitCommand(pipeline *core.Pipeline) {
 		fmt.Println("  • Explore WebSocket dashboard: triageprof websocket --findings findings.json")
 	} else {
 		fmt.Printf("\n❌ Demo Kit failed: %s\n", manifest.Error)
+		
+		// Provide enhanced error information if available
+		if manifest.ErrorContext != nil {
+			fmt.Printf("\n🔍 Error Details:\n")
+			fmt.Printf("   Type: [%s:%s]\n", manifest.ErrorContext.ErrorType, manifest.ErrorContext.ErrorCode)
+			fmt.Printf("   Message: %s\n", manifest.ErrorContext.Message)
+			if manifest.ErrorContext.Details != "" {
+				fmt.Printf("   Details: %s\n", manifest.ErrorContext.Details)
+			}
+			if manifest.ErrorContext.Suggestion != "" {
+				fmt.Printf("   💡 Suggestion: %s\n", manifest.ErrorContext.Suggestion)
+			}
+			if manifest.ErrorContext.IsRecoverable {
+				fmt.Printf("   🔄 This error is recoverable\n")
+			}
+		}
+		
 		os.Exit(1)
 	}
 }
