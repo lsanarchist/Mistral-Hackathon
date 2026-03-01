@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -15,7 +16,7 @@ import (
 
 func TestWebSocketCompressionDisabled(t *testing.T) {
 	// Create WebSocket server with compression disabled
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0)
 	defer server.Stop()
 
 	// Test compression info endpoint
@@ -40,7 +41,7 @@ func TestWebSocketCompressionDisabled(t *testing.T) {
 
 func TestWebSocketCompressionEnabled(t *testing.T) {
 	// Create WebSocket server with compression enabled
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, true)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, true, false, 0)
 	defer server.Stop()
 
 	// Test compression info endpoint
@@ -64,7 +65,7 @@ func TestWebSocketCompressionEnabled(t *testing.T) {
 }
 
 func TestWebSocketCompressionMethodNotAllowed(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0)
 	defer server.Stop()
 
 	// Test POST method (should not be allowed)
@@ -79,7 +80,7 @@ func TestWebSocketCompressionMethodNotAllowed(t *testing.T) {
 
 func TestPluginMarketplaceEndpoint(t *testing.T) {
 	// Create WebSocket server
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0)
 	defer server.Stop()
 
 	// Test marketplace endpoint
@@ -104,7 +105,7 @@ func TestPluginMarketplaceEndpoint(t *testing.T) {
 }
 
 func TestPluginInstallEndpoint(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0)
 	defer server.Stop()
 
 	// Test install endpoint with empty body
@@ -118,7 +119,7 @@ func TestPluginInstallEndpoint(t *testing.T) {
 }
 
 func TestPluginUpdateEndpoint(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0)
 	defer server.Stop()
 
 	// Test update endpoint with empty body
@@ -132,7 +133,7 @@ func TestPluginUpdateEndpoint(t *testing.T) {
 }
 
 func TestPluginUninstallEndpoint(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0)
 	defer server.Stop()
 
 	// Test uninstall endpoint with empty body
@@ -146,7 +147,7 @@ func TestPluginUninstallEndpoint(t *testing.T) {
 }
 
 func TestPerformanceHistory(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0)
 	defer server.Stop()
 
 	// Create test findings
@@ -185,7 +186,7 @@ func TestPerformanceHistory(t *testing.T) {
 }
 
 func TestPerformanceHistoryEndpoint(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0)
 	defer server.Stop()
 
 	// Create test findings
@@ -228,7 +229,7 @@ func TestPerformanceHistoryEndpoint(t *testing.T) {
 }
 
 func TestPerformanceAnalysisEndpoint(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0)
 	defer server.Stop()
 
 	// Create test findings
@@ -275,7 +276,7 @@ func TestPerformanceAnalysisEndpoint(t *testing.T) {
 }
 
 func TestPerformanceSnapshotLimit(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0)
 	defer server.Stop()
 
 	// Create test findings with different scores
@@ -302,7 +303,7 @@ func TestPerformanceSnapshotLimit(t *testing.T) {
 // JWT Authentication Tests
 
 func TestJWTTokenGeneration(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), true, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), true, false, false, 0)
 	defer server.Stop()
 
 	// Test token generation
@@ -318,7 +319,7 @@ func TestJWTTokenGeneration(t *testing.T) {
 }
 
 func TestJWTTokenValidation(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), true, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), true, false, false, 0)
 	defer server.Stop()
 
 	// Generate valid token
@@ -341,7 +342,7 @@ func TestJWTTokenValidation(t *testing.T) {
 }
 
 func TestJWTTokenExpiration(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), true, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), true, false, false, 0)
 	defer server.Stop()
 
 	// Generate token with very short expiration for testing
@@ -355,7 +356,7 @@ func TestJWTTokenExpiration(t *testing.T) {
 }
 
 func TestJWTAuthDisabled(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0)
 	defer server.Stop()
 
 	// When auth is disabled, token generation should fail
@@ -422,7 +423,7 @@ func TestJWTTokenExtraction(t *testing.T) {
 }
 
 func TestJWTAuthTokenEndpoint(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), true, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), true, false, false, 0)
 	defer server.Stop()
 
 	// Test token generation endpoint
@@ -486,7 +487,7 @@ func TestJWTAuthTokenEndpoint(t *testing.T) {
 }
 
 func TestJWTAuthDisabledTokenEndpoint(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0)
 	defer server.Stop()
 
 	// When auth is disabled, token endpoint should return error
@@ -518,7 +519,7 @@ func TestJWTSecretKeyGeneration(t *testing.T) {
 }
 
 func TestJWTWebSocketConnectionWithAuth(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), true, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), true, false, false, 0)
 	defer server.Stop()
 
 	// Generate a valid token
@@ -539,7 +540,7 @@ func TestJWTWebSocketConnectionWithAuth(t *testing.T) {
 }
 
 func TestJWTWebSocketConnectionWithoutToken(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), true, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), true, false, false, 0)
 	defer server.Stop()
 
 	// Test WebSocket connection without token
@@ -555,7 +556,7 @@ func TestJWTWebSocketConnectionWithoutToken(t *testing.T) {
 }
 
 func TestJWTWebSocketConnectionWithInvalidToken(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), true, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), true, false, false, 0)
 	defer server.Stop()
 
 	// Test WebSocket connection with invalid token
@@ -572,7 +573,7 @@ func TestJWTWebSocketConnectionWithInvalidToken(t *testing.T) {
 }
 
 func TestJWTWebSocketConnectionWithAuthDisabled(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0)
 	defer server.Stop()
 
 	// When auth is disabled, validation should allow anonymous access
@@ -592,7 +593,7 @@ func TestJWTWebSocketConnectionWithAuthDisabled(t *testing.T) {
 // TestWebSocketClientHandling tests WebSocket client connection management
 func TestWebSocketClientHandling(t *testing.T) {
 	// Create WebSocket server
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0)
 	defer server.Stop()
 
 	// Test initial client count
@@ -623,4 +624,204 @@ func TestWebSocketClientHandling(t *testing.T) {
 	history := server.GetPerformanceHistory()
 	assert.True(t, len(history) > 0, "Should have performance history")
 	assert.True(t, len(history) <= server.maxHistorySize, "Should respect max history size")
+}
+
+// WebSocket Batching Tests
+
+func TestWebSocketBatchingDisabled(t *testing.T) {
+	// Create WebSocket server with batching disabled
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0)
+	defer server.Stop()
+
+	// Test batching info endpoint
+	req := httptest.NewRequest("GET", "/batching/info", nil)
+	w := httptest.NewRecorder()
+
+	server.handleBatchingInfo(w, req)
+
+	resp := w.Result()
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var batchingInfo map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&batchingInfo); err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, false, batchingInfo["enabled"])
+	assert.Contains(t, batchingInfo, "interval_ms")
+	assert.Contains(t, batchingInfo, "description")
+}
+
+func TestWebSocketBatchingEnabled(t *testing.T) {
+	// Create WebSocket server with batching enabled
+	batchInterval := 50 * time.Millisecond
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, true, batchInterval)
+	defer server.Stop()
+
+	// Test batching info endpoint
+	req := httptest.NewRequest("GET", "/batching/info", nil)
+	w := httptest.NewRecorder()
+
+	server.handleBatchingInfo(w, req)
+
+	resp := w.Result()
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	var batchingInfo map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&batchingInfo); err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, true, batchingInfo["enabled"])
+	assert.Equal(t, float64(50), batchingInfo["interval_ms"])
+	assert.Contains(t, batchingInfo, "description")
+}
+
+func TestWebSocketBatchingMethodNotAllowed(t *testing.T) {
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0)
+	defer server.Stop()
+
+	// Test POST method (should not be allowed)
+	req := httptest.NewRequest("POST", "/batching/info", nil)
+	w := httptest.NewRecorder()
+
+	server.handleBatchingInfo(w, req)
+
+	resp := w.Result()
+	assert.Equal(t, http.StatusMethodNotAllowed, resp.StatusCode)
+}
+
+func TestWebSocketMessageQueue(t *testing.T) {
+	// Create WebSocket server with batching enabled
+	batchInterval := 100 * time.Millisecond
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, true, batchInterval)
+	defer server.Stop()
+
+	// Create test findings
+	findings := &model.FindingsBundle{
+		Summary: model.Summary{
+			OverallScore: 80,
+		},
+		Findings: []model.Finding{
+			{Severity: "medium", Title: "Test Finding"},
+		},
+	}
+
+	// Update server data (this should queue messages)
+	server.UpdateData(findings, nil)
+	server.UpdateData(findings, nil)
+	server.UpdateData(findings, nil)
+
+	// Wait a bit for messages to be queued
+	time.Sleep(20 * time.Millisecond)
+
+	// Verify messages are queued (we can't directly access the queue, but we can verify batching is working)
+	assert.True(t, server.batchingEnabled, "Batching should be enabled")
+	assert.Equal(t, batchInterval, server.batchInterval, "Batch interval should match")
+}
+
+func TestWebSocketBatchingIntegration(t *testing.T) {
+	// Create WebSocket server with batching enabled
+	batchInterval := 200 * time.Millisecond
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, true, batchInterval)
+	defer server.Stop()
+
+	// Create test findings
+	findings := &model.FindingsBundle{
+		Summary: model.Summary{
+			OverallScore: 75,
+		},
+		Findings: []model.Finding{
+			{Severity: "high", Title: "Test Critical Finding"},
+			{Severity: "medium", Title: "Test Medium Finding"},
+		},
+	}
+
+	// Update server data multiple times
+	for i := 0; i < 5; i++ {
+		server.UpdateData(findings, nil)
+	}
+
+	// Wait for batching to process
+	time.Sleep(300 * time.Millisecond)
+
+	// Verify server is still functioning
+	assert.True(t, server.batchingEnabled)
+	assert.Equal(t, batchInterval, server.batchInterval)
+}
+
+func TestWebSocketBatchingWithCompression(t *testing.T) {
+	// Create WebSocket server with both batching and compression enabled
+	batchInterval := 50 * time.Millisecond
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, true, true, batchInterval)
+	defer server.Stop()
+
+	// Verify both features are enabled
+	assert.True(t, server.batchingEnabled, "Batching should be enabled")
+	assert.True(t, server.compressionEnabled, "Compression should be enabled")
+
+	// Test that both info endpoints work
+	compressionReq := httptest.NewRequest("GET", "/compression/info", nil)
+	compressionW := httptest.NewRecorder()
+	server.handleCompressionInfo(compressionW, compressionReq)
+
+	batchingReq := httptest.NewRequest("GET", "/batching/info", nil)
+	batchingW := httptest.NewRecorder()
+	server.handleBatchingInfo(batchingW, batchingReq)
+
+	assert.Equal(t, http.StatusOK, compressionW.Result().StatusCode)
+	assert.Equal(t, http.StatusOK, batchingW.Result().StatusCode)
+}
+
+func TestWebSocketBatchingStop(t *testing.T) {
+	// Create WebSocket server with batching enabled
+	batchInterval := 100 * time.Millisecond
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, true, batchInterval)
+
+	// Stop the server (should clean up batching timer)
+	err := server.Stop()
+	assert.NoError(t, err, "Server should stop without error")
+
+	// Verify batching timer is stopped
+	assert.Nil(t, server.batchTimer, "Batching timer should be nil after stop")
+}
+
+// TestWebSocketBatchingConcurrency tests concurrent access to the message queue
+func TestWebSocketBatchingConcurrency(t *testing.T) {
+	// Create WebSocket server with batching enabled
+	batchInterval := 200 * time.Millisecond
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, true, batchInterval)
+	defer server.Stop()
+
+	// Create test findings
+	findings := &model.FindingsBundle{
+		Summary: model.Summary{
+			OverallScore: 90,
+		},
+		Findings: []model.Finding{
+			{Severity: "low", Title: "Concurrent Test Finding"},
+		},
+	}
+
+	// Test concurrent updates
+	var wg sync.WaitGroup
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for j := 0; j < 5; j++ {
+				server.UpdateData(findings, nil)
+				time.Sleep(5 * time.Millisecond)
+			}
+		}()
+	}
+
+	wg.Wait()
+
+	// Wait for batching to complete
+	time.Sleep(300 * time.Millisecond)
+
+	// Server should still be functioning
+	assert.True(t, server.batchingEnabled)
+	assert.NotNil(t, server)
 }

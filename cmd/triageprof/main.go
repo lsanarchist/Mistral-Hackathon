@@ -27,11 +27,11 @@ func main() {
 		fmt.Println("  analyze --in <bundle.json> --out <findings.json> --top <N> [--callgraph --callgraph-depth <depth>] [--regression --baseline <path>]")
 		fmt.Println("  report --in <findings.json> --out <report.md|json> --output markdown|json")
 		fmt.Println("  llm --bundle <bundle.json> --findings <findings.json> --out <insights.json> [--provider <provider>] [--model <model>] [--timeout <sec>] [--dry-run]")
-		fmt.Println("  run --plugin <name> --target-url <url> --duration <sec> --outdir <dir> [--websocket-port <port>] [--websocket-auth] [--websocket-compression]")
-		fmt.Println("  run --plugin <name> --target-type python --target-command <cmd> --duration <sec> --outdir <dir> [--websocket-port <port>] [--websocket-auth] [--websocket-compression]")
-		fmt.Println("  run --plugin <name> --target-type node --target-command <cmd> --duration <sec> --outdir <dir> [--websocket-port <port>] [--websocket-auth] [--websocket-compression]")
+		fmt.Println("  run --plugin <name> --target-url <url> --duration <sec> --outdir <dir> [--websocket-port <port>] [--websocket-auth] [--websocket-compression] [--websocket-batching] [--websocket-batch-interval <ms>]")
+		fmt.Println("  run --plugin <name> --target-type python --target-command <cmd> --duration <sec> --outdir <dir> [--websocket-port <port>] [--websocket-auth] [--websocket-compression] [--websocket-batching] [--websocket-batch-interval <ms>]")
+		fmt.Println("  run --plugin <name> --target-type node --target-command <cmd> --duration <sec> --outdir <dir> [--websocket-port <port>] [--websocket-auth] [--websocket-compression] [--websocket-batching] [--websocket-batch-interval <ms>]")
 		fmt.Println("  web --in <findings.json> --outdir <dir> [--insights <insights.json>]")
-		fmt.Println("  websocket --findings <findings.json> [--insights <insights.json>] [--port <port>] [--data-dir <dir>] [--compression]")
+		fmt.Println("  websocket --findings <findings.json> [--insights <insights.json>] [--port <port>] [--data-dir <dir>] [--compression] [--batching] [--batch-interval <ms>]")
 		fmt.Println("\nLLM Options for 'run' command:")
 		fmt.Println("  --llm (enable LLM insights)")
 		fmt.Println("  --llm-provider <provider> (mistral, openai - default: mistral)")
@@ -280,6 +280,8 @@ func runRunCommand(pipeline *core.Pipeline) {
 	websocketPort := flagSet.Int("websocket-port", 0, "WebSocket server port (0 to disable)")
 	websocketAuth := flagSet.Bool("websocket-auth", false, "Enable WebSocket authentication")
 	websocketCompression := flagSet.Bool("websocket-compression", false, "Enable WebSocket message compression")
+	websocketBatching := flagSet.Bool("websocket-batching", false, "Enable WebSocket message batching")
+	websocketBatchInterval := flagSet.Int("websocket-batch-interval", 100, "WebSocket batch interval in milliseconds")
 	flagSet.Parse(os.Args[2:])
 
 	if *pluginName == "" || *outDir == "" {
@@ -345,7 +347,8 @@ func runRunCommand(pipeline *core.Pipeline) {
 
 	// Configure WebSocket server if port is specified
 	if *websocketPort > 0 {
-		pipeline.WithWebSocketServer(*websocketPort, *outDir, *websocketAuth, *websocketCompression)
+		batchInterval := time.Duration(*websocketBatchInterval) * time.Millisecond
+		pipeline.WithWebSocketServer(*websocketPort, *outDir, *websocketAuth, *websocketCompression, *websocketBatching, batchInterval)
 		fmt.Printf("WebSocket server enabled on port %d\n", *websocketPort)
 		if *websocketCompression {
 			fmt.Println("WebSocket compression: ENABLED")
@@ -356,6 +359,11 @@ func runRunCommand(pipeline *core.Pipeline) {
 			fmt.Println("WebSocket authentication: ENABLED")
 		} else {
 			fmt.Println("WebSocket authentication: DISABLED")
+		}
+		if *websocketBatching {
+			fmt.Printf("WebSocket batching: ENABLED (interval: %dms)\n", *websocketBatchInterval)
+		} else {
+			fmt.Println("WebSocket batching: DISABLED")
 		}
 	}
 
@@ -531,6 +539,8 @@ func runWebSocketCommand(pipeline *core.Pipeline) {
 	dataDir := flagSet.String("data-dir", "./data", "Directory for data files")
 	autoRefresh := flagSet.Int("auto-refresh", 0, "Auto-refresh interval in seconds (0 to disable)")
 	compression := flagSet.Bool("compression", false, "Enable WebSocket message compression")
+	batching := flagSet.Bool("batching", false, "Enable WebSocket message batching")
+	batchInterval := flagSet.Int("batch-interval", 100, "WebSocket batch interval in milliseconds")
 	flagSet.Parse(os.Args[2:])
 
 	if *findingsPath == "" {
@@ -539,7 +549,8 @@ func runWebSocketCommand(pipeline *core.Pipeline) {
 	}
 
 	// Configure WebSocket server
-	pipeline.WithWebSocketServer(*port, *dataDir, false, *compression)
+	batchIntervalDuration := time.Duration(*batchInterval) * time.Millisecond
+	pipeline.WithWebSocketServer(*port, *dataDir, false, *compression, *batching, batchIntervalDuration)
 
 	// Configure auto-refresh if enabled
 	if *autoRefresh > 0 {
@@ -563,6 +574,11 @@ func runWebSocketCommand(pipeline *core.Pipeline) {
 		fmt.Printf("Compression: ENABLED (WebSocket messages will be compressed)\n")
 	} else {
 		fmt.Printf("Compression: DISABLED (WebSocket messages will be sent uncompressed)\n")
+	}
+	if batching != nil && *batching {
+		fmt.Printf("Batching: ENABLED (interval: %dms)\n", *batchInterval)
+	} else {
+		fmt.Printf("Batching: DISABLED (messages sent immediately)\n")
 	}
 	fmt.Println("Press Ctrl+C to stop the server")
 

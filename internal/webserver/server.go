@@ -43,6 +43,11 @@ type WebSocketServer struct {
 	performanceHistory []PerformanceSnapshot
 	historyMu       sync.Mutex
 	maxHistorySize  int
+	batchingEnabled bool
+	batchInterval   time.Duration
+	messageQueue    []interface{}
+	queueMu         sync.Mutex
+	batchTimer      *time.Timer
 }
 
 // PerformanceSnapshot represents a historical performance data point
@@ -72,7 +77,7 @@ type PluginHealth struct {
 }
 
 // NewWebSocketServer creates a new WebSocket server instance
-func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth bool, enableCompression bool) *WebSocketServer {
+func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth bool, enableCompression bool, enableBatching bool, batchInterval time.Duration) *WebSocketServer {
 	mux := http.NewServeMux()
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
@@ -119,6 +124,14 @@ func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth b
 		compressionThreshold: compressionThreshold,
 		performanceHistory: make([]PerformanceSnapshot, 0),
 		maxHistorySize:  100, // Keep last 100 snapshots
+		batchingEnabled:  enableBatching,
+		batchInterval:   batchInterval,
+		messageQueue:    make([]interface{}, 0),
+	}
+
+	// Initialize batching if enabled
+	if enableBatching && batchInterval > 0 {
+		s.startBatching()
 	}
 
 	// Set up routes
@@ -136,6 +149,7 @@ func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth b
 	mux.HandleFunc("/performance/analysis", s.handlePerformanceAnalysis)
 	mux.HandleFunc("/plugins/performance", s.handlePluginPerformance)
 	mux.HandleFunc("/compression/info", s.handleCompressionInfo)
+	mux.HandleFunc("/batching/info", s.handleBatchingInfo)
 	
 	// Add auth endpoints if enabled
 	if enableAuth {
@@ -148,16 +162,96 @@ func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth b
 	return s
 }
 
-// Start starts the WebSocket server
-func (s *WebSocketServer) Start() error {
-	log.Printf("Starting WebSocket server on %s", s.server.Addr)
-	return s.server.ListenAndServe()
+// startBatching initializes the batching timer
+func (s *WebSocketServer) startBatching() {
+	s.queueMu.Lock()
+	defer s.queueMu.Unlock()
+
+	if s.batchTimer != nil {
+		s.batchTimer.Stop()
+	}
+
+	if s.batchingEnabled && s.batchInterval > 0 {
+		s.batchTimer = time.AfterFunc(s.batchInterval, func() {
+			s.flushMessageQueue()
+			s.startBatching() // Restart the timer for next batch
+		})
+	}
+}
+
+// flushMessageQueue sends all queued messages to clients
+func (s *WebSocketServer) flushMessageQueue() {
+	s.queueMu.Lock()
+	if len(s.messageQueue) == 0 {
+		s.queueMu.Unlock()
+		return
+	}
+
+	// Create a copy of the queue
+	messages := make([]interface{}, len(s.messageQueue))
+	copy(messages, s.messageQueue)
+	s.messageQueue = s.messageQueue[:0] // Clear the queue
+	s.queueMu.Unlock()
+
+	// Send batched message
+	s.sendBatchedMessage(messages)
+}
+
+// sendBatchedMessage sends a batch of messages to all clients
+func (s *WebSocketServer) sendBatchedMessage(messages []interface{}) {
+	s.clientsMu.Lock()
+	defer s.clientsMu.Unlock()
+
+	if len(s.clients) == 0 {
+		return
+	}
+
+	// Create batched payload
+	batchedPayload := map[string]interface{}{
+		"type":      "batched_update",
+		"timestamp": time.Now().Unix(),
+		"batch_size": len(messages),
+		"messages":  messages,
+		"stats": map[string]interface{}{
+			"batching_enabled": s.batchingEnabled,
+			"batch_interval_ms": s.batchInterval.Milliseconds(),
+			"connected_clients": len(s.clients),
+		},
+	}
+
+	// Send to all clients
+	for client := range s.clients {
+		if err := client.WriteJSON(batchedPayload); err != nil {
+			log.Printf("Error sending batched data to client: %v", err)
+			client.Close()
+			delete(s.clients, client)
+		}
+	}
+}
+
+// queueMessage adds a message to the batching queue
+func (s *WebSocketServer) queueMessage(message interface{}) {
+	s.queueMu.Lock()
+	defer s.queueMu.Unlock()
+
+	s.messageQueue = append(s.messageQueue, message)
 }
 
 // Stop stops the WebSocket server
 func (s *WebSocketServer) Stop() error {
 	log.Println("Stopping WebSocket server...")
-	
+
+	// Stop batching timer
+	s.queueMu.Lock()
+	if s.batchTimer != nil {
+		s.batchTimer.Stop()
+		s.batchTimer = nil
+	}
+	s.queueMu.Unlock()
+
+	// Flush any remaining messages
+	s.flushMessageQueue()
+
 	// Close all client connections
 	s.clientsMu.Lock()
 	for client := range s.clients {
@@ -170,6 +264,12 @@ func (s *WebSocketServer) Stop() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	return s.server.Shutdown(ctx)
+}
+
+// Start starts the WebSocket server
+func (s *WebSocketServer) Start() error {
+	log.Printf("Starting WebSocket server on %s", s.server.Addr)
+	return s.server.ListenAndServe()
 }
 
 // LoadData loads findings and insights from files
@@ -231,17 +331,23 @@ func (s *WebSocketServer) BroadcastData() {
 			"connected_clients":   len(s.clients),
 			"auth_enabled":        s.authEnabled,
 			"compression":         s.GetCompressionInfo(),
+			"batching_enabled":    s.batchingEnabled,
 		},
 		"history": s.getPerformanceHistory(),
 		"pluginPerformance": s.getPluginPerformanceSummary(),
 	}
 
-	// Send to all clients
-	for client := range s.clients {
-		if err := client.WriteJSON(payload); err != nil {
-			log.Printf("Error sending data to client: %v", err)
-			client.Close()
-			delete(s.clients, client)
+	// Use batching if enabled, otherwise send immediately
+	if s.batchingEnabled && s.batchInterval > 0 {
+		s.queueMessage(payload)
+	} else {
+		// Send to all clients immediately
+		for client := range s.clients {
+			if err := client.WriteJSON(payload); err != nil {
+				log.Printf("Error sending data to client: %v", err)
+				client.Close()
+				delete(s.clients, client)
+			}
 		}
 	}
 }
@@ -415,6 +521,15 @@ func (s *WebSocketServer) GetCompressionInfo() map[string]interface{} {
 		"level":            s.compressionLevel,
 		"threshold":        s.compressionThreshold,
 		"description":      "WebSocket message compression reduces bandwidth usage for large performance data messages",
+	}
+}
+
+// GetBatchingInfo returns batching configuration information
+func (s *WebSocketServer) GetBatchingInfo() map[string]interface{} {
+	return map[string]interface{}{
+		"enabled":           s.batchingEnabled,
+		"interval_ms":      s.batchInterval.Milliseconds(),
+		"description":      "WebSocket message batching reduces message frequency by combining multiple updates into batches",
 	}
 }
 
@@ -1036,6 +1151,18 @@ func (s *WebSocketServer) handleCompressionInfo(w http.ResponseWriter, r *http.R
 	compressionInfo := s.GetCompressionInfo()
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(compressionInfo)
+}
+
+// handleBatchingInfo handles batching information requests
+func (s *WebSocketServer) handleBatchingInfo(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	batchingInfo := s.GetBatchingInfo()
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(batchingInfo)
 }
 
 // handlePerformanceHistory handles performance history requests

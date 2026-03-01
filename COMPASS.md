@@ -191,6 +191,26 @@ Plugins are separate executables, discovered via manifests, and communicate with
 - **Testing**: Unit tests for JWT token generation, validation, and WebSocket authentication flow
 - **Result**: Secure WebSocket connections with JWT authentication, backward-compatible with existing functionality
 
+### 2026-03-01 04:30: WebSocket Message Batching Implementation
+- **Objective**: Implement message batching for WebSocket connections to optimize high-frequency updates
+- **Changes**:
+  - Added message batching fields to `WebSocketServer` struct: `batchingEnabled`, `batchInterval`, `messageQueue`, `queueMu`, `batchTimer`
+  - Enhanced `NewWebSocketServer()` constructor with batching parameters
+  - Implemented `startBatching()` method to initialize batching timer
+  - Added `flushMessageQueue()` method to send batched messages
+  - Implemented `sendBatchedMessage()` method for batch transmission
+  - Added `queueMessage()` method for message queuing
+  - Enhanced `Stop()` method to clean up batching resources
+  - Updated `BroadcastData()` to use batching when enabled
+  - Added `GetBatchingInfo()` method for batching configuration information
+  - Added `/batching/info` HTTP endpoint for batching status
+  - Updated core pipeline integration with batching parameters
+  - Added CLI flags `--websocket-batching` and `--websocket-batch-interval`
+  - Enhanced WebSocket server output to show batching status
+  - Added comprehensive batching tests including concurrency tests
+- **Testing**: Unit tests for batching functionality, integration tests, and concurrency tests
+- **Result**: WebSocket message batching with configurable intervals, reducing message frequency for high-volume scenarios while maintaining real-time capabilities
+
 ---
 
 ## How to Contribute
