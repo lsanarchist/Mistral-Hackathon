@@ -552,6 +552,7 @@ func runWebSocketCommand(pipeline *core.Pipeline) {
 	compression := flagSet.Bool("compression", false, "Enable WebSocket message compression")
 	batching := flagSet.Bool("batching", false, "Enable WebSocket message batching")
 	batchInterval := flagSet.Int("batch-interval", 100, "WebSocket batch interval in milliseconds")
+	connectionQuality := flagSet.Bool("connection-quality", false, "Enable WebSocket connection quality monitoring")
 	flagSet.Parse(os.Args[2:])
 
 	if *findingsPath == "" {
@@ -562,6 +563,7 @@ func runWebSocketCommand(pipeline *core.Pipeline) {
 	// Configure WebSocket server
 	batchIntervalDuration := time.Duration(*batchInterval) * time.Millisecond
 	pipeline.WithWebSocketServer(*port, *dataDir, false, *compression, *batching, batchIntervalDuration)
+	pipeline.WithWebSocketConnectionQuality(*connectionQuality)
 
 	// Configure auto-refresh if enabled
 	if *autoRefresh > 0 {
