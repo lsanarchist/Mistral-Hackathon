@@ -32,8 +32,13 @@ func (a *Analyzer) Analyze(bundle model.ProfileBundle, topN int) (*model.Finding
 
 // AnalyzeWithDeterministicRules applies deterministic analysis rules
 func (a *Analyzer) AnalyzeWithDeterministicRules(bundle model.ProfileBundle, topN int) (*model.FindingsBundle, error) {
+	return a.AnalyzeWithDeterministicRulesAndOptions(bundle, topN, nil)
+}
+
+// AnalyzeWithDeterministicRulesAndOptions applies deterministic analysis rules with performance options
+func (a *Analyzer) AnalyzeWithDeterministicRulesAndOptions(bundle model.ProfileBundle, topN int, perfConfig *model.PerformanceOptimizationConfig) (*model.FindingsBundle, error) {
 	deterministicAnalyzer := NewDeterministicAnalyzer()
-	return deterministicAnalyzer.AnalyzeWithDeterministicRules(bundle, topN)
+	return deterministicAnalyzer.AnalyzeWithDeterministicRulesAndOptions(bundle, topN, perfConfig)
 }
 
 func (a *Analyzer) AnalyzeWithOptions(bundle model.ProfileBundle, topN int, options AnalyzeOptions) (*model.FindingsBundle, error) {

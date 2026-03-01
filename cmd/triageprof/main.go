@@ -57,8 +57,8 @@ func main() {
 		fmt.Println("  run --plugin <name> --target-type node --target-command <cmd> --duration <sec> --outdir <dir> [--websocket-port <port>] [--websocket-auth] [--websocket-compression] [--websocket-batching] [--websocket-batch-interval <ms>]")
 		fmt.Println("  web --in <findings.json> --outdir <dir> [--insights <insights.json>]")
 		fmt.Println("  websocket --findings <findings.json> [--insights <insights.json>] [--port <port>] [--data-dir <dir>] [--compression] [--batching] [--batch-interval <ms>] [--phase5]")
-		fmt.Println("  demo --repo <url> --out <dir> [--ref <branch/commit>] [--duration <sec>]")
-		fmt.Println("  demo-kit --out <dir> [--duration <sec>] (uses built-in demo repository)")
+		fmt.Println("  demo --repo <url> --out <dir> [--ref <branch/commit>] [--duration <sec>] [--concurrent] [--max-workers <N>] [--sampling-rate <rate>] [--memory-optimization] [--large-codebase]")
+		fmt.Println("  demo-kit --out <dir> [--duration <sec>] [--concurrent] [--max-workers <N>] [--sampling-rate <rate>] [--memory-optimization] [--large-codebase] (uses built-in demo repository)")
 		fmt.Println("\nLLM Options for 'run' command:")
 		fmt.Println("  --llm (enable LLM insights)")
 		fmt.Println("  --llm-provider <provider> (mistral, openai - default: mistral)")
@@ -761,6 +761,11 @@ func runDemoCommand(pipeline *core.Pipeline) {
 	outDir := flagSet.String("out", "", "Output directory")
 	ref := flagSet.String("ref", "", "Branch, tag, or commit (optional)")
 	duration := flagSet.Int("duration", 15, "Benchmark duration in seconds")
+	concurrentBenchmarks := flagSet.Bool("concurrent", false, "Enable concurrent benchmark execution")
+	maxWorkers := flagSet.Int("max-workers", 2, "Maximum concurrent workers for benchmark execution")
+	samplingRate := flagSet.Float64("sampling-rate", 1.0, "Profile sampling rate (0.1-1.0)")
+	memoryOptimization := flagSet.Bool("memory-optimization", false, "Enable memory optimization for large profiles")
+	largeCodebase := flagSet.Bool("large-codebase", false, "Optimize for large codebases")
 	flagSet.Parse(os.Args[2:])
 
 	if *repoURL == "" || *outDir == "" {
@@ -776,10 +781,44 @@ func runDemoCommand(pipeline *core.Pipeline) {
 		fmt.Printf("📌 Using reference: %s\n", *ref)
 	}
 	fmt.Printf("⏱  Benchmark duration: %d seconds\n", *duration)
-	fmt.Printf("📁 Output directory: %s\n\n", *outDir)
+	fmt.Printf("📁 Output directory: %s\n", *outDir)
+	
+	// Display performance optimization settings
+	fmt.Printf("\n🔧 Performance Optimization Settings:\n")
+	if *concurrentBenchmarks {
+		fmt.Printf("   ✅ Concurrent benchmarks: ENABLED (max workers: %d)\n", *maxWorkers)
+	} else {
+		fmt.Printf("   ❌ Concurrent benchmarks: DISABLED\n")
+	}
+	if *samplingRate < 1.0 {
+		fmt.Printf("   ✅ Profile sampling: ENABLED (rate: %.1f)\n", *samplingRate)
+	} else {
+		fmt.Printf("   ❌ Profile sampling: DISABLED\n")
+	}
+	if *memoryOptimization {
+		fmt.Printf("   ✅ Memory optimization: ENABLED\n")
+	} else {
+		fmt.Printf("   ❌ Memory optimization: DISABLED\n")
+	}
+	if *largeCodebase {
+		fmt.Printf("   ✅ Large codebase mode: ENABLED\n")
+	} else {
+		fmt.Printf("   ❌ Large codebase mode: DISABLED\n")
+	}
+	fmt.Printf("\n")
 
-	// Run the demo workflow
-	manifest, err := pipeline.Demo(ctx, *repoURL, *ref, *outDir, *duration)
+	// Create performance configuration
+	perfConfig := &model.PerformanceOptimizationConfig{
+		EnableConcurrentBenchmarks: *concurrentBenchmarks,
+		MaxConcurrentWorkers:       *maxWorkers,
+		EnableProfileSampling:      *samplingRate < 1.0,
+		SamplingRate:               *samplingRate,
+		EnableMemoryOptimization:   *memoryOptimization,
+		LargeCodebaseMode:          *largeCodebase,
+	}
+
+	// Run the demo workflow with performance configuration
+	manifest, err := pipeline.DemoWithPerformance(ctx, *repoURL, *ref, *outDir, *duration, perfConfig)
 	if err != nil {
 		fmt.Printf("❌ Demo failed: %v\n", err)
 
@@ -854,6 +893,11 @@ func runDemoKitCommand(pipeline *core.Pipeline) {
 	flagSet := flag.NewFlagSet("demo-kit", flag.ExitOnError)
 	outDir := flagSet.String("out", "", "Output directory")
 	duration := flagSet.Int("duration", 15, "Benchmark duration in seconds")
+	concurrentBenchmarks := flagSet.Bool("concurrent", false, "Enable concurrent benchmark execution")
+	maxWorkers := flagSet.Int("max-workers", 2, "Maximum concurrent workers for benchmark execution")
+	samplingRate := flagSet.Float64("sampling-rate", 1.0, "Profile sampling rate (0.1-1.0)")
+	memoryOptimization := flagSet.Bool("memory-optimization", false, "Enable memory optimization for large profiles")
+	largeCodebase := flagSet.Bool("large-codebase", false, "Optimize for large codebases")
 	flagSet.Parse(os.Args[2:])
 
 	if *outDir == "" {
@@ -870,10 +914,44 @@ func runDemoKitCommand(pipeline *core.Pipeline) {
 	fmt.Println("🚀 Starting TriageProf Demo Kit")
 	fmt.Printf("📌 Using built-in demo repository: %s\n", demoRepoPath)
 	fmt.Printf("⏱  Benchmark duration: %d seconds\n", *duration)
-	fmt.Printf("📁 Output directory: %s\n\n", *outDir)
+	fmt.Printf("📁 Output directory: %s\n", *outDir)
+	
+	// Display performance optimization settings
+	fmt.Printf("\n🔧 Performance Optimization Settings:\n")
+	if *concurrentBenchmarks {
+		fmt.Printf("   ✅ Concurrent benchmarks: ENABLED (max workers: %d)\n", *maxWorkers)
+	} else {
+		fmt.Printf("   ❌ Concurrent benchmarks: DISABLED\n")
+	}
+	if *samplingRate < 1.0 {
+		fmt.Printf("   ✅ Profile sampling: ENABLED (rate: %.1f)\n", *samplingRate)
+	} else {
+		fmt.Printf("   ❌ Profile sampling: DISABLED\n")
+	}
+	if *memoryOptimization {
+		fmt.Printf("   ✅ Memory optimization: ENABLED\n")
+	} else {
+		fmt.Printf("   ❌ Memory optimization: DISABLED\n")
+	}
+	if *largeCodebase {
+		fmt.Printf("   ✅ Large codebase mode: ENABLED\n")
+	} else {
+		fmt.Printf("   ❌ Large codebase mode: DISABLED\n")
+	}
+	fmt.Printf("\n")
+
+	// Create performance configuration
+	perfConfig := &model.PerformanceOptimizationConfig{
+		EnableConcurrentBenchmarks: *concurrentBenchmarks,
+		MaxConcurrentWorkers:       *maxWorkers,
+		EnableProfileSampling:      *samplingRate < 1.0,
+		SamplingRate:               *samplingRate,
+		EnableMemoryOptimization:   *memoryOptimization,
+		LargeCodebaseMode:          *largeCodebase,
+	}
 
 	// Run the demo workflow with the local demo repository
-	manifest, err := pipeline.Demo(ctx, demoRepoPath, "", *outDir, *duration)
+	manifest, err := pipeline.DemoWithPerformance(ctx, demoRepoPath, "", *outDir, *duration, perfConfig)
 	if err != nil {
 		fmt.Printf("❌ Demo kit failed: %v\n", err)
 		

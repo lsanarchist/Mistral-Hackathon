@@ -362,6 +362,11 @@ func (p *Pipeline) Analyze(ctx context.Context, bundlePath string, topN int, out
 
 // AnalyzeWithDeterministicRules performs deterministic analysis
 func (p *Pipeline) AnalyzeWithDeterministicRules(ctx context.Context, bundlePath string, topN int, outPath string) (*model.FindingsBundle, error) {
+	return p.AnalyzeWithDeterministicRulesAndOptions(ctx, bundlePath, topN, outPath, nil)
+}
+
+// AnalyzeWithDeterministicRulesAndOptions performs deterministic analysis with performance options
+func (p *Pipeline) AnalyzeWithDeterministicRulesAndOptions(ctx context.Context, bundlePath string, topN int, outPath string, perfConfig *model.PerformanceOptimizationConfig) (*model.FindingsBundle, error) {
 	// Read bundle
 	data, err := os.ReadFile(bundlePath)
 	if err != nil {
@@ -373,8 +378,8 @@ func (p *Pipeline) AnalyzeWithDeterministicRules(ctx context.Context, bundlePath
 		return nil, err
 	}
 
-	// Analyze with deterministic rules
-	findings, err := p.analyzer.AnalyzeWithDeterministicRules(profileBundle, topN)
+	// Analyze with deterministic rules and performance options
+	findings, err := p.analyzer.AnalyzeWithDeterministicRulesAndOptions(profileBundle, topN, perfConfig)
 	if err != nil {
 		return nil, err
 	}

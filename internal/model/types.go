@@ -6,6 +6,18 @@ import (
 	"time"
 )
 
+// PerformanceOptimizationConfig contains configuration for performance optimization features
+type PerformanceOptimizationConfig struct {
+	EnableConcurrentBenchmarks bool    `json:"enableConcurrentBenchmarks,omitempty"`
+	MaxConcurrentWorkers       int     `json:"maxConcurrentWorkers,omitempty"`
+	EnableProfileSampling      bool    `json:"enableProfileSampling,omitempty"`
+	SamplingRate               float64 `json:"samplingRate,omitempty"`
+	EnableMemoryOptimization   bool    `json:"enableMemoryOptimization,omitempty"`
+	EnableEnhancedCaching     bool    `json:"enableEnhancedCaching,omitempty"`
+	CacheMaxSizeMB            int     `json:"cacheMaxSizeMB,omitempty"`
+	LargeCodebaseMode          bool    `json:"largeCodebaseMode,omitempty"`
+}
+
 // ErrorContext provides structured error information for better error handling
 type ErrorContext struct {
 	ErrorType    string `json:"errorType,omitempty"`

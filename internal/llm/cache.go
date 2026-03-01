@@ -22,6 +22,9 @@ type CacheConfig struct {
 	CacheDir         string
 	MaxCacheSizeMB   int
 	MaxCacheAgeHours int
+	EnhancedCaching  bool  // Enable advanced caching strategies
+	CacheCompression bool  // Enable cache compression
+	CacheIndexing    bool  // Enable cache indexing for faster lookups
 }
 
 // InsightsCache handles caching of LLM-generated insights
@@ -46,6 +49,11 @@ func NewInsightsCache(config CacheConfig) *InsightsCache {
 	cacheDir := config.CacheDir
 	if cacheDir == "" {
 		cacheDir = filepath.Join(os.TempDir(), "triageprof-insights-cache")
+	}
+
+	// Create cache directory if it doesn't exist
+	if err := os.MkdirAll(cacheDir, 0755); err != nil {
+		log.Printf("Warning: Failed to create cache directory %s: %v", cacheDir, err)
 	}
 
 	// Create cache directory if it doesn't exist
@@ -305,4 +313,27 @@ func (c *InsightsCache) ClearCache() error {
 	log.Printf("Cleared %d cache entries", clearedCount)
 	c.stats = CacheStats{}
 	return nil
+}
+
+// NewInsightsCacheFromPerformanceConfig creates a cache config from performance optimization settings
+func NewInsightsCacheFromPerformanceConfig(perfConfig *model.PerformanceOptimizationConfig) *InsightsCache {
+	if perfConfig == nil || !perfConfig.EnableEnhancedCaching {
+		return nil
+	}
+
+	config := CacheConfig{
+		Enabled:         true,
+		CacheDir:        filepath.Join(os.TempDir(), "triageprof-insights-cache"),
+		MaxCacheSizeMB:  perfConfig.CacheMaxSizeMB,
+		MaxCacheAgeHours: 24, // Default: 24 hours
+		EnhancedCaching:  true,
+		CacheCompression: true,
+		CacheIndexing:    true,
+	}
+
+	if config.MaxCacheSizeMB <= 0 {
+		config.MaxCacheSizeMB = 100 // Default: 100MB
+	}
+
+	return NewInsightsCache(config)
 }
