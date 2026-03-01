@@ -3,7 +3,7 @@ A "feature iteration" must:
 1) Define the feature in 2–5 bullet acceptance criteria.
 2) Write code.
 3) Add tests covering the new behavior (or a deterministic verification harness if tests are hard).
-4) Update  COMPASS.md + project_context.md to reflect:
+4) Update  change.log + project_context.md to reflect:
    - what the feature does
    - how it integrates with core schema / pipeline
    - plugin impact (if any)
@@ -18,4 +18,4 @@ A "feature iteration" must:
 1) Read COMPASS.md first (North Star, constraints, current focus, recent changes).
 2) Consult project_context.md only if deeper architectural detail is needed.
 
-For temporary files use create tmp folder here(/home/doomguy/Documents/hackaton/Mistral-Hackathon) if you need to.
+For temporary files use create tmp folder here(/home/doomguy/Documents/hackaton/Mistral-Hackathon/tmp/) if you need to.

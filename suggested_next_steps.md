@@ -1,418 +1,181 @@
-# Suggested Next Steps for TriageProf
+# Suggested Next Steps — TriageProf Demo-Grade MVP (Go pprof + Mistral API)
 
-## Immediate Priorities
+> Goal: **one command → a “wow” report**.
+> `triageprof demo --repo <url> [--ref <commit>] --out out/`  
+> Outputs: `report.html` + `report.md` + `findings.json` (+ raw pprof artifacts).
 
-### ✅ MAKE COOL GUI FOR DEMO - COMPLETED
-### ✅ MAKE PROJECT LOOK RESPECTFUL - COMPLETED
-### ✅ IMPROVE WORKFLOW WITH MISTRAL API - COMPLETED
-### ✅ IMPROVE THOSE SUGGESTIONS - COMPLETED
+---
 
-### ✅ IMPLEMENT PLUGIN PERFORMANCE METRICS - COMPLETED
+## Definition of Done (what “MVP demo” means)
 
-### ✅ IMPLEMENT WEBSOCKET JWT AUTHENTICATION - COMPLETED
+- Works on a **real Go open-source repo** that has benchmarks (or produces a clear “no benchmarks found” report).
+- Produces a **clean HTML report** with:
+  - Top 3–5 bottlenecks (ranked)
+  - Evidence (pprof top funcs + stacks + file:line when available)
+  - Actionable fix guidance (deterministic rules + optional LLM enrichment)
+- **LLM is optional**:
+  - If Mistral API is configured → adds “why / how to fix / trade-offs”
+  - If not configured / API fails → report still builds, just without LLM sections
+- Output is **reproducible** (pinned repo ref + stable schema + snapshot tests).
 
-### JWT Authentication Enhancements
-- **Role-based access control**: Implement different permission levels (viewer, editor, admin)
-- **Token refresh**: Add token refresh endpoint for long-lived sessions
-- **Multi-factor authentication**: Add MFA support for enhanced security
-- **API key rotation**: Implement automatic key rotation for better security
-- **Rate limiting**: Add rate limiting to authentication endpoints
+---
 
-### 2. **Advanced Plugin Discovery UI**
-- **Objective**: Create interactive plugin management interface
-- **Rationale**: Make plugin system more visible and accessible to users
-- **Implementation**:
-  - Plugin marketplace/browser in web UI
-  - Visual plugin capability matrix
-  - Plugin health/status monitoring
-  - One-click plugin updates
-=======
-### ✅ IMPLEMENT WEBSOCKET MESSAGE COMPRESSION - COMPLETED
-### ✅ IMPLEMENT LLM INSIGHTS CACHING LAYER - COMPLETED
-### ✅ IMPLEMENT PLUGIN PERFORMANCE METRICS - COMPLETED
-### ✅ IMPLEMENT WEBSOCKET MESSAGE BATCHING - COMPLETED
+## Phase 0 — Repo Hygiene (make the project “demo clean”)
 
-### WebSocket Compression Enhancements
-- **Dynamic compression level adjustment**: Automatically adjust compression level based on network conditions and payload size
-- **Adaptive threshold tuning**: Intelligently determine optimal compression threshold based on message patterns
-- **Compression statistics dashboard**: Visualize bandwidth savings and compression efficiency in the web UI
-- **Client-side compression support**: Add compression support for WebSocket client connections
-- **Compression benchmarking**: Add performance metrics to compare compressed vs uncompressed throughput
+- **Narrow scope to Go for MVP**
+  - Move non-Go examples to `examples/_archive/` (keep history, stop confusing the demo).
+  - Keep only `examples/go/` and one pinned demo repo.
+- **Delete/disable local-ML paths**
+  - Keep LLM only as **remote API calls** (Mistral).
+  - Ensure `--llm=off` is the default safe path.
+- **Docs cleanup**
+  - Replace the current `suggested_next_steps.md` with this document (no merge-conflict markers, no “COMPLETED” noise).
 
-### ✅ IMPLEMENT WEBSOCKET CONNECTION QUALITY MONITORING - COMPLETED
+Acceptance criteria:
+- `go test ./...` passes; `triageprof --help` is readable; repo looks focused.
 
-### ✅ IMPLEMENT WEBSOCKET CONNECTION QUALITY MONITORING ENHANCEMENTS - COMPLETED
+---
 
-### ✅ WebSocket Connection Quality Dashboard - COMPLETED
-- **Objective**: Create interactive web UI dashboard for connection quality monitoring
-- **Rationale**: Provide visual representation of connection health, trends, and alerts
-- **Implementation**:
-  - Real-time connection quality charts
-  - Historical trend analysis with time series
-  - Alert visualization and management
-  - Client-specific connection details
-  - Quality distribution metrics
+## Phase 1 — Golden Path CLI: `triageprof demo`
 
-### ✅ WebSocket Connection Quality Dashboard Enhancements - COMPLETED
-- **Objective**: Enhance the connection quality dashboard with advanced features
-- **Rationale**: Provide deeper insights and better user experience for connection monitoring
-- **Implementation**:
-  - ✅ Geographical connection analysis with map visualization
-  - ✅ Connection quality predictions using machine learning
-  - ✅ Adaptive data frequency based on connection quality
-  - ✅ Multi-protocol support for different real-time protocols
-  - ✅ Connection quality scoring system with comprehensive health metrics
-  - ✅ Bandwidth throttling visualization and configuration
-  - ✅ Connection quality history with time range selection
-  - ✅ Export functionality for connection quality reports
-=======
-### ✅ WebSocket Connection Quality Dashboard Advanced Enhancements - COMPLETED
-- **Objective**: Further enhance the connection quality dashboard with additional advanced features
-- **Rationale**: Provide even deeper insights and more sophisticated monitoring capabilities
-- **Implementation**:
-  - ✅ **Interactive geographical map**: Replace bar chart with interactive world map showing connection quality by region
-  - ✅ **Real-time geographical heatmap**: Visualize connection density and quality on a world map
-  - ✅ **Regional comparison tools**: Compare performance between different regions with side-by-side analysis
-  - ✅ **Geographical trend analysis**: Track quality changes over time for specific regions
-  - ✅ **Advanced prediction models**: Implement more sophisticated prediction algorithms using historical patterns
-  - ✅ **Prediction confidence scoring**: Add confidence levels to quality predictions
-  - ✅ **Anomaly detection**: Automatically identify unusual connection quality patterns
-  - ✅ **Predictive alerts**: Generate alerts based on predicted quality degradation
-  - ✅ **Connection quality forecasting**: Predict future quality based on historical trends and current conditions
-  - ✅ **Multi-dimensional analysis**: Analyze quality across multiple dimensions (region, time, connection type)
+Implement a single “golden” command that does everything:
 
-### ✅ WebSocket Connection Quality Dashboard Advanced Enhancements Phase 2 - COMPLETED
-- **Objective**: Further enhance the connection quality dashboard with machine learning and automation
-- **Rationale**: Provide even deeper insights and more sophisticated monitoring capabilities
-- **Implementation**:
-  - ✅ **Machine Learning Models**: Implement ML-based anomaly detection algorithms using pattern recognition
-  - ✅ **Historical Anomaly Trends**: Track anomaly patterns over time for predictive maintenance
-  - ✅ **Anomaly Alerts**: Real-time notifications for critical anomaly detection
-  - ✅ **Automated Remediation**: Integration with network management systems for automatic fixes
-  - ✅ **Anomaly Clustering**: Group similar anomalies for pattern recognition and root cause analysis
-  - ✅ **Anomaly Pattern Learning**: ML-based learning of normal vs anomalous patterns over time
-  - ✅ **Predictive Maintenance**: Forecast potential issues before they occur based on anomaly trends
-  - ✅ **Automated Root Cause Analysis**: AI-powered analysis of anomaly causes and suggested fixes
+- **Inputs**
+  - `--repo` (git URL or local path)
+  - `--ref` (commit/tag/branch; default: default branch)
+  - `--bench` (regex; default: `.`)
+  - `--pkg` (optional package selector)
+  - `--duration` / `--count` (for stability)
+  - `--out` (output dir)
+- **Steps**
+  1) Clone (or copy local)
+  2) Detect benchmarks (fast scan: `go test ./... -list=.` or `-run=^$ -bench=.` with dry mode)
+  3) Run benchmark(s) and generate:
+     - CPU: `-cpuprofile`
+     - Mem/alloc: `-memprofile` (+ `-benchmem`)
+     - Optional: mutex/block profiles behind flags
+  4) Save a `run.json` manifest (repo/ref, go env, flags, timestamps, versions)
 
-### ✅ WebSocket Connection Quality Dashboard Advanced Enhancements Phase 2 - COMPLETED
-- **Objective**: Further enhance the connection quality dashboard with machine learning and automation
-- **Rationale**: Provide even deeper insights and more sophisticated monitoring capabilities
-- **Implementation**:
-  - ✅ **Machine Learning Models**: Implemented ML-based anomaly detection algorithms using pattern recognition
-  - ✅ **Historical Anomaly Trends**: Track anomaly patterns over time for predictive maintenance
-  - ✅ **Anomaly Alerts**: Real-time notifications for critical anomaly detection
-  - ✅ **Automated Remediation**: Integration with network management systems for automatic fixes
-  - ✅ **Anomaly Clustering**: Group similar anomalies for pattern recognition and root cause analysis
-  - ✅ **Anomaly Pattern Learning**: ML-based learning of normal vs anomalous patterns over time
-  - ✅ **Predictive Maintenance**: Forecast potential issues before they occur based on anomaly trends
-  - ✅ **Automated Root Cause Analysis**: AI-powered analysis of anomaly causes and suggested fixes
+Acceptance criteria:
+- `triageprof demo --repo <repo> --out out/` produces `out/profiles/*` + `out/run.json` every time.
 
-### ✅ WebSocket Connection Quality Dashboard Advanced Enhancements Phase 3 - COMPLETED
-- **Objective**: Further enhance the connection quality dashboard with advanced AI/ML capabilities
-- **Rationale**: Provide even deeper insights and more sophisticated monitoring capabilities
-- **Implementation**:
-  - ✅ **Advanced ML Models**: Implemented more sophisticated anomaly detection algorithms using deep learning
-  - ✅ **Real-time Anomaly Prediction**: Predict anomalies before they occur using time series forecasting
-  - ✅ **Automated Root Cause Analysis**: AI-powered analysis of anomaly causes and suggested fixes
-  - ✅ **Anomaly Correlation**: Cross-connection correlation for identifying systemic issues
-  - ✅ **Adaptive Learning**: Continuous learning and adaptation to changing network conditions
-  - ✅ **Anomaly Impact Analysis**: Quantify the business impact of detected anomalies
-  - ✅ **Automated Mitigation**: Automatic application of fixes for common anomaly patterns
-  - ✅ **Anomaly Prevention**: Proactive measures to prevent known anomaly patterns from recurring
+---
 
-### ✅ WebSocket Connection Quality Dashboard Advanced Enhancements Phase 4 ✅ COMPLETED
-- **Objective**: Further enhance the connection quality dashboard with advanced AI/ML capabilities
-- **Rationale**: Provide even deeper insights and more sophisticated monitoring capabilities
-- **Implementation**:
-  - ✅ **Advanced ML Models**: Implemented more sophisticated anomaly detection algorithms using deep learning
-  - ✅ **Real-time Anomaly Prediction**: Predict anomalies before they occur using time series forecasting
-  - ✅ **Automated Root Cause Analysis**: AI-powered analysis of anomaly causes and suggested fixes
-  - ✅ **Anomaly Correlation**: Cross-connection correlation for identifying systemic issues
-  - ✅ **Adaptive Learning**: Continuous learning and adaptation to changing network conditions
-  - ✅ **Anomaly Impact Analysis**: Quantify the business impact of detected anomalies
-  - ✅ **Automated Mitigation**: Automatic application of fixes for common anomaly patterns
-  - ✅ **Anomaly Prevention**: Proactive measures to prevent known anomaly patterns from recurring
+## Phase 2 — Deterministic Analyzer: `pprof → findings.json`
 
-### WebSocket Connection Quality Dashboard Advanced Enhancements Phase 5
-- **Objective**: Further enhance the connection quality dashboard with advanced AI/ML capabilities
-- **Rationale**: Provide even deeper insights and more sophisticated monitoring capabilities
-- **Implementation**:
-  - **Advanced ML Models**: Implement more sophisticated anomaly detection algorithms using deep learning
-  - **Real-time Anomaly Prediction**: Predict anomalies before they occur using time series forecasting
-  - **Automated Root Cause Analysis**: AI-powered analysis of anomaly causes and suggested fixes
-  - **Anomaly Correlation**: Cross-connection correlation for identifying systemic issues
-  - **Adaptive Learning**: Continuous learning and adaptation to changing network conditions
-  - **Anomaly Impact Analysis**: Quantify the business impact of detected anomalies
-  - **Automated Mitigation**: Automatic application of fixes for common anomaly patterns
-  - **Anomaly Prevention**: Proactive measures to prevent known anomaly patterns from recurring
+Create a stable schema and rules that never depend on LLM.
 
-### Advanced Connection Quality Features
-- **Geographical connection analysis**: Track connection quality by client location/region
-- **Connection quality API**: Extended API for programmatic access to connection metrics
-- **Connection quality predictions**: Machine learning-based quality forecasting
-- **Automatic reconnection strategies**: Intelligent reconnection based on quality patterns
-- **Multi-protocol support**: Extend quality monitoring to other real-time protocols
+### Findings schema (v1)
+Each finding should contain:
+- `id`, `title`, `category` (cpu/alloc/heap/gc/mutex/block)
+- `severity` (low/med/high/critical) + `confidence` (0..1)
+- `impact_summary` (short)
+- `evidence[]` (top funcs, flat/cum, stack excerpts, file:line where possible)
+- `deterministic_hints[]` (rule-based fix ideas)
+- `tags[]` (e.g., `allocation_churn`, `lock_contention`, `json_decode_hotpath`)
 
-### WebSocket Performance Optimization
-- **Adaptive compression levels**: Dynamically adjust compression based on connection quality
-- **Intelligent batching**: Combine adaptive updates with message batching
-- **Priority-based delivery**: Ensure critical alerts reach clients even on poor connections
-- **Connection quality scoring**: Comprehensive scoring system for overall health
-- **Network topology awareness**: Adapt to different network conditions automatically
+### Rules to implement first (highest demo value)
+- CPU hotpath dominance (top N cumulative + dominance ratio)
+- Allocation churn (mallocgc/memmove/bytes.growSlice patterns)
+- JSON decode/encode hotspots (encoding/json heavy frames)
+- String churn patterns (strings/bytes/regexp hotspots)
+- GC pressure (runtime/GC frames noticeable in CPU profile)
+- Mutex contention (single lock dominating)
 
-### ✅ IMPLEMENT WEBSOCKET CONNECTION QUALITY MONITORING - COMPLETED
+Acceptance criteria:
+- `triageprof analyze --in out/profiles --out out/` creates `out/findings.json` with 3–10 findings for a typical repo.
 
-### WebSocket Connection Quality Enhancements
-- **Connection quality dashboard**: Visualize connection quality metrics in the web UI with historical trends
-- **Quality-based data adaptation**: Automatically adjust data frequency based on connection quality
-- **Connection health alerts**: Notify users when connection quality degrades below thresholds
-- **Geographical connection analysis**: Track connection quality by client location/region
-- **Connection quality history**: Maintain historical connection quality data for trend analysis
-- **Bandwidth throttling**: Automatically reduce data volume for poor connections
-- **Connection quality API**: Extended API for programmatic access to connection metrics
+---
 
-### WebSocket Batching Enhancements
-- **Adaptive batching**: Dynamically adjust batch intervals based on message volume and network conditions
-- **Batch size limits**: Implement maximum batch size to prevent memory issues with large message queues
-- **Priority queuing**: Add message priority levels for critical vs normal updates
-- **Batch statistics dashboard**: Visualize batching efficiency and message volume reduction
-- **Client-side batching support**: Add batching configuration options for WebSocket clients
-- **Batch compression integration**: Combine batching with compression for optimal bandwidth usage
-- **Batch timeout warnings**: Add alerts when messages are delayed due to batching
-- **Batch size monitoring**: Track and display average batch sizes and processing times
+## Phase 3 — LLM Enrichment via Mistral API (no local ML)
 
-### ✅ IMPLEMENT WEBSOCKET MESSAGE BATCHING - COMPLETED
+Add an enrichment stage that takes **only the deterministic findings** and returns strictly structured output.
 
-### WebSocket Batching Enhancements
-- **Adaptive batching**: Dynamically adjust batch intervals based on message volume and network conditions
-- **Batch size limits**: Implement maximum batch size to prevent memory issues with large message queues
-- **Priority queuing**: Add message priority levels for critical vs normal updates
-- **Batch statistics dashboard**: Visualize batching efficiency and message volume reduction
-- **Client-side batching support**: Add batching configuration options for WebSocket clients
-- **Batch compression integration**: Combine batching with compression for optimal bandwidth usage
-- **Batch timeout warnings**: Add alerts when messages are delayed due to batching
-- **Batch size monitoring**: Track and display average batch sizes and processing times
+### Interface
+- `--llm=mistral` (or `--llm=off`)
+- Reads `MISTRAL_API_KEY`
+- Adds `out/llm_enrichment.json` and merges into report sections.
 
-### ✅ IMPLEMENT WEBSOCKET CLIENT RECONNECTION - COMPLETED
+### Guardrails (must-have)
+- **Strict JSON-only output** (validate; if invalid → discard and continue)
+- **No hallucinated claims**:
+  - Require the model to cite `evidence_refs` that point to your evidence entries
+  - If uncertain, it must put items into `unknowns[]`
+- **Redaction**:
+  - Strip secrets and overly-large code blobs
+  - Send summaries + small evidence snippets, not whole repos
+- **Caching**:
+  - Hash of `findings.json` → cached enrichment to avoid repeat costs
 
-### WebSocket Reconnection Enhancements
-- **Connection quality monitoring**: Track and display connection latency and packet loss statistics
-- **Reconnection statistics dashboard**: Visualize reconnection attempts, success rates, and downtime
-- **Adaptive reconnection timing**: Dynamically adjust reconnection delays based on network conditions
-- **Multi-server failover**: Automatically failover to backup WebSocket servers when primary fails
-- **Reconnection notifications**: Add desktop notifications for connection state changes
-- **Connection health indicators**: Visual indicators showing connection stability over time
-- **Reconnection history**: Maintain and display history of reconnection events
-- **Server-side reconnection support**: Add server-initiated reconnection requests
-- **WebSocket ping/pong monitoring**: Implement keep-alive monitoring for connection health
-- **Bandwidth adaptation**: Automatically adjust data frequency based on connection quality
+Acceptance criteria:
+- With a valid key: report includes an “LLM insights” section per top finding.
+- Without a key: report still builds, clearly shows “LLM disabled”.
 
-### LLM Caching Enhancements
-- **Cache invalidation based on code changes**: Detect when source code changes and invalidate relevant cache entries
-- **Cache warming**: Pre-populate cache with insights for common performance patterns
-- **Distributed caching**: Support Redis/Memcached for team-wide cache sharing
-- **Cache statistics dashboard**: Visualize cache performance in the web UI
-- **Smart cache keys**: Incorporate more factors like runtime version, dependencies, etc.
+---
 
-### ✅ Performance Dashboard Enhancements - COMPLETED
-- **Custom time ranges**: Allow users to select specific time periods for analysis ✅
-- **Export performance reports**: PDF/CSV export of historical performance data ✅
-- **Performance alerts**: Configurable thresholds and notifications for performance degradation ✅
-- **Annotation system**: Add markers for deployments, incidents, or other events ✅
-- **Multi-application comparison**: Compare performance across different services ✅
+## Phase 4 — Report Generator Polish (this is what sells the demo)
 
-### Performance Alert Enhancements
-- **Email notifications**: Send email alerts when performance thresholds are breached
-- **Webhook integrations**: Post alerts to Slack, Teams, or other webhook endpoints
-- **Alert escalation**: Implement escalation policies for unresolved alerts
-- **Alert templates**: Customizable alert message templates with dynamic variables
-- **Alert scheduling**: Time-based alert suppression during maintenance windows
+Generate three outputs every run:
 
-### Annotation System Enhancements
-- **Rich text annotations**: Support for markdown and formatted text in annotations
-- **Annotation attachments**: Add screenshots, logs, or other files to annotations
-- **Annotation categories**: Tag annotations with custom categories for better organization
-- **Annotation search**: Full-text search across all annotations
-- **Annotation export**: Export annotations separately or with performance data
+1) **`report.html`** (primary demo artifact)
+   - Summary: repo, ref, runtime, top bottleneck cards
+   - Findings list: sortable by severity/impact/confidence
+   - Each finding: evidence tables + expandable stacks + (optional) LLM narrative
+   - Footer: reproducibility info (command line, versions)
 
-### Export Functionality Enhancements
-- **Scheduled exports**: Automated periodic exports to specified destinations
-- **Export templates**: Customizable export formats and layouts
-- **Cloud storage integration**: Direct export to S3, GCS, or Azure Blob Storage
-- **Database export**: Export performance data to SQL/NoSQL databases
-- **Visual export formats**: PDF reports with charts and visualizations
+2) **`report.md`** (for GitHub issue/comment)
+   - Short summary + top findings + bullet fixes
+   - Links/paths to the evidence artifacts
 
-### Multi-Application Comparison Enhancements
-- **Historical comparison**: Compare current performance against historical baselines
-- **Trend analysis**: Identify performance trends across multiple applications
-- **Correlation analysis**: Find relationships between different performance metrics
-- **Benchmarking**: Compare against industry benchmarks or internal standards
-- **Visual comparison tools**: Interactive charts and dashboards for side-by-side analysis
-- **Advanced filtering**: Filter performance data by severity, category, or plugin
-- **Performance SLO tracking**: Track service level objectives and error budgets
+3) **`findings.json`** (machine-readable contract)
 
-### Multi-Model LLM Enhancements
-- **Additional provider support**: Add support for Anthropic, Google Gemini, and other LLM providers
-- **Provider auto-detection**: Automatically detect available API keys and suggest providers
-- **Fallback mechanism**: Automatically fall back to available providers when primary fails
-- **Cost estimation**: Show estimated costs for different providers/models before generation
-- **Performance benchmarking**: Compare response times and quality across providers
+Acceptance criteria:
+- Opening `report.html` looks clean and understandable to a non-expert in <60 seconds.
 
-### ✅ IMPLEMENT ADVANCED PLUGIN MANAGEMENT UI - COMPLETED
-### ✅ ENHANCE REAL-TIME MONITORING DASHBOARD - COMPLETED
-### ✅ IMPLEMENT MULTI-MODEL LLM SUPPORT - COMPLETED
+---
 
-### Plugin Performance Enhancements
-- **Detailed execution profiling**: Capture stack traces and memory profiles for plugin executions
-- **Historical performance trends**: Track plugin performance over time with trend analysis
-- **Performance alerts**: Configurable thresholds and notifications for plugin performance degradation
-- **Resource usage visualization**: Interactive charts showing memory and CPU usage patterns
-- **Performance comparison**: Compare plugin performance across different versions and environments
-- **Anomaly detection**: Automatically identify unusual performance patterns in plugin execution
+## Phase 5 — Demo Kit (make it easy to show live)
 
-### Plugin Management Enhancements
-- **Plugin version compatibility checking**: Validate plugin versions against core requirements
-- **Automatic plugin updates**: Implement background update checking and notifications
-- **Plugin dependency management**: Handle plugin dependencies and conflict resolution
-- **Plugin sandboxing**: Enhanced security for plugin execution
-- **Remote plugin repository**: Centralized plugin hosting and distribution
+- Add `./demo.sh` (or `make demo`) that runs the golden path on a **pinned** repo/ref.
+- Commit `demo-output/` with one known-good output (so the UI can be shown even offline).
+- Add README “Demo in 30 seconds”:
+  - install
+  - run demo
+  - open report
 
-### Advanced Analysis Features
-- **Cross-plugin correlation**: Analyze findings across multiple plugins
-- **Historical trend analysis**: Track performance changes over time
-- **Baseline comparison**: Compare current performance against historical baselines
-- **Anomaly detection**: Identify unusual performance patterns automatically
+Acceptance criteria:
+- New person can reproduce the demo without asking questions.
 
-### UI/UX Improvements
-- **Plugin performance metrics**: Show plugin execution times and resource usage
-- **Plugin usage statistics**: Track which plugins are most commonly used
-- **User ratings and reviews**: Community feedback on plugin quality
-- **Plugin documentation integration**: Embed plugin documentation in the UI
-=======
+---
 
-### 2. **Advanced Plugin Discovery UI**
-- **Objective**: Create interactive plugin management interface
-- **Rationale**: Make plugin system more visible and accessible to users
-- **Implementation**:
-  - Plugin marketplace/browser in web UI
-  - Visual plugin capability matrix
-  - Plugin health/status monitoring
-  - One-click plugin updates
+## Phase 6 — Tests (so you can move fast safely)
 
+- Unit tests:
+  - pprof parsing wrappers
+  - each rule emits expected finding fields
+- Snapshot (golden) tests:
+  - `findings.json` stable ordering
+  - `report.md` stable text blocks
+- E2E test:
+  - run `triageprof demo` against a tiny fixture repo (or minimal internal test module)
+  - assert files exist + basic invariants
 
+Acceptance criteria:
+- CI (or local `go test ./...`) catches regressions in schema/report.
 
-## Feature Backlog
+---
 
-### **LLM Enhancements**
-- **Multi-model support**: Add support for additional LLM providers
-- **Prompt templates**: Customizable prompt structures for different use cases
-- **Caching layer**: Cache insights for repeated analysis to reduce API costs
-- **Quality metrics**: Track insight usefulness and accuracy over time
+## Phase 7 — Small “Nice” Extras (only if time remains)
 
-### **WebSocket Enhancements**
-- **Authentication**: Add JWT/OAuth support for secure WebSocket connections ✅ (JWT authentication implemented)
-- **Data filtering**: Implement subscription-based data filtering by severity/category
-- **Historical playback**: Add ability to replay historical performance data
-- **Multi-room support**: Create separate WebSocket rooms for different applications
-- **Rate limiting**: Implement connection and message rate limiting
-- **WebSocket message compression**: Add support for compressed messages ✅ (permessage-deflate compression implemented)
-- **Connection quality monitoring**: Track and display connection latency
-- **WebSocket client reconnection**: Implement automatic reconnection with exponential backoff
-- **Message acknowledgments**: Add client acknowledgment protocol for reliable delivery
-- **WebSocket message batching**: Implement batching for high-frequency updates
-- **WebSocket connection metrics**: Add detailed connection statistics and performance metrics
+- `triageprof serve --dir out/` to open a local report viewer (optional).
+- “Compare two runs” (baseline vs current) for a single benchmark (simple diff in findings).
+- Export a `github_issue.md` template file.
 
-### **Web UI Improvements**
-- **Dark mode**: Add dark theme support
-- **Custom dashboards**: User-configurable dashboard layouts
-- **Export options**: PDF/CSV export of analysis results
-- **Collaboration features**: Shareable analysis links and comments
+---
 
-### **Plugin System Maturity**
-- **Plugin marketplace**: Central repository for discovering plugins
-- **Automatic updates**: Version checking and update notifications
-- **Plugin sandboxing**: Enhanced security for plugin execution
-- **Capability validation**: Pre-launch compatibility checking
+## Backlog (post-MVP, do not block the demo)
 
-### **Core Robustness**
-- **Error recovery**: Automatic retry and fallback mechanisms
-- **Performance optimization**: Profile core pipeline for speed
-- **Memory management**: Better handling of large profile datasets
-- **Test coverage**: Comprehensive unit and integration tests
-
-### **Integration & Deployment**
-- **CI/CD pipeline**: Automated testing and deployment
-- **Docker support**: Containerized deployment options
-- **Cloud integration**: AWS/GCP/Azure deployment templates
-- **Monitoring integration**: Prometheus/Grafana connectors
-
-## Research & Exploration
-
-### **Advanced Analysis Techniques**
-- **Anomaly detection**: Machine learning for unusual patterns
-- **Root cause analysis**: Automated causal inference
-- **Predictive modeling**: Performance degradation forecasting
-- **Automated remediation**: Self-healing performance optimizations
-
-### **Extended Language Support**
-- **Java/JVM plugins**: Support for Java applications
-- **Rust plugins**: Rust language profiling
-- **.NET plugins**: C# and .NET Core support
-- **Mobile plugins**: iOS/Android performance analysis
-
-### **Advanced Visualization**
-- **3D flame graphs**: Interactive performance visualization
-- **Time-travel debugging**: Historical execution replay
-- **Dependency graphs**: Visualize component interactions
-- **Heat maps**: Performance hotspot visualization
-
-## Community & Ecosystem
-
-### **Documentation & Onboarding**
-- **Interactive tutorials**: Step-by-step guides with live examples
-- **Video demos**: Screen recordings of key workflows
-- **API documentation**: Comprehensive developer guides
-- **Best practices**: Performance optimization playbooks
-
-### **Community Building**
-- **Plugin development kits**: Templates and tools for plugin authors
-- **Contribution guidelines**: Clear processes for open source contributions
-- **User forums**: Community support and discussion
-- **Hackathons**: Regular events to encourage innovation
-
-## Technical Debt & Maintenance
-
-### **Code Quality**
-- **Refactoring**: Clean up legacy code patterns
-- **Type safety**: Add TypeScript to web components
-- **Documentation**: Improve code comments and docstrings
-- **Consistency**: Standardize coding patterns across modules
-
-### **Testing Infrastructure**
-- **End-to-end tests**: Comprehensive workflow testing
-- **Performance tests**: Benchmark core operations
-- **Security testing**: Vulnerability scanning and hardening
-- **Cross-browser testing**: Ensure web UI compatibility
-
-## Priority Matrix
-
-| Priority | Area | Examples |
-|----------|------|----------|
-| **High** | Core functionality, Bug fixes, Security | Real-time monitoring, Error handling, Plugin security |
-| **Medium** | User experience, Performance | Web UI improvements, Analysis speed, Memory usage |
-| **Low** | Nice-to-have, Future-proofing | Additional plugins, Advanced visualizations, Integration options |
-
-## Decision Points
-
-### **Architecture Decisions Needed**
-1. **Database backend**: SQL vs NoSQL for historical data
-2. **Real-time protocol**: ✅ WebSockets implemented vs Server-Sent Events
-3. **Plugin distribution**: Centralized vs decentralized marketplace
-4. **Authentication**: User accounts vs API keys for WebSocket connections
-
-### **Resource Allocation**
-- **Development**: 60% core features, 30% plugins, 10% documentation
-- **Testing**: 50% automation, 30% manual, 20% performance
-- **Community**: 40% support, 30% outreach, 30% education
-
-This roadmap provides a balanced approach to evolving TriageProf while maintaining stability and delivering value to users.
+- Plugin SDK hardening + compatibility matrix
+- Support more profilers/languages (keep as skeleton only for now)
+- Advanced callgraph/dominator visualizations
+- CI integration (GitHub Actions) and regression thresholds
