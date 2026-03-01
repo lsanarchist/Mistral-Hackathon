@@ -12,7 +12,7 @@ import (
 func TestPhase5Features(t *testing.T) {
 	// Create a test WebSocket server with Phase 5 features enabled
 	server := NewWebSocketServer(8083, "./testdata", "./plugins", false, false, false, 0, 
-		true, nil, nil, ConnectionQualityConfig{}, true, true, true, true)
+		true, nil, nil, ConnectionQualityConfig{}, true, true, true, true, false)
 
 	// Verify Phase 5 features are enabled
 	if !server.phase5FeaturesEnabled {
@@ -104,7 +104,7 @@ func TestPhase5Features(t *testing.T) {
 // TestPhase5AnomalyDetection tests Phase 5 anomaly detection with simulated connections
 func TestPhase5AnomalyDetection(t *testing.T) {
 	server := NewWebSocketServer(8084, "./testdata", "./plugins", false, false, false, 0, 
-		true, nil, nil, ConnectionQualityConfig{}, true, true, true, true)
+		true, nil, nil, ConnectionQualityConfig{}, true, true, true, true, false)
 
 	// Create some test connection stats with anomalies
 	server.statsMu.Lock()
@@ -222,7 +222,7 @@ func TestPhase5AnomalyDetection(t *testing.T) {
 // TestPhase5RootCauseAnalysis tests Phase 5 root cause analysis
 func TestPhase5RootCauseAnalysis(t *testing.T) {
 	server := NewWebSocketServer(8085, "./testdata", "./plugins", false, false, false, 0, 
-		true, nil, nil, ConnectionQualityConfig{}, true, true, true, true)
+		true, nil, nil, ConnectionQualityConfig{}, true, true, true, true, false)
 
 	// Test root cause analysis for different anomaly types
 	testCases := []struct {
@@ -271,7 +271,7 @@ func TestPhase5RootCauseAnalysis(t *testing.T) {
 // TestPhase5PatternMatching tests Phase 5 pattern matching functionality
 func TestPhase5PatternMatching(t *testing.T) {
 	server := NewWebSocketServer(8086, "./testdata", "./plugins", false, false, false, 0, 
-		true, nil, nil, ConnectionQualityConfig{}, true, true, true, true)
+		true, nil, nil, ConnectionQualityConfig{}, true, true, true, true, false)
 
 	// Add a test pattern to the server
 	pattern := RootCausePattern{

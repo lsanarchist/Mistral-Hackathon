@@ -42,7 +42,7 @@ func (m *mockWebSocketConn) SetCloseHandler(h func(code int, text string) error)
 
 func TestWebSocketCompressionDisabled(t *testing.T) {
 	// Create WebSocket server with compression disabled
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0*time.Second, false, nil, nil, ConnectionQualityConfig{}, false, false, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0*time.Second, false, nil, nil, ConnectionQualityConfig{}, false, false, false, false)
 	defer server.Stop()
 
 	// Test compression info endpoint
@@ -59,7 +59,7 @@ func TestWebSocketCompressionDisabled(t *testing.T) {
 }
 
 func TestWebSocketCompressionMethodNotAllowed(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0*time.Second, false, nil, nil, ConnectionQualityConfig{}, false, false, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0*time.Second, false, nil, nil, ConnectionQualityConfig{}, false, false, false, false)
 	defer server.Stop()
 
 	// Test POST method (should not be allowed)
@@ -74,7 +74,7 @@ func TestWebSocketCompressionMethodNotAllowed(t *testing.T) {
 
 func TestPluginMarketplaceEndpoint(t *testing.T) {
 	// Create WebSocket server
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0*time.Second, false, nil, nil, ConnectionQualityConfig{}, false, false, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0*time.Second, false, nil, nil, ConnectionQualityConfig{}, false, false, false, false)
 	defer server.Stop()
 
 	// Test marketplace endpoint
@@ -99,7 +99,7 @@ func TestPluginMarketplaceEndpoint(t *testing.T) {
 }
 
 func TestPluginInstallEndpoint(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0*time.Second, false, nil, nil, ConnectionQualityConfig{}, false, false, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0*time.Second, false, nil, nil, ConnectionQualityConfig{}, false, false, false, false)
 	defer server.Stop()
 
 	// Test install endpoint with empty body
@@ -113,7 +113,7 @@ func TestPluginInstallEndpoint(t *testing.T) {
 }
 
 func TestPluginUpdateEndpoint(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0*time.Second, false, nil, nil, ConnectionQualityConfig{}, false, false, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0*time.Second, false, nil, nil, ConnectionQualityConfig{}, false, false, false, false)
 	defer server.Stop()
 
 	// Test update endpoint with empty body
@@ -127,7 +127,7 @@ func TestPluginUpdateEndpoint(t *testing.T) {
 }
 
 func TestPluginUninstallEndpoint(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0*time.Second, false, nil, nil, ConnectionQualityConfig{}, false, false, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0*time.Second, false, nil, nil, ConnectionQualityConfig{}, false, false, false, false)
 	defer server.Stop()
 
 	// Test uninstall endpoint with empty body
@@ -141,7 +141,7 @@ func TestPluginUninstallEndpoint(t *testing.T) {
 }
 
 func TestPerformanceHistory(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0*time.Second, false, nil, nil, ConnectionQualityConfig{}, false, false, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0*time.Second, false, nil, nil, ConnectionQualityConfig{}, false, false, false, false)
 	defer server.Stop()
 
 	// Create test findings
@@ -180,7 +180,7 @@ func TestPerformanceHistory(t *testing.T) {
 }
 
 func TestPerformanceHistoryEndpoint(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0*time.Second, false, nil, nil, ConnectionQualityConfig{}, false, false, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0*time.Second, false, nil, nil, ConnectionQualityConfig{}, false, false, false, false)
 	defer server.Stop()
 
 	// Create test findings
@@ -223,7 +223,7 @@ func TestPerformanceHistoryEndpoint(t *testing.T) {
 }
 
 func TestPerformanceAnalysisEndpoint(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0*time.Second, false, nil, nil, ConnectionQualityConfig{}, false, false, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0*time.Second, false, nil, nil, ConnectionQualityConfig{}, false, false, false, false)
 	defer server.Stop()
 
 	// Create test findings
@@ -270,7 +270,7 @@ func TestPerformanceAnalysisEndpoint(t *testing.T) {
 }
 
 func TestPerformanceSnapshotLimit(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0*time.Second, false, nil, nil, ConnectionQualityConfig{}, false, false, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0*time.Second, false, nil, nil, ConnectionQualityConfig{}, false, false, false, false)
 	defer server.Stop()
 
 	// Create test findings with different scores

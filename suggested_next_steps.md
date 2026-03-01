@@ -18,8 +18,13 @@
   - If not configured / API fails → report still builds, just without LLM sections
 - Output is **reproducible** (pinned repo ref + stable schema + snapshot tests).
 
----
-## Task - investigate and fix github actions - I am getting notifications that it fails every commit
+IMPORTANT!!!
+## Task 1 investigate and fix github actions - I am getting notifications that it fails every commit
+## MAIN TASK - focus on finalizing the project
+
+IMPORTANT!!!
+## Task 1 investigate and fix github actions - I am getting notifications that it fails every commit
+## MAIN TASK - focus on finalizing the project
 
 
 ## ✅ Phase 0 — Repo Hygiene (COMPLETED)
@@ -336,12 +341,8 @@ Add optional enrichment that takes deterministic findings and returns structured
 4. ✅ **Dependency Management**: Added dependency updates and security scanning workflows
 5. ✅ **Quality Gates**: Implemented code quality checks with golangci-lint and gofmt
 
-### Phase 10 — Advanced Analysis Features
-1. **Comparative Analysis**: Add baseline comparison features for performance regression detection
-2. **Trend Analysis**: Time-series performance tracking across multiple runs
-3. **Automated Remediation**: Generate suggested code fixes based on findings
-4. **Integration Hub**: CI/CD integrations (GitHub, GitLab, GitHub Actions, etc.)
-5. **Enterprise Features**: Team collaboration, RBAC, audit logs, and multi-user support
+
+
 
 ## Quick Verification
 
@@ -366,3 +367,15 @@ This produces:
 - ✅ Profile generation and management fixes
 - ✅ Optimized benchmark execution for demos
 - ✅ Comprehensive error handling and user feedback
+
+
+
+IMPORTANT!!!
+## Task 1 investigate and fix github actions - I am getting notifications that it fails every commit
+## MAIN TASK - focus on finalizing the project
+IMPORTANT!!!
+## Task 1 investigate and fix github actions - I am getting notifications that it fails every commit
+## MAIN TASK - focus on finalizing the project
+IMPORTANT!!!
+## Task 1 investigate and fix github actions - I am getting notifications that it fails every commit
+## MAIN TASK - focus on finalizing the project
