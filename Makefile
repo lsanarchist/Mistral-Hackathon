@@ -6,7 +6,7 @@ PYTHON_PLUGIN=python-cprofile
 NODE_PLUGIN=node-inspector
 RUBY_PLUGIN=ruby-stackprof
 
-.PHONY: all build test demo demo-python clean
+.PHONY: all build test clean lint release demo demo-python demo-node demo-ruby
 
 all: build
 
@@ -21,6 +21,19 @@ build:
 
 test:
 	$(GO) test $(GOFLAGS) ./...
+
+# Run linter
+lint:
+	gofmt -l .
+	golangci-lint run
+
+# Create release artifacts
+release:
+	mkdir -p release
+	GOOS=linux GOARCH=amd64 $(GO) build $(GOFLAGS) -o release/triageprof-linux-amd64 ./cmd/triageprof
+	GOOS=darwin GOARCH=amd64 $(GO) build $(GOFLAGS) -o release/triageprof-darwin-amd64 ./cmd/triageprof
+	GOOS=windows GOARCH=amd64 $(GO) build $(GOFLAGS) -o release/triageprof-windows-amd64.exe ./cmd/triageprof
+	@echo "Release artifacts created in release/"
 
 demo: build
 	# Run the comprehensive demo script

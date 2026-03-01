@@ -1,0 +1,41 @@
+name: Test and Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Install dependencies
+      run: go mod download
+
+    - name: Run tests
+      run: go test ./... -v
+
+    - name: Build main binary
+      run: go build -o bin/triageprof cmd/triageprof/main.go
+
+    - name: Build plugins
+      run: |
+        cd plugins/src/go-pprof-http && go build -o ../../bin/go-pprof-http main.go
+        cd ../../src/python-cprofile && python -m compileall .
+        cd ../../src/ruby-stackprof && ruby -c main.rb
+
+    - name: Verify build artifacts
+      run: |
+        ls -la bin/
+        ./bin/triageprof plugins list

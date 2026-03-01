@@ -1,0 +1,39 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Build release artifacts
+      run: |
+        mkdir -p release
+        GOOS=linux GOARCH=amd64 go build -o release/triageprof-linux-amd64 cmd/triageprof/main.go
+        GOOS=darwin GOARCH=amd64 go build -o release/triageprof-darwin-amd64 cmd/triageprof/main.go
+        GOOS=windows GOARCH=amd64 go build -o release/triageprof-windows-amd64.exe cmd/triageprof/main.go
+        
+        # Build plugins
+        cd plugins/src/go-pprof-http && GOOS=linux GOARCH=amd64 go build -o ../../../release/go-pprof-http-linux-amd64 main.go
+        cd ../../../release && tar -czvf triageprof-plugins.tar.gz go-pprof-http-linux-amd64
+
+    - name: Create release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: release/*
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
