@@ -87,6 +87,23 @@ document.addEventListener('DOMContentLoaded', function() {
         error.style.display = 'block';
     }
 
+    function renderQuickStats() {
+        // Calculate statistics
+        const totalFindings = allFindings.length;
+        const criticalCount = allFindings.filter(f => f.severity?.toLowerCase() === 'critical').length;
+        const highCount = allFindings.filter(f => f.severity?.toLowerCase() === 'high').length;
+        
+        // Calculate average score
+        const scores = allFindings.map(f => f.score || 0).filter(score => score > 0);
+        const avgScore = scores.length > 0 ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : 0;
+        
+        // Update DOM
+        document.getElementById('totalFindings').textContent = totalFindings;
+        document.getElementById('criticalFindings').textContent = criticalCount;
+        document.getElementById('highFindings').textContent = highCount;
+        document.getElementById('avgScore').textContent = avgScore;
+    }
+    
     function renderData() {
         try {
             // Set up basic info
@@ -105,18 +122,61 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Set confidence if insights available
             if (insightsData && insightsData.ExecutiveSummary) {
-                document.getElementById('confidence').textContent = insightsData.ExecutiveSummary.Confidence + '%';
-                document.getElementById('overview').innerHTML = 
-                    `<p><strong>Overview:</strong> ${insightsData.ExecutiveSummary.Overview || 'No overview available'}</p>` +
-                    `<p><strong>Severity:</strong> ${insightsData.ExecutiveSummary.OverallSeverity || 'Unknown'} (${insightsData.ExecutiveSummary.Confidence || 0}% confidence)</p>`;
+                const confidence = insightsData.ExecutiveSummary.Confidence || 0;
+                document.getElementById('confidence').textContent = confidence + '%';
+                
+                // Add confidence indicator
+                const confidenceIndicator = document.createElement('div');
+                confidenceIndicator.className = 'confidence-indicator';
+                
+                let confidenceClass = 'confidence-low';
+                let confidenceText = 'Low Confidence';
+                if (confidence >= 80) {
+                    confidenceClass = 'confidence-high';
+                    confidenceText = 'High Confidence';
+                } else if (confidence >= 50) {
+                    confidenceClass = 'confidence-medium';
+                    confidenceText = 'Medium Confidence';
+                }
+                
+                confidenceIndicator.className = 'confidence-indicator ' + confidenceClass;
+                confidenceIndicator.textContent = confidenceText;
+                
+                const confidenceElement = document.getElementById('confidence');
+                confidenceElement.parentNode.insertBefore(confidenceIndicator, confidenceElement.nextSibling);
+                
+                // Enhanced overview with AI branding
+                let overviewHTML = `<div class="ai-overview">`;
+                overviewHTML += `<div class="ai-header"><i class="fas fa-robot"></i> AI Analysis Overview</div>`;
+                overviewHTML += `<p class="ai-overview-text">${insightsData.ExecutiveSummary.Overview || 'No overview available'}</p>`;
+                overviewHTML += `<div class="ai-metrics">`;
+                overviewHTML += `<span class="ai-metric"><strong>Severity:</strong> ${insightsData.ExecutiveSummary.OverallSeverity || 'Unknown'}</span>`;
+                overviewHTML += `<span class="ai-metric"><strong>Confidence:</strong> ${confidence}%</span>`;
+                
+                if (insightsData.ExecutiveSummary.KeyThemes && insightsData.ExecutiveSummary.KeyThemes.length > 0) {
+                    overviewHTML += `<span class="ai-metric"><strong>Themes:</strong> ${insightsData.ExecutiveSummary.KeyThemes.join(', ')}</span>`;
+                }
+                overviewHTML += `</div></div>`;
+                
+                document.getElementById('overview').innerHTML = overviewHTML;
+                
             } else {
                 document.getElementById('confidence').textContent = 'N/A';
                 document.getElementById('overview').innerHTML = '<p>No LLM insights available</p>';
             }
             
+            // Render quick stats
+            renderQuickStats();
+            
             // Render charts
             renderSeverityChart();
             renderCategoryChart();
+            
+            // Show AI summary section if insights are available
+            if (insightsData) {
+                document.getElementById('aiSummarySection').style.display = 'block';
+                document.getElementById('pluginInfoSection').style.display = 'block';
+            }
             
             // Render top risks if available
             if (insightsData && insightsData.TopRisks && insightsData.TopRisks.length > 0) {
@@ -195,6 +255,17 @@ document.addEventListener('DOMContentLoaded', function() {
                                 size: 12
                             }
                         }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${label}: ${value} findings (${percentage}%)`;
+                            }
+                        }
                     }
                 }
             }
@@ -242,6 +313,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 plugins: {
                     legend: {
                         display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.parsed.y} findings in ${context.label}`;
+                            }
+                        }
                     }
                 },
                 scales: {
@@ -297,11 +375,30 @@ document.addEventListener('DOMContentLoaded', function() {
             const card = document.createElement('div');
             card.className = 'risk-card';
             
+            // Determine risk level class
+            let riskLevelClass = 'risk-low';
+            if (risk.Severity.toLowerCase().includes('critical') || risk.Severity.toLowerCase().includes('high')) {
+                riskLevelClass = 'risk-high';
+            } else if (risk.Severity.toLowerCase().includes('medium')) {
+                riskLevelClass = 'risk-medium';
+            }
+            
             card.innerHTML = `
-                <div class="card-title">${index + 1}. ${risk.Description}</div>
-                <div class="card-detail"><strong>Severity:</strong> ${risk.Severity}</div>
-                <div class="card-detail"><strong>Impact:</strong> ${risk.Impact}</div>
-                <div class="card-detail"><strong>Likelihood:</strong> ${risk.Likelihood}</div>
+                <div class="risk-header">
+                    <div class="risk-number">${index + 1}</div>
+                    <div class="risk-title">${risk.Description}</div>
+                    <div class="risk-badge ${riskLevelClass}">${risk.Severity}</div>
+                </div>
+                <div class="risk-details">
+                    <div class="risk-detail-item">
+                        <i class="fas fa-bullseye"></i>
+                        <span><strong>Impact:</strong> ${risk.Impact}</span>
+                    </div>
+                    <div class="risk-detail-item">
+                        <i class="fas fa-chart-line"></i>
+                        <span><strong>Likelihood:</strong> ${risk.Likelihood}</span>
+                    </div>
+                </div>
             `;
             
             riskCards.appendChild(card);
@@ -321,12 +418,31 @@ document.addEventListener('DOMContentLoaded', function() {
             const card = document.createElement('div');
             card.className = 'action-card';
             
+            // Determine priority level class
+            let priorityLevelClass = 'priority-low';
+            if (action.Priority.toLowerCase().includes('high') || action.Priority.toLowerCase().includes('critical')) {
+                priorityLevelClass = 'priority-high';
+            } else if (action.Priority.toLowerCase().includes('medium')) {
+                priorityLevelClass = 'priority-medium';
+            }
+            
             card.innerHTML = `
-                <div class="card-title">${index + 1}. ${action.Description}</div>
-                <div class="card-detail"><strong>Priority:</strong> ${action.Priority}</div>
-                <div class="card-detail"><strong>Estimated Effort:</strong> ${action.EstimatedEffort}</div>
-                ${action.Categories && action.Categories.length > 0 ? 
-                    `<div class="card-detail"><strong>Categories:</strong> ${action.Categories.join(', ')}</div>` : ''}
+                <div class="action-header">
+                    <div class="action-number">${index + 1}</div>
+                    <div class="action-title">${action.Description}</div>
+                    <div class="action-badge ${priorityLevelClass}">${action.Priority}</div>
+                </div>
+                <div class="action-details">
+                    <div class="action-detail-item">
+                        <i class="fas fa-clock"></i>
+                        <span><strong>Estimated Effort:</strong> ${action.EstimatedEffort}</span>
+                    </div>
+                    ${action.Categories && action.Categories.length > 0 ? 
+                        `<div class="action-detail-item">
+                            <i class="fas fa-tags"></i>
+                            <span><strong>Categories:</strong> ${action.Categories.join(', ')}</span>
+                        </div>` : ''}
+                </div>
             `;
             
             actionCards.appendChild(card);
@@ -437,56 +553,122 @@ document.addEventListener('DOMContentLoaded', function() {
                 const insightsSection = document.createElement('div');
                 insightsSection.className = 'insights-section';
                 
-                const insightsTitle = document.createElement('div');
-                insightsTitle.className = 'insights-title';
-                insightsTitle.innerHTML = '<i class="fas fa-robot"></i> LLM Insights';
+                // Add AI header with confidence
+                const insightsHeader = document.createElement('div');
+                insightsHeader.className = 'insights-header';
                 
-                insightsSection.appendChild(insightsTitle);
+                const confidence = findingInsight.Confidence || 0;
+                let confidenceEmoji = '🟡';
+                if (confidence >= 80) {
+                    confidenceEmoji = '🟢';
+                } else if (confidence <= 50) {
+                    confidenceEmoji = '🔴';
+                }
+                
+                insightsHeader.innerHTML = `
+                    <div class="insights-header-title">
+                        <i class="fas fa-robot"></i> AI Analysis (${confidenceEmoji} ${confidence}% Confidence)
+                    </div>
+                `;
+                
+                insightsSection.appendChild(insightsHeader);
                 
                 if (findingInsight.Narrative) {
-                    const narrative = document.createElement('p');
-                    narrative.innerHTML = `<strong>Narrative:</strong> ${findingInsight.Narrative}`;
+                    const narrative = document.createElement('div');
+                    narrative.className = 'insights-narrative';
+                    narrative.innerHTML = `
+                        <div class="narrative-header"><i class="fas fa-comment-dots"></i> Root Cause Analysis</div>
+                        <p>${findingInsight.Narrative}</p>
+                    `;
                     insightsSection.appendChild(narrative);
                 }
                 
                 if (findingInsight.LikelyRootCauses && findingInsight.LikelyRootCauses.length > 0) {
+                    const rootCausesSection = document.createElement('div');
+                    rootCausesSection.className = 'insights-root-causes';
+                    
                     const rootCausesTitle = document.createElement('div');
-                    rootCausesTitle.innerHTML = '<strong><i class="fas fa-search"></i> Likely Root Causes:</strong>';
-                    insightsSection.appendChild(rootCausesTitle);
+                    rootCausesTitle.className = 'root-causes-title';
+                    rootCausesTitle.innerHTML = '<i class="fas fa-search"></i> Likely Root Causes';
+                    rootCausesSection.appendChild(rootCausesTitle);
                     
                     const rootCausesList = document.createElement('ul');
-                    rootCausesList.className = 'insights-list';
+                    rootCausesList.className = 'root-causes-list';
                     
-                    findingInsight.LikelyRootCauses.forEach(cause => {
+                    findingInsight.LikelyRootCauses.forEach((cause, i) => {
                         const li = document.createElement('li');
-                        li.textContent = cause;
+                        li.innerHTML = `<span class="cause-number">${i + 1}.</span> ${cause}`;
                         rootCausesList.appendChild(li);
                     });
                     
-                    insightsSection.appendChild(rootCausesList);
+                    rootCausesSection.appendChild(rootCausesList);
+                    insightsSection.appendChild(rootCausesSection);
                 }
                 
                 if (findingInsight.Suggestions && findingInsight.Suggestions.length > 0) {
+                    const suggestionsSection = document.createElement('div');
+                    suggestionsSection.className = 'insights-suggestions';
+                    
                     const suggestionsTitle = document.createElement('div');
-                    suggestionsTitle.innerHTML = '<strong><i class="fas fa-lightbulb"></i> Suggestions:</strong>';
-                    insightsSection.appendChild(suggestionsTitle);
+                    suggestionsTitle.className = 'suggestions-title';
+                    suggestionsTitle.innerHTML = '<i class="fas fa-lightbulb"></i> Optimization Recommendations';
+                    suggestionsSection.appendChild(suggestionsTitle);
                     
                     const suggestionsList = document.createElement('ul');
-                    suggestionsList.className = 'insights-list';
+                    suggestionsList.className = 'suggestions-list';
                     
-                    findingInsight.Suggestions.forEach(suggestion => {
+                    findingInsight.Suggestions.forEach((suggestion, i) => {
                         const li = document.createElement('li');
-                        li.textContent = suggestion;
+                        li.innerHTML = `<span class="suggestion-number">${i + 1}.</span> ${suggestion}`;
                         suggestionsList.appendChild(li);
                     });
                     
-                    insightsSection.appendChild(suggestionsList);
+                    suggestionsSection.appendChild(suggestionsList);
+                    insightsSection.appendChild(suggestionsSection);
                 }
                 
-                if (findingInsight.Confidence) {
-                    const confidence = document.createElement('p');
-                    confidence.innerHTML = `<strong>Confidence:</strong> ${findingInsight.Confidence}%`;
-                    insightsSection.appendChild(confidence);
+                if (findingInsight.NextMeasurements && findingInsight.NextMeasurements.length > 0) {
+                    const measurementsSection = document.createElement('div');
+                    measurementsSection.className = 'insights-measurements';
+                    
+                    const measurementsTitle = document.createElement('div');
+                    measurementsTitle.className = 'measurements-title';
+                    measurementsTitle.innerHTML = '<i class="fas fa-chart-line"></i> Validation Metrics';
+                    measurementsSection.appendChild(measurementsTitle);
+                    
+                    const measurementsList = document.createElement('ul');
+                    measurementsList.className = 'measurements-list';
+                    
+                    findingInsight.NextMeasurements.forEach((measurement, i) => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<span class="measurement-number">${i + 1}.</span> ${measurement}`;
+                        measurementsList.appendChild(li);
+                    });
+                    
+                    measurementsSection.appendChild(measurementsList);
+                    insightsSection.appendChild(measurementsSection);
+                }
+                
+                if (findingInsight.Caveats && findingInsight.Caveats.length > 0) {
+                    const caveatsSection = document.createElement('div');
+                    caveatsSection.className = 'insights-caveats';
+                    
+                    const caveatsTitle = document.createElement('div');
+                    caveatsTitle.className = 'caveats-title';
+                    caveatsTitle.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Considerations & Limitations';
+                    caveatsSection.appendChild(caveatsTitle);
+                    
+                    const caveatsList = document.createElement('ul');
+                    caveatsList.className = 'caveats-list';
+                    
+                    findingInsight.Caveats.forEach((caveat, i) => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<span class="caveat-number">${i + 1}.</span> ${caveat}`;
+                        caveatsList.appendChild(li);
+                    });
+                    
+                    caveatsSection.appendChild(caveatsList);
+                    insightsSection.appendChild(caveatsSection);
                 }
                 
                 findingCard.appendChild(insightsSection);

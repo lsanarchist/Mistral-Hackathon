@@ -50,6 +50,60 @@
                 <div class="overview-text" id="overview"></div>
             </div>
             
+            <!-- AI Insights Summary Section -->
+            <div class="ai-summary-section" id="aiSummarySection" style="display: none;">
+                <div class="ai-summary-header">
+                    <i class="fas fa-robot"></i>
+                    <h2>AI-Powered Performance Analysis</h2>
+                    <span class="ai-badge">Powered by Mistral AI</span>
+                </div>
+                <div class="ai-summary-content">
+                    <div class="ai-feature">
+                        <div class="ai-feature-icon"><i class="fas fa-brain"></i></div>
+                        <div class="ai-feature-text">
+                            <h3>Intelligent Root Cause Analysis</h3>
+                            <p>Our AI examines performance data to identify the underlying causes of bottlenecks</p>
+                        </div>
+                    </div>
+                    <div class="ai-feature">
+                        <div class="ai-feature-icon"><i class="fas fa-lightbulb"></i></div>
+                        <div class="ai-feature-text">
+                            <h3>Actionable Recommendations</h3>
+                            <p>Get specific, prioritized suggestions for performance optimization</p>
+                        </div>
+                    </div>
+                    <div class="ai-feature">
+                        <div class="ai-feature-icon"><i class="fas fa-chart-line"></i></div>
+                        <div class="ai-feature-text">
+                            <h3>Data-Driven Insights</h3>
+                            <p>Analysis based on real profiling data, not guesswork</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="quick-stats-section">
+                <h2><i class="fas fa-tachometer-alt"></i> Quick Statistics</h2>
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalFindings">0</div>
+                        <div class="stat-label">Total Findings</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="criticalFindings">0</div>
+                        <div class="stat-label">Critical Issues</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="highFindings">0</div>
+                        <div class="stat-label">High Severity</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="avgScore">0</div>
+                        <div class="stat-label">Avg Score</div>
+                    </div>
+                </div>
+            </div>
+            
             <div class="charts-section">
                 <div class="chart-container">
                     <h3><i class="fas fa-chart-pie"></i> Severity Distribution</h3>
@@ -71,6 +125,33 @@
                     <option value="low">Low</option>
                     <option value="info">Info</option>
                 </select>
+            </div>
+            
+            <div class="plugin-info-section" id="pluginInfoSection" style="display: none;">
+                <h2><i class="fas fa-puzzle-piece"></i> Plugin Information</h2>
+                <div class="plugin-info-content">
+                    <div class="plugin-info-item">
+                        <div class="plugin-icon"><i class="fas fa-cogs"></i></div>
+                        <div class="plugin-info-text">
+                            <h3>Plugin Architecture</h3>
+                            <p>TriageProf uses a modular plugin system where each profiler lives in its own plugin module. Plugins are discovered via JSON manifests and communicate using JSON-RPC.</p>
+                        </div>
+                    </div>
+                    <div class="plugin-info-item">
+                        <div class="plugin-icon"><i class="fas fa-folder"></i></div>
+                        <div class="plugin-info-text">
+                            <h3>Plugin Locations</h3>
+                            <p>Plugins are located in the <code>plugins/</code> directory with manifests in <code>plugins/manifests/</code>. Each plugin has its own source code and binary.</p>
+                        </div>
+                    </div>
+                    <div class="plugin-info-item">
+                        <div class="plugin-icon"><i class="fas fa-plus-circle"></i></div>
+                        <div class="plugin-info-text">
+                            <h3>Extensible Design</h3>
+                            <p>New profilers can be added by creating plugins without modifying the core system. The plugin API remains stable for backward compatibility.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <div class="top-risks" id="topRisksSection" style="display: none;">
