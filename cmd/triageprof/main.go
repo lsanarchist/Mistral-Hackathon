@@ -16,7 +16,32 @@ import (
 	"github.com/mistral-hackathon/triageprof/internal/llm"
 	"github.com/mistral-hackathon/triageprof/internal/model"
 	"github.com/mistral-hackathon/triageprof/internal/plugin"
+	"github.com/mistral-hackathon/triageprof/internal/webserver"
+	"log"
 )
+
+// boolToStatus converts a boolean to ENABLED/DISABLED string
+func boolToStatus(value bool) string {
+	if value {
+		return "ENABLED"
+	}
+	return "DISABLED"
+}
+
+// loadConnectionQualityAlerts loads connection quality alerts from a JSON file
+func loadConnectionQualityAlerts(filePath string) ([]webserver.ConnectionQualityAlert, error) {
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read connection quality alerts file: %w", err)
+	}
+
+	var alerts []webserver.ConnectionQualityAlert
+	if err := json.Unmarshal(data, &alerts); err != nil {
+		return nil, fmt.Errorf("failed to parse connection quality alerts: %w", err)
+	}
+
+	return alerts, nil
+}
 
 func main() {
 	if len(os.Args) < 2 {
@@ -283,6 +308,9 @@ func runRunCommand(pipeline *core.Pipeline) {
 	websocketBatching := flagSet.Bool("websocket-batching", false, "Enable WebSocket message batching")
 	websocketBatchInterval := flagSet.Int("websocket-batch-interval", 100, "WebSocket batch interval in milliseconds")
 	websocketConnectionQuality := flagSet.Bool("websocket-connection-quality", false, "Enable WebSocket connection quality monitoring")
+	websocketQualityAlerts := flagSet.String("websocket-quality-alerts", "", "WebSocket connection quality alert configuration file (JSON)")
+	websocketAdaptiveUpdates := flagSet.Bool("websocket-adaptive-updates", true, "Enable adaptive updates based on connection quality")
+	websocketBandwidthThrottling := flagSet.Bool("websocket-bandwidth-throttling", true, "Enable bandwidth throttling based on connection quality")
 	performanceAlerts := flagSet.String("performance-alerts", "", "Performance alert configuration file (JSON)")
 	flagSet.Parse(os.Args[2:])
 
@@ -352,6 +380,39 @@ func runRunCommand(pipeline *core.Pipeline) {
 		batchInterval := time.Duration(*websocketBatchInterval) * time.Millisecond
 		pipeline.WithWebSocketServer(*websocketPort, *outDir, *websocketAuth, *websocketCompression, *websocketBatching, batchInterval)
 		pipeline.WithWebSocketConnectionQuality(*websocketConnectionQuality)
+		
+		// Configure connection quality enhancements
+		if *websocketConnectionQuality {
+			// Load quality alerts if specified
+			if *websocketQualityAlerts != "" {
+				qualityAlerts, err := loadConnectionQualityAlerts(*websocketQualityAlerts)
+				if err != nil {
+					log.Printf("Warning: Failed to load connection quality alerts: %v", err)
+				} else {
+					pipeline.WithWebSocketConnectionQualityAlerts(qualityAlerts)
+				}
+			}
+			
+			// Configure quality-based adaptations
+			qualityConfig := webserver.ConnectionQualityConfig{
+				AdaptiveUpdatesEnabled: *websocketAdaptiveUpdates,
+				BandwidthThrottlingEnabled: *websocketBandwidthThrottling,
+				UpdateIntervals: webserver.UpdateIntervals{
+					Excellent: 1 * time.Second,
+					Good:     2 * time.Second,
+					Fair:     5 * time.Second,
+					Poor:     10 * time.Second,
+				},
+				ThrottlingThresholds: webserver.ThrottlingThresholds{
+					Excellent: 1000000, // 1MB/s
+					Good:     500000,  // 500KB/s
+					Fair:     200000,  // 200KB/s
+					Poor:     50000,   // 50KB/s
+				},
+			}
+			pipeline.WithWebSocketConnectionQualityConfig(qualityConfig)
+		}
+		
 		if *performanceAlerts != "" {
 			pipeline.WithPerformanceAlerts(*performanceAlerts)
 		}
@@ -373,6 +434,11 @@ func runRunCommand(pipeline *core.Pipeline) {
 		}
 		if *websocketConnectionQuality {
 			fmt.Println("WebSocket connection quality monitoring: ENABLED")
+			fmt.Printf("WebSocket adaptive updates: %s\n", boolToStatus(*websocketAdaptiveUpdates))
+			fmt.Printf("WebSocket bandwidth throttling: %s\n", boolToStatus(*websocketBandwidthThrottling))
+			if *websocketQualityAlerts != "" {
+				fmt.Printf("WebSocket quality alerts: LOADED from %s\n", *websocketQualityAlerts)
+			}
 		} else {
 			fmt.Println("WebSocket connection quality monitoring: DISABLED")
 		}
@@ -553,6 +619,9 @@ func runWebSocketCommand(pipeline *core.Pipeline) {
 	batching := flagSet.Bool("batching", false, "Enable WebSocket message batching")
 	batchInterval := flagSet.Int("batch-interval", 100, "WebSocket batch interval in milliseconds")
 	connectionQuality := flagSet.Bool("connection-quality", false, "Enable WebSocket connection quality monitoring")
+	qualityAlerts := flagSet.String("quality-alerts", "", "WebSocket connection quality alert configuration file (JSON)")
+	adaptiveUpdates := flagSet.Bool("adaptive-updates", true, "Enable adaptive updates based on connection quality")
+	bandwidthThrottling := flagSet.Bool("bandwidth-throttling", true, "Enable bandwidth throttling based on connection quality")
 	flagSet.Parse(os.Args[2:])
 
 	if *findingsPath == "" {
@@ -564,6 +633,38 @@ func runWebSocketCommand(pipeline *core.Pipeline) {
 	batchIntervalDuration := time.Duration(*batchInterval) * time.Millisecond
 	pipeline.WithWebSocketServer(*port, *dataDir, false, *compression, *batching, batchIntervalDuration)
 	pipeline.WithWebSocketConnectionQuality(*connectionQuality)
+	
+	// Configure connection quality enhancements
+	if *connectionQuality {
+		// Load quality alerts if specified
+		if *qualityAlerts != "" {
+			qualityAlertsList, err := loadConnectionQualityAlerts(*qualityAlerts)
+			if err != nil {
+				log.Printf("Warning: Failed to load connection quality alerts: %v", err)
+			} else {
+				pipeline.WithWebSocketConnectionQualityAlerts(qualityAlertsList)
+			}
+		}
+		
+		// Configure quality-based adaptations
+		qualityConfig := webserver.ConnectionQualityConfig{
+			AdaptiveUpdatesEnabled: *adaptiveUpdates,
+			BandwidthThrottlingEnabled: *bandwidthThrottling,
+			UpdateIntervals: webserver.UpdateIntervals{
+				Excellent: 1 * time.Second,
+				Good:     2 * time.Second,
+				Fair:     5 * time.Second,
+				Poor:     10 * time.Second,
+			},
+			ThrottlingThresholds: webserver.ThrottlingThresholds{
+				Excellent: 1000000, // 1MB/s
+				Good:     500000,  // 500KB/s
+				Fair:     200000,  // 200KB/s
+				Poor:     50000,   // 50KB/s
+			},
+		}
+		pipeline.WithWebSocketConnectionQualityConfig(qualityConfig)
+	}
 
 	// Configure auto-refresh if enabled
 	if *autoRefresh > 0 {
@@ -592,6 +693,16 @@ func runWebSocketCommand(pipeline *core.Pipeline) {
 		fmt.Printf("Batching: ENABLED (interval: %dms)\n", *batchInterval)
 	} else {
 		fmt.Printf("Batching: DISABLED (messages sent immediately)\n")
+	}
+	if connectionQuality != nil && *connectionQuality {
+		fmt.Printf("Connection quality: ENABLED (tracking latency and packet loss)\n")
+		fmt.Printf("Adaptive updates: %s\n", boolToStatus(*adaptiveUpdates))
+		fmt.Printf("Bandwidth throttling: %s\n", boolToStatus(*bandwidthThrottling))
+		if *qualityAlerts != "" {
+			fmt.Printf("Quality alerts: LOADED from %s\n", *qualityAlerts)
+		}
+	} else {
+		fmt.Printf("Connection quality: DISABLED\n")
 	}
 	fmt.Println("Press Ctrl+C to stop the server")
 

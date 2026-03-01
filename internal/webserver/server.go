@@ -24,6 +24,9 @@ import (
 	"github.com/mistral-hackathon/triageprof/internal/plugin"
 )
 
+// timeNow is a variable for testing time-dependent functionality
+var timeNow = time.Now
+
 // WebSocketServer handles real-time data streaming
 type WebSocketServer struct {
 	server          *http.Server
@@ -59,6 +62,13 @@ type WebSocketServer struct {
 	statsMu         sync.Mutex
 	pingInterval    time.Duration
 	connectionQualityEnabled bool
+	connectionQualityAlerts []ConnectionQualityAlert
+	qualityAlertsMu        sync.Mutex
+	connectionQualityConfig ConnectionQualityConfig
+	qualityConfigMu        sync.Mutex
+	connectionQualityHistory []map[string]interface{} // Historical connection quality data
+	qualityHistoryMu       sync.Mutex
+	maxQualityHistorySize  int
 }
 
 // PerformanceSnapshot represents a historical performance data point
@@ -107,6 +117,41 @@ type WebSocketConnectionStats struct {
 	BytesSent         int64         `json:"bytes_sent"`
 	BytesReceived     int64         `json:"bytes_received"`
 	ConnectionQuality  string        `json:"connection_quality"` // excellent, good, fair, poor
+	QualityHistory    []string      `json:"quality_history,omitempty"` // Historical quality states
+	LastQualityChange time.Time     `json:"last_quality_change,omitempty"`
+}
+
+// ConnectionQualityAlert represents a configurable alert for connection quality
+type ConnectionQualityAlert struct {
+	ID               string  `json:"id"`
+	Name             string  `json:"name"`
+	QualityThreshold string  `json:"quality_threshold"` // poor, fair, good
+	LatencyThreshold float64 `json:"latency_threshold,omitempty"` // in ms
+	PacketLossThreshold float64 `json:"packet_loss_threshold,omitempty"` // percentage
+	Active           bool    `json:"active"`
+	LastTriggered    *time.Time `json:"last_triggered,omitempty"`
+}
+
+// ConnectionQualityConfig represents configuration for quality-based adaptations
+type ConnectionQualityConfig struct {
+	AdaptiveUpdatesEnabled bool          `json:"adaptive_updates_enabled"`
+	UpdateIntervals        UpdateIntervals `json:"update_intervals"`
+	BandwidthThrottlingEnabled bool `json:"bandwidth_throttling_enabled"`
+	ThrottlingThresholds   ThrottlingThresholds `json:"throttling_thresholds"`
+}
+
+type UpdateIntervals struct {
+	Excellent time.Duration `json:"excellent"`
+	Good     time.Duration `json:"good"`
+	Fair     time.Duration `json:"fair"`
+	Poor     time.Duration `json:"poor"`
+}
+
+type ThrottlingThresholds struct {
+	Excellent int `json:"excellent"` // max bytes per second
+	Good     int `json:"good"`
+	Fair     int `json:"fair"`
+	Poor     int `json:"poor"`
 }
 
 // JWTClaims represents the JWT token claims
@@ -124,7 +169,7 @@ type PluginHealth struct {
 }
 
 // NewWebSocketServer creates a new WebSocket server instance
-func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth bool, enableCompression bool, enableBatching bool, batchInterval time.Duration, enableConnectionQuality bool, alertsConfig []PerformanceAlert) *WebSocketServer {
+func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth bool, enableCompression bool, enableBatching bool, batchInterval time.Duration, enableConnectionQuality bool, alertsConfig []PerformanceAlert, qualityAlerts []ConnectionQualityAlert, qualityConfig ConnectionQualityConfig) *WebSocketServer {
 	mux := http.NewServeMux()
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
@@ -144,6 +189,26 @@ func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth b
 	pingInterval := 30 * time.Second
 	if enableConnectionQuality {
 		pingInterval = 10 * time.Second // More frequent pings for quality monitoring
+	}
+
+	// Set default quality configuration if not provided
+	if qualityConfig.UpdateIntervals.Excellent == 0 {
+		qualityConfig = ConnectionQualityConfig{
+			AdaptiveUpdatesEnabled: true,
+			UpdateIntervals: UpdateIntervals{
+				Excellent: 1 * time.Second,
+				Good:     2 * time.Second,
+				Fair:     5 * time.Second,
+				Poor:     10 * time.Second,
+			},
+			BandwidthThrottlingEnabled: true,
+			ThrottlingThresholds: ThrottlingThresholds{
+				Excellent: 1000000, // 1MB/s
+				Good:     500000,  // 500KB/s
+				Fair:     200000,  // 200KB/s
+				Poor:     50000,   // 50KB/s
+			},
+		}
 	}
 
 	// Configure compression settings if enabled
@@ -185,6 +250,10 @@ func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth b
 		connectionStats: make(map[*websocket.Conn]*WebSocketConnectionStats),
 		pingInterval:    pingInterval,
 		connectionQualityEnabled: enableConnectionQuality,
+		connectionQualityAlerts: qualityAlerts,
+		connectionQualityConfig: qualityConfig,
+		connectionQualityHistory: make([]map[string]interface{}, 0),
+		maxQualityHistorySize:  100, // Keep last 100 quality snapshots
 	}
 
 	// Initialize batching if enabled
@@ -213,6 +282,9 @@ func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth b
 	mux.HandleFunc("/compression/info", s.handleCompressionInfo)
 	mux.HandleFunc("/batching/info", s.handleBatchingInfo)
 	mux.HandleFunc("/connection/quality", s.handleConnectionQuality)
+	mux.HandleFunc("/connection/quality/history", s.handleConnectionQualityHistory)
+	mux.HandleFunc("/connection/quality/alerts", s.handleConnectionQualityAlerts)
+	mux.HandleFunc("/connection/quality/config", s.handleConnectionQualityConfig)
 	
 	// Add auth endpoints if enabled
 	if enableAuth {
@@ -407,13 +479,44 @@ func (s *WebSocketServer) BroadcastData() {
 	if s.batchingEnabled && s.batchInterval > 0 {
 		s.queueMessage(payload)
 	} else {
-		// Send to all clients immediately
-		for client := range s.clients {
-			if err := client.WriteJSON(payload); err != nil {
-				log.Printf("Error sending data to client: %v", err)
-				client.Close()
-				delete(s.clients, client)
+		// Send to all clients with adaptive quality-based updates
+		s.sendDataToClientsWithAdaptiveQuality(payload)
+	}
+}
+
+// sendDataToClientsWithAdaptiveQuality sends data to clients with quality-based adaptations
+func (s *WebSocketServer) sendDataToClientsWithAdaptiveQuality(payload interface{}) {
+	s.statsMu.Lock()
+	defer s.statsMu.Unlock()
+
+	for client, stats := range s.connectionStats {
+		if !s.clients[client] {
+			continue // Client is being removed
+		}
+
+		// Apply bandwidth throttling if enabled
+		if s.connectionQualityConfig.BandwidthThrottlingEnabled {
+			bandwidthLimit := s.getBandwidthLimit(stats.ConnectionQuality)
+			if bandwidthLimit > 0 {
+				// Calculate payload size
+				payloadBytes, err := json.Marshal(payload)
+				if err == nil {
+					// Check if sending this payload would exceed bandwidth limit
+					// This is a simplified check - in production you'd want a token bucket algorithm
+					if len(payloadBytes) > bandwidthLimit {
+						log.Printf("Bandwidth throttling: Skipping large payload (%d bytes) for client %s with %s connection", 
+							len(payloadBytes), stats.ClientID, stats.ConnectionQuality)
+						continue
+					}
+				}
 			}
+		}
+
+		// Send data to client
+		if err := client.WriteJSON(payload); err != nil {
+			log.Printf("Error sending data to client: %v", err)
+			client.Close()
+			delete(s.clients, client)
 		}
 	}
 }
@@ -725,7 +828,143 @@ func (s *WebSocketServer) updateConnectionStats(conn *websocket.Conn, bytesSent 
 	}
 
 	// Update connection quality
-	stats.ConnectionQuality = s.calculateConnectionQuality(stats.Latency, stats.PacketLoss)
+	newQuality := s.calculateConnectionQuality(stats.Latency, stats.PacketLoss)
+	
+	// Track quality changes for history
+	if stats.ConnectionQuality != "" && stats.ConnectionQuality != newQuality {
+		stats.LastQualityChange = time.Now()
+		// Keep last 10 quality states
+		if len(stats.QualityHistory) >= 10 {
+			stats.QualityHistory = stats.QualityHistory[1:]
+		}
+		stats.QualityHistory = append(stats.QualityHistory, newQuality)
+	}
+	stats.ConnectionQuality = newQuality
+	
+	// Record connection quality history
+	s.recordConnectionQualityHistory(conn, stats)
+	
+	// Check quality alerts
+	s.checkConnectionQualityAlerts(stats)
+}
+
+// recordConnectionQualityHistory records connection quality data for historical analysis
+func (s *WebSocketServer) recordConnectionQualityHistory(conn *websocket.Conn, stats *WebSocketConnectionStats) {
+	s.qualityHistoryMu.Lock()
+	defer s.qualityHistoryMu.Unlock()
+
+	// Add current quality data to history
+	historyEntry := map[string]interface{}{
+		"timestamp":          time.Now(),
+		"client_id":          stats.ClientID,
+		"connection_quality": stats.ConnectionQuality,
+		"latency_ms":         stats.Latency.Milliseconds(),
+		"packet_loss":        stats.PacketLoss,
+		"messages_sent":      stats.MessagesSent,
+		"messages_received":  stats.MessagesReceived,
+		"bytes_sent":         stats.BytesSent,
+		"bytes_received":     stats.BytesReceived,
+	}
+
+	s.connectionQualityHistory = append(s.connectionQualityHistory, historyEntry)
+
+	// Limit history size
+	if len(s.connectionQualityHistory) > s.maxQualityHistorySize {
+		s.connectionQualityHistory = s.connectionQualityHistory[1:]
+	}
+}
+
+// checkConnectionQualityAlerts checks if any quality alerts should be triggered
+func (s *WebSocketServer) checkConnectionQualityAlerts(stats *WebSocketConnectionStats) {
+	s.qualityAlertsMu.Lock()
+	defer s.qualityAlertsMu.Unlock()
+
+	now := time.Now()
+	
+	for i, alert := range s.connectionQualityAlerts {
+		if !alert.Active {
+			continue
+		}
+
+		// Use timeNow for testability
+		
+		// Check quality threshold
+		qualityMatch := false
+		switch alert.QualityThreshold {
+		case "poor", "fair", "good":
+			if stats.ConnectionQuality == alert.QualityThreshold {
+				qualityMatch = true
+			}
+		case "":
+			qualityMatch = true // No quality threshold specified
+		}
+
+		// Check latency threshold if specified
+		latencyMatch := true
+		if alert.LatencyThreshold > 0 {
+			latencyMatch = stats.Latency.Seconds()*1000 >= alert.LatencyThreshold
+		}
+
+		// Check packet loss threshold if specified
+		packetLossMatch := true
+		if alert.PacketLossThreshold > 0 {
+			packetLossMatch = stats.PacketLoss >= alert.PacketLossThreshold
+		}
+
+		// Trigger alert if all conditions are met
+		if qualityMatch && latencyMatch && packetLossMatch {
+			// Update the alert
+			s.connectionQualityAlerts[i].LastTriggered = &now
+			log.Printf("Connection quality alert triggered: %s (client: %s, quality: %s, latency: %v, packet loss: %.2f%%)", 
+				alert.Name, stats.ClientID, stats.ConnectionQuality, stats.Latency, stats.PacketLoss)
+		}
+	}
+}
+
+// getAdaptiveUpdateInterval returns the appropriate update interval based on connection quality
+func (s *WebSocketServer) getAdaptiveUpdateInterval(quality string) time.Duration {
+	s.qualityConfigMu.Lock()
+	defer s.qualityConfigMu.Unlock()
+
+	if !s.connectionQualityConfig.AdaptiveUpdatesEnabled {
+		return 0 // Disabled - use default interval
+	}
+
+	switch quality {
+	case "excellent":
+		return s.connectionQualityConfig.UpdateIntervals.Excellent
+	case "good":
+		return s.connectionQualityConfig.UpdateIntervals.Good
+	case "fair":
+		return s.connectionQualityConfig.UpdateIntervals.Fair
+	case "poor":
+		return s.connectionQualityConfig.UpdateIntervals.Poor
+	default:
+		return s.connectionQualityConfig.UpdateIntervals.Good
+	}
+}
+
+// getBandwidthLimit returns the appropriate bandwidth limit based on connection quality
+func (s *WebSocketServer) getBandwidthLimit(quality string) int {
+	s.qualityConfigMu.Lock()
+	defer s.qualityConfigMu.Unlock()
+
+	if !s.connectionQualityConfig.BandwidthThrottlingEnabled {
+		return 0 // Disabled - no limit
+	}
+
+	switch quality {
+	case "excellent":
+		return s.connectionQualityConfig.ThrottlingThresholds.Excellent
+	case "good":
+		return s.connectionQualityConfig.ThrottlingThresholds.Good
+	case "fair":
+		return s.connectionQualityConfig.ThrottlingThresholds.Fair
+	case "poor":
+		return s.connectionQualityConfig.ThrottlingThresholds.Poor
+	default:
+		return s.connectionQualityConfig.ThrottlingThresholds.Good
+	}
 }
 
 // getConnectionStats returns connection statistics for all clients
@@ -762,6 +1001,19 @@ func (s *WebSocketServer) GetConnectionQualityInfo() map[string]interface{} {
 		}
 	}
 
+	s.qualityConfigMu.Lock()
+	config := s.connectionQualityConfig
+	s.qualityConfigMu.Unlock()
+
+	s.qualityAlertsMu.Lock()
+	activeAlerts := 0
+	for _, alert := range s.connectionQualityAlerts {
+		if alert.Active {
+			activeAlerts++
+		}
+	}
+	s.qualityAlertsMu.Unlock()
+
 	return map[string]interface{}{
 		"connection_quality_enabled": s.connectionQualityEnabled,
 		"ping_interval_ms":           s.pingInterval.Milliseconds(),
@@ -773,6 +1025,9 @@ func (s *WebSocketServer) GetConnectionQualityInfo() map[string]interface{} {
 			"poor":     poor,
 		},
 		"average_latency_ms": s.calculateAverageLatency(stats),
+		"adaptive_updates_enabled": config.AdaptiveUpdatesEnabled,
+		"bandwidth_throttling_enabled": config.BandwidthThrottlingEnabled,
+		"active_quality_alerts": activeAlerts,
 	}
 }
 
@@ -918,6 +1173,15 @@ func generateClientID() string {
 		return fmt.Sprintf("client-%d", time.Now().UnixNano())
 	}
 	return "client-" + base64.URLEncoding.EncodeToString(key)
+}
+
+func generateAlertID() string {
+	key := make([]byte, 6)
+	if _, err := rand.Read(key); err != nil {
+		log.Printf("Failed to generate alert ID, using timestamp fallback: %v", err)
+		return fmt.Sprintf("alert-%d", time.Now().UnixNano())
+	}
+	return "alert-" + base64.URLEncoding.EncodeToString(key)
 }
 
 // GenerateJWTToken creates a new JWT token
@@ -1496,6 +1760,100 @@ func (s *WebSocketServer) handleConnectionQuality(w http.ResponseWriter, r *http
 	connectionQualityInfo := s.GetConnectionQualityInfo()
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(connectionQualityInfo)
+}
+
+// handleConnectionQualityHistory handles connection quality history requests
+func (s *WebSocketServer) handleConnectionQualityHistory(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	s.qualityHistoryMu.Lock()
+	defer s.qualityHistoryMu.Unlock()
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"history": s.connectionQualityHistory,
+		"count":   len(s.connectionQualityHistory),
+	})
+}
+
+// handleConnectionQualityAlerts handles connection quality alert requests
+func (s *WebSocketServer) handleConnectionQualityAlerts(w http.ResponseWriter, r *http.Request) {
+	s.qualityAlertsMu.Lock()
+	defer s.qualityAlertsMu.Unlock()
+
+	w.Header().Set("Content-Type", "application/json")
+
+	switch r.Method {
+	case http.MethodGet:
+		// Return current alerts
+		json.NewEncoder(w).Encode(s.connectionQualityAlerts)
+	case http.MethodPost:
+		// Add new alert
+		var alert ConnectionQualityAlert
+		if err := json.NewDecoder(r.Body).Decode(&alert); err != nil {
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+		
+		// Generate ID if not provided
+		if alert.ID == "" {
+			alert.ID = generateAlertID()
+		}
+		
+		s.connectionQualityAlerts = append(s.connectionQualityAlerts, alert)
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(alert)
+	case http.MethodDelete:
+		// Delete alert by ID
+		id := r.URL.Query().Get("id")
+		if id == "" {
+			http.Error(w, "Alert ID required", http.StatusBadRequest)
+			return
+		}
+		
+		for i, alert := range s.connectionQualityAlerts {
+			if alert.ID == id {
+				s.connectionQualityAlerts = append(s.connectionQualityAlerts[:i], s.connectionQualityAlerts[i+1:]...)
+				w.WriteHeader(http.StatusOK)
+				json.NewEncoder(w).Encode(map[string]string{"status": "deleted"})
+				return
+			}
+		}
+		
+		http.Error(w, "Alert not found", http.StatusNotFound)
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+// handleConnectionQualityConfig handles connection quality configuration requests
+func (s *WebSocketServer) handleConnectionQualityConfig(w http.ResponseWriter, r *http.Request) {
+	s.qualityConfigMu.Lock()
+	defer s.qualityConfigMu.Unlock()
+
+	w.Header().Set("Content-Type", "application/json")
+
+	switch r.Method {
+	case http.MethodGet:
+		// Return current configuration
+		json.NewEncoder(w).Encode(s.connectionQualityConfig)
+	case http.MethodPost:
+		// Update configuration
+		var config ConnectionQualityConfig
+		if err := json.NewDecoder(r.Body).Decode(&config); err != nil {
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+		
+		s.connectionQualityConfig = config
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(config)
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
 }
 
 // handlePerformanceHistory handles performance history requests

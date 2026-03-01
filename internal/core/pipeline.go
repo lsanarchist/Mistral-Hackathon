@@ -36,6 +36,8 @@ type Pipeline struct {
 	wsServer      *webserver.WebSocketServer
 	alertsConfigFile string
 	connectionQualityEnabled bool
+	connectionQualityAlerts []webserver.ConnectionQualityAlert
+	connectionQualityConfig webserver.ConnectionQualityConfig
 }
 
 func NewPipeline(pluginDir string) *Pipeline {
@@ -104,7 +106,7 @@ func (p *Pipeline) WithWebSocketServer(port int, dataDir string, enableAuth bool
 		log.Printf("Warning: Failed to load performance alerts: %v", err)
 	}
 	
-	p.wsServer = webserver.NewWebSocketServer(port, dataDir, pluginDir, enableAuth, enableCompression, enableBatching, batchInterval, p.connectionQualityEnabled, alertsConfig)
+	p.wsServer = webserver.NewWebSocketServer(port, dataDir, pluginDir, enableAuth, enableCompression, enableBatching, batchInterval, p.connectionQualityEnabled, alertsConfig, p.connectionQualityAlerts, p.connectionQualityConfig)
 }
 
 // WithWebSocketAutoRefresh configures auto-refresh interval for WebSocket server
@@ -117,6 +119,16 @@ func (p *Pipeline) WithWebSocketAutoRefresh(interval time.Duration) {
 // WithWebSocketConnectionQuality enables WebSocket connection quality monitoring
 func (p *Pipeline) WithWebSocketConnectionQuality(enabled bool) {
 	p.connectionQualityEnabled = enabled
+}
+
+// WithWebSocketConnectionQualityAlerts configures connection quality alerts
+func (p *Pipeline) WithWebSocketConnectionQualityAlerts(alerts []webserver.ConnectionQualityAlert) {
+	p.connectionQualityAlerts = alerts
+}
+
+// WithWebSocketConnectionQualityConfig configures connection quality adaptation settings
+func (p *Pipeline) WithWebSocketConnectionQualityConfig(config webserver.ConnectionQualityConfig) {
+	p.connectionQualityConfig = config
 }
 
 // StartWebSocketServer starts the WebSocket server
