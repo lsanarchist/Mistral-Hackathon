@@ -13,6 +13,7 @@ import (
 
 	"github.com/mistral-hackathon/triageprof/internal/analyzer"
 	"github.com/mistral-hackathon/triageprof/internal/llm"
+	"github.com/mistral-hackathon/triageprof/internal/auth"
 	"github.com/mistral-hackathon/triageprof/internal/model"
 	"github.com/mistral-hackathon/triageprof/internal/plugin"
 	"github.com/mistral-hackathon/triageprof/internal/report"
@@ -45,6 +46,9 @@ type Pipeline struct {
 	phase5FeaturesEnabled  bool
 	phase6FeaturesEnabled  bool
 	performanceGateConfig model.PerformanceGateConfig
+	auditLogger    *AuditLogger
+	rbacManager    *auth.RBACManager
+	enterpriseConfig model.EnterpriseConfig
 }
 
 func NewPipeline(pluginDir string) *Pipeline {
@@ -54,6 +58,9 @@ func NewPipeline(pluginDir string) *Pipeline {
 		analyzer:      analyzer.NewAnalyzer(),
 		reporter:      report.NewReporter(),
 		llmGenerator:  nil, // LLM disabled by default
+		auditLogger:    NewAuditLogger(AuditLoggerConfig{Enabled: false}),
+		rbacManager:    auth.NewRBACManager(),
+		enterpriseConfig: model.EnterpriseConfig{},
 	}
 }
 
@@ -104,6 +111,75 @@ func (p *Pipeline) WithLLMWithCache(apiKey, model string, timeout, maxResponse, 
 func (p *Pipeline) WithPerformanceGates(config model.PerformanceGateConfig) *Pipeline {
 	p.performanceGateConfig = config
 	return p
+}
+
+// WithEnterpriseConfig configures enterprise features
+func (p *Pipeline) WithEnterpriseConfig(config model.EnterpriseConfig) *Pipeline {
+	p.enterpriseConfig = config
+	
+	// Initialize audit logger if enterprise features are enabled
+	if config.Enabled && config.AuditLogging {
+		p.auditLogger = NewAuditLogger(AuditLoggerConfig{
+			Enabled:    true,
+			LogDir:     ".", // Default to current directory, will be updated when output dir is known
+			MaxEntries: 1000,
+		})
+	} else {
+		p.auditLogger = NewAuditLogger(AuditLoggerConfig{Enabled: false})
+	}
+	
+	// Initialize RBAC if enabled
+	if config.Enabled && config.RBACEnabled {
+		p.rbacManager = auth.NewRBACManager()
+	} else {
+		p.rbacManager = auth.NewRBACManager() // Still initialize but with default roles
+	}
+	
+	return p
+}
+
+// UpdateAuditLogDirectory updates the audit log directory after output directory is known
+func (p *Pipeline) UpdateAuditLogDirectory(outDir string) {
+	if p.auditLogger != nil && p.auditLogger.IsEnabled() {
+		// Create a new audit logger with the correct output directory
+		oldLogger := p.auditLogger
+		p.auditLogger = NewAuditLogger(AuditLoggerConfig{
+			Enabled:    true,
+			LogDir:     outDir,
+			MaxEntries: 1000,
+		})
+		// Copy any existing logs from the old logger
+		if oldLogger != nil {
+			for _, entry := range oldLogger.GetLogs() {
+				p.auditLogger.LogAction(entry.UserID, entry.Action, entry.Resource, entry.Details, entry.Status)
+			}
+		}
+	}
+}
+
+// LogAuditAction logs an audit action for enterprise auditing
+func (p *Pipeline) LogAuditAction(userID, action, resource, details, status string) {
+	if p.auditLogger != nil && p.auditLogger.IsEnabled() {
+		p.auditLogger.LogAction(userID, action, resource, details, status)
+	}
+}
+
+// GetAuditSummary returns audit log summary
+func (p *Pipeline) GetAuditSummary() map[string]interface{} {
+	if p.auditLogger != nil {
+		return p.auditLogger.GetAuditSummary()
+	}
+	return map[string]interface{}{"enabled": false}
+}
+
+// GetRBACManager returns the RBAC manager
+func (p *Pipeline) GetRBACManager() *auth.RBACManager {
+	return p.rbacManager
+}
+
+// GetEnterpriseConfig returns the enterprise configuration
+func (p *Pipeline) GetEnterpriseConfig() model.EnterpriseConfig {
+	return p.enterpriseConfig
 }
 
 // CheckPerformanceGates checks findings against configured performance gates

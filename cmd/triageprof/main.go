@@ -864,6 +864,16 @@ func runDemoCommand(pipeline *core.Pipeline) {
 	failOnCritical := flagSet.Bool("fail-on-critical", true, "Fail build on critical threshold exceedance")
 	failOnHigh := flagSet.Bool("fail-on-high", false, "Fail build on high threshold exceedance")
 	warnOnMedium := flagSet.Bool("warn-on-medium", true, "Warn on medium threshold exceedance")
+	
+	// Enterprise Features
+	enterpriseEnabled := flagSet.Bool("enterprise", false, "Enable enterprise features")
+	teamName := flagSet.String("team", "", "Team name for enterprise collaboration")
+	userName := flagSet.String("user", "", "User name for enterprise auditing")
+	auditLogging := flagSet.Bool("audit-logging", false, "Enable audit logging for enterprise compliance")
+	rbacEnabled := flagSet.Bool("rbac", false, "Enable role-based access control")
+	maxUsers := flagSet.Int("max-users", 10, "Maximum number of users for enterprise license")
+	maxTeams := flagSet.Int("max-teams", 5, "Maximum number of teams for enterprise license")
+	
 	flagSet.Parse(os.Args[2:])
 
 	if *repoURL == "" || *outDir == "" {
@@ -880,6 +890,32 @@ func runDemoCommand(pipeline *core.Pipeline) {
 	}
 	fmt.Printf("⏱  Benchmark duration: %d seconds\n", *duration)
 	fmt.Printf("📁 Output directory: %s\n", *outDir)
+	
+	// Display enterprise settings
+	if *enterpriseEnabled {
+		fmt.Printf("\n🏢 Enterprise Features:\n")
+		fmt.Printf("   ✅ Enterprise mode: ENABLED\n")
+		if *teamName != "" {
+			fmt.Printf("   👥 Team: %s\n", *teamName)
+		}
+		if *userName != "" {
+			fmt.Printf("   👤 User: %s\n", *userName)
+		}
+		if *auditLogging {
+			fmt.Printf("   📝 Audit logging: ENABLED\n")
+		} else {
+			fmt.Printf("   ❌ Audit logging: DISABLED\n")
+		}
+		if *rbacEnabled {
+			fmt.Printf("   🔐 RBAC: ENABLED\n")
+		} else {
+			fmt.Printf("   ❌ RBAC: DISABLED\n")
+		}
+		fmt.Printf("   👥 Max users: %d\n", *maxUsers)
+		fmt.Printf("   👥 Max teams: %d\n", *maxTeams)
+	} else {
+		fmt.Printf("\n🏢 Enterprise Features: DISABLED\n")
+	}
 	
 	// Display performance optimization settings
 	fmt.Printf("\n🔧 Performance Optimization Settings:\n")
@@ -949,6 +985,20 @@ func runDemoCommand(pipeline *core.Pipeline) {
 		WarnOnMediumThreshold:      *warnOnMedium,
 	}
 
+	// Create enterprise configuration
+	enterpriseConfig := model.EnterpriseConfig{
+		Enabled:          *enterpriseEnabled,
+		TeamName:         *teamName,
+		UserName:         *userName,
+		AuditLogging:     *auditLogging,
+		RBACEnabled:      *rbacEnabled,
+		MaxUsers:         *maxUsers,
+		MaxTeams:         *maxTeams,
+	}
+
+	// Configure enterprise features in pipeline
+	pipeline.WithEnterpriseConfig(enterpriseConfig)
+
 	// Configure performance gates in pipeline
 	pipeline.WithPerformanceGates(performanceGateConfig)
 
@@ -976,11 +1026,50 @@ func runDemoCommand(pipeline *core.Pipeline) {
 		os.Exit(1)
 	}
 
-	// Add performance gate config to manifest
-	manifest.PerformanceGateConfig = performanceGateConfig
+	// Add enterprise config to manifest
+	manifest.EnterpriseConfig = enterpriseConfig
 
 	// Add performance gate config to manifest
 	manifest.PerformanceGateConfig = performanceGateConfig
+
+	// Log audit action if enterprise features are enabled
+	if enterpriseConfig.Enabled && enterpriseConfig.AuditLogging {
+		userID := *userName
+		if userID == "" {
+			userID = "system"
+		}
+		pipeline.LogAuditAction(userID, "demo_completed", *repoURL, 
+			fmt.Sprintf("Benchmarks: %d, Profiles: %d, Duration: %ds", len(manifest.Benchmarks), len(manifest.Profiles), *duration), "success")
+		
+		// Display audit summary
+		auditSummary := pipeline.GetAuditSummary()
+		if auditSummary["enabled"].(bool) {
+			fmt.Printf("\n📝 Audit Log Summary:\n")
+			fmt.Printf("   Total entries: %d\n", auditSummary["total_entries"])
+			fmt.Printf("   Status: ENABLED\n")
+		}
+	}
+
+	// Add enterprise config to manifest
+	manifest.EnterpriseConfig = enterpriseConfig
+
+	// Log audit action if enterprise features are enabled
+	if enterpriseConfig.Enabled && enterpriseConfig.AuditLogging {
+		userID := *userName
+		if userID == "" {
+			userID = "system"
+		}
+		pipeline.LogAuditAction(userID, "demo_kit_completed", "built-in-demo-repo", 
+			fmt.Sprintf("Benchmarks: %d, Profiles: %d, Duration: %ds", len(manifest.Benchmarks), len(manifest.Profiles), *duration), "success")
+		
+		// Display audit summary
+		auditSummary := pipeline.GetAuditSummary()
+		if auditSummary["enabled"].(bool) {
+			fmt.Printf("\n📝 Audit Log Summary:\n")
+			fmt.Printf("   Total entries: %d\n", auditSummary["total_entries"])
+			fmt.Printf("   Status: ENABLED\n")
+		}
+	}
 
 	// Save run manifest
 	manifestData, err := json.MarshalIndent(manifest, "", "  ")
@@ -1121,6 +1210,16 @@ func runDemoKitCommand(pipeline *core.Pipeline) {
 	failOnCritical := flagSet.Bool("fail-on-critical", true, "Fail build on critical threshold exceedance")
 	failOnHigh := flagSet.Bool("fail-on-high", false, "Fail build on high threshold exceedance")
 	warnOnMedium := flagSet.Bool("warn-on-medium", true, "Warn on medium threshold exceedance")
+	
+	// Enterprise Features
+	enterpriseEnabled := flagSet.Bool("enterprise", false, "Enable enterprise features")
+	teamName := flagSet.String("team", "", "Team name for enterprise collaboration")
+	userName := flagSet.String("user", "", "User name for enterprise auditing")
+	auditLogging := flagSet.Bool("audit-logging", false, "Enable audit logging for enterprise compliance")
+	rbacEnabled := flagSet.Bool("rbac", false, "Enable role-based access control")
+	maxUsers := flagSet.Int("max-users", 10, "Maximum number of users for enterprise license")
+	maxTeams := flagSet.Int("max-teams", 5, "Maximum number of teams for enterprise license")
+	
 	flagSet.Parse(os.Args[2:])
 
 	if *outDir == "" {
@@ -1163,6 +1262,32 @@ func runDemoKitCommand(pipeline *core.Pipeline) {
 	}
 	fmt.Printf("\n")
 
+	// Display enterprise settings
+	if *enterpriseEnabled {
+		fmt.Printf("\n🏢 Enterprise Features:\n")
+		fmt.Printf("   ✅ Enterprise mode: ENABLED\n")
+		if *teamName != "" {
+			fmt.Printf("   👥 Team: %s\n", *teamName)
+		}
+		if *userName != "" {
+			fmt.Printf("   👤 User: %s\n", *userName)
+		}
+		if *auditLogging {
+			fmt.Printf("   📝 Audit logging: ENABLED\n")
+		} else {
+			fmt.Printf("   ❌ Audit logging: DISABLED\n")
+		}
+		if *rbacEnabled {
+			fmt.Printf("   🔐 RBAC: ENABLED\n")
+		} else {
+			fmt.Printf("   ❌ RBAC: DISABLED\n")
+		}
+		fmt.Printf("   👥 Max users: %d\n", *maxUsers)
+		fmt.Printf("   👥 Max teams: %d\n", *maxTeams)
+	} else {
+		fmt.Printf("\n🏢 Enterprise Features: DISABLED\n")
+	}
+
 	// Create performance configuration
 	perfConfig := &model.PerformanceOptimizationConfig{
 		EnableConcurrentBenchmarks: *concurrentBenchmarks,
@@ -1194,6 +1319,20 @@ func runDemoKitCommand(pipeline *core.Pipeline) {
 		FailOnHighThreshold:        *failOnHigh,
 		WarnOnMediumThreshold:      *warnOnMedium,
 	}
+
+	// Create enterprise configuration
+	enterpriseConfig := model.EnterpriseConfig{
+		Enabled:          *enterpriseEnabled,
+		TeamName:         *teamName,
+		UserName:         *userName,
+		AuditLogging:     *auditLogging,
+		RBACEnabled:      *rbacEnabled,
+		MaxUsers:         *maxUsers,
+		MaxTeams:         *maxTeams,
+	}
+
+	// Configure enterprise features in pipeline
+	pipeline.WithEnterpriseConfig(enterpriseConfig)
 
 	// Configure performance gates in pipeline
 	pipeline.WithPerformanceGates(performanceGateConfig)
@@ -1232,6 +1371,24 @@ func runDemoKitCommand(pipeline *core.Pipeline) {
 			fmt.Printf("⚠️  Warning: failed to write run manifest: %v\n", err)
 		} else {
 			fmt.Printf("📋 Run manifest saved to: %s\n", manifestPath)
+		}
+	}
+
+	// Log audit action if enterprise features are enabled
+	if enterpriseConfig.Enabled && enterpriseConfig.AuditLogging {
+		userID := *userName
+		if userID == "" {
+			userID = "system"
+		}
+		pipeline.LogAuditAction(userID, "demo_kit_completed", "built-in-demo-repo", 
+			fmt.Sprintf("Benchmarks: %d, Profiles: %d, Duration: %ds", len(manifest.Benchmarks), len(manifest.Profiles), *duration), "success")
+		
+		// Display audit summary
+		auditSummary := pipeline.GetAuditSummary()
+		if auditSummary["enabled"].(bool) {
+			fmt.Printf("\n📝 Audit Log Summary:\n")
+			fmt.Printf("   Total entries: %d\n", auditSummary["total_entries"])
+			fmt.Printf("   Status: ENABLED\n")
 		}
 	}
 

@@ -30,6 +30,59 @@ type PerformanceGateConfig struct {
 	WarnOnMediumThreshold       bool   `json:"warnOnMediumThreshold,omitempty"`
 }
 
+// EnterpriseConfig defines enterprise features configuration
+type EnterpriseConfig struct {
+	Enabled          bool   `json:"enabled,omitempty"`
+	TeamName         string `json:"team_name,omitempty"`
+	UserName         string `json:"user_name,omitempty"`
+	AuditLogging     bool   `json:"audit_logging,omitempty"`
+	RBACEnabled      bool   `json:"rbac_enabled,omitempty"`
+	MaxUsers         int    `json:"max_users,omitempty"`
+	MaxTeams         int    `json:"max_teams,omitempty"`
+}
+
+// User represents a user in the enterprise system
+type User struct {
+	ID       string   `json:"id,omitempty"`
+	Username string   `json:"username,omitempty"`
+	Email    string   `json:"email,omitempty"`
+	Roles    []string `json:"roles,omitempty"`
+	Teams    []string `json:"teams,omitempty"`
+}
+
+// Team represents a team in the enterprise system
+type Team struct {
+	ID          string   `json:"id,omitempty"`
+	Name        string   `json:"name,omitempty"`
+	Description string   `json:"description,omitempty"`
+	Members     []string `json:"members,omitempty"`
+}
+
+// Role represents a role with associated permissions
+type Role struct {
+	ID          string      `json:"id,omitempty"`
+	Name        string      `json:"name,omitempty"`
+	Permissions []string    `json:"permissions,omitempty"`
+	Users       []string    `json:"users,omitempty"`
+}
+
+// Permission represents a specific permission
+type Permission struct {
+	ID          string `json:"id,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Description string `json:"description,omitempty"`
+}
+
+// AuditLogEntry represents an audit log entry
+type AuditLogEntry struct {
+	Timestamp   string `json:"timestamp,omitempty"`
+	UserID      string `json:"user_id,omitempty"`
+	Action      string `json:"action,omitempty"`
+	Resource    string `json:"resource,omitempty"`
+	Details     string `json:"details,omitempty"`
+	Status      string `json:"status,omitempty"`
+}
+
 // DefaultPerformanceGateConfig returns default performance gate configuration
 func DefaultPerformanceGateConfig() PerformanceGateConfig {
 	return PerformanceGateConfig{
@@ -177,6 +230,7 @@ type RunManifest struct {
 	PerformanceConfig    PerformanceOptimizationConfig `json:"performanceConfig,omitempty"`
 	RemediationConfig    RemediationConfig        `json:"remediationConfig,omitempty"`
 	PerformanceGateConfig PerformanceGateConfig     `json:"performanceGateConfig,omitempty"`
+	EnterpriseConfig     EnterpriseConfig         `json:"enterpriseConfig,omitempty"`
 	ErrorContext         *ErrorContext             `json:"errorContext,omitempty"`
 }
 

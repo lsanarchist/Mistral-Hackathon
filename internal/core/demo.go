@@ -33,6 +33,7 @@ type RunManifest struct {
 	PerformanceConfig *model.PerformanceOptimizationConfig `json:"performanceConfig,omitempty"`
 	RemediationConfig *model.RemediationConfig `json:"remediationConfig,omitempty"`
 	PerformanceGateConfig model.PerformanceGateConfig `json:"performanceGateConfig,omitempty"`
+	EnterpriseConfig model.EnterpriseConfig `json:"enterpriseConfig,omitempty"`
 }
 
 // cloneRepo clones a Git repository to the specified directory
@@ -563,6 +564,9 @@ func (p *Pipeline) DemoWithPerformance(ctx context.Context, repoURL, ref, outDir
 		PerformanceConfig: perfConfig,
 	}
 
+	// Update audit log directory to use the output directory
+	p.UpdateAuditLogDirectory(outDir)
+
 	var repoPath string
 	var err error
 
@@ -758,6 +762,7 @@ func (p *Pipeline) DemoWithPerformance(ctx context.Context, repoURL, ref, outDir
 	}
 
 	manifest.Success = true
+	manifest.EnterpriseConfig = p.enterpriseConfig
 	return manifest, nil
 }
 
