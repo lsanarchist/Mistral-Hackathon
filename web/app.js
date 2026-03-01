@@ -362,32 +362,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 showNotification('WebSocket connected successfully!', 'success');
             };
 
-            websocket.onmessage = function(event) {
-                try {
-                    const data = JSON.parse(event.data);
-                    
-                    if (data.type === 'data_update') {
-                        // Update data from WebSocket
-                        findingsData = data.findings;
-                        insightsData = data.insights;
-                        allFindings = findingsData.findings || [];
-                        
-                        // Update last refresh time
-                        updateLastRefreshTime();
-                        
-                        // Render the data
-                        renderData();
-                        
-                        // Update WebSocket stats
-                        updateWebSocketStats(data.stats);
-                        
-                        // Show notification for live updates
-                        showLiveUpdateNotification();
-                    }
-                } catch (err) {
-                    console.error('Error processing WebSocket message:', err);
-                }
-            };
+            // Set up message handler
+            updateWebSocketMessageHandler();
 
             websocket.onclose = function() {
                 isWebSocketConnected = false;
@@ -450,6 +426,426 @@ document.addEventListener('DOMContentLoaded', function() {
                 lastRefreshTime.textContent = 'Last updated: ' + stats.last_updated;
             }
         }
+    }
+    
+    // Update WebSocket message handler to process performance history
+    function updateWebSocketMessageHandler() {
+        websocket.onmessage = function(event) {
+            try {
+                const data = JSON.parse(event.data);
+                
+                if (data.type === 'data_update') {
+                    // Update data from WebSocket
+                    findingsData = data.findings;
+                    insightsData = data.insights;
+                    allFindings = findingsData.findings || [];
+                    
+                    // Update last refresh time
+                    updateLastRefreshTime();
+                    
+                    // Render the data
+                    renderData();
+                    
+                    // Update WebSocket stats
+                    updateWebSocketStats(data.stats);
+                    
+                    // Process performance history if available
+                    if (data.history && data.history.length > 0) {
+                        updatePerformanceHistory(data.history);
+                    }
+                    
+                    // Show notification for live updates
+                    showLiveUpdateNotification();
+                }
+            } catch (err) {
+                console.error('Error processing WebSocket message:', err);
+            }
+        };
+    }
+    
+    // Update performance history visualization
+    function updatePerformanceHistory(history) {
+        if (!history || history.length === 0) {
+            return;
+        }
+        
+        // Update performance metrics dashboard
+        updatePerformanceMetricsDashboard(history);
+        
+        // Update trends charts
+        updateTrendsCharts(history);
+        
+        // Update score breakdown
+        updateScoreBreakdown(history);
+    }
+    
+    // Update performance metrics dashboard
+    function updatePerformanceMetricsDashboard(history) {
+        const latest = history[history.length - 1];
+        
+        // Update metric cards
+        document.getElementById('performanceScore').textContent = latest.overall_score || 'N/A';
+        document.getElementById('criticalIssues').textContent = latest.critical_count || '0';
+        document.getElementById('highIssues').textContent = latest.high_count || '0';
+        document.getElementById('resolvedIssues').textContent = '0'; // Placeholder for resolved issues
+        
+        // Add visual indicators
+        const scoreElement = document.getElementById('performanceScore');
+        const score = parseFloat(latest.overall_score) || 0;
+        
+        // Clear previous classes
+        scoreElement.className = 'metric-value';
+        
+        if (score >= 80) {
+            scoreElement.classList.add('score-excellent');
+        } else if (score >= 60) {
+            scoreElement.classList.add('score-good');
+        } else if (score >= 40) {
+            scoreElement.classList.add('score-fair');
+        } else {
+            scoreElement.classList.add('score-poor');
+        }
+    }
+    
+    // Update trends charts
+    function updateTrendsCharts(history) {
+        if (history.length < 2) {
+            return;
+        }
+        
+        // Extract data for charts
+        const timestamps = history.map(h => h.timestamp);
+        const scores = history.map(h => h.overall_score);
+        const criticalCounts = history.map(h => h.critical_count);
+        const highCounts = history.map(h => h.high_count);
+        
+        // Update score trend chart
+        updateScoreTrendChart(timestamps, scores);
+        
+        // Update resolution trend chart (placeholder)
+        updateResolutionTrendChart(timestamps, criticalCounts, highCounts);
+    }
+    
+    // Update score trend chart
+    function updateScoreTrendChart(timestamps, scores) {
+        const ctx = document.getElementById('scoreTrendChart');
+        if (!ctx) return;
+        
+        const isDark = document.documentElement.classList.contains('dark-mode');
+        const textColor = isDark ? '#e0e0e0' : '#262626';
+        const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+        
+        // Format timestamps for display
+        const labels = timestamps.map(ts => {
+            const date = new Date(ts);
+            return date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+        });
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Performance Score',
+                    data: scores,
+                    borderColor: 'rgba(74, 111, 165, 1)',
+                    backgroundColor: 'rgba(74, 111, 165, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        ticks: {
+                            color: textColor,
+                            font: { size: 10 }
+                        },
+                        grid: { color: gridColor }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            color: textColor,
+                            font: { size: 10 }
+                        },
+                        grid: { color: gridColor }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff'
+                    }
+                }
+            }
+        });
+    }
+    
+    // Update resolution trend chart
+    function updateResolutionTrendChart(timestamps, criticalCounts, highCounts) {
+        const ctx = document.getElementById('resolutionTrendChart');
+        if (!ctx) return;
+        
+        const isDark = document.documentElement.classList.contains('dark-mode');
+        const textColor = isDark ? '#e0e0e0' : '#262626';
+        const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+        
+        // Format timestamps for display
+        const labels = timestamps.map(ts => {
+            const date = new Date(ts);
+            return date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+        });
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Critical Issues',
+                        data: criticalCounts,
+                        borderColor: 'rgba(255, 107, 107, 1)',
+                        backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'High Severity Issues',
+                        data: highCounts,
+                        borderColor: 'rgba(255, 230, 109, 1)',
+                        backgroundColor: 'rgba(255, 230, 109, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        ticks: {
+                            color: textColor,
+                            font: { size: 10 }
+                        },
+                        grid: { color: gridColor }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: textColor,
+                            font: { size: 10 }
+                        },
+                        grid: { color: gridColor }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: { color: textColor, font: { size: 10 } }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff'
+                    }
+                }
+            }
+        });
+    }
+    
+    // Update score breakdown visualization
+    function updateScoreBreakdown(history) {
+        const ctx = document.getElementById('scoreBreakdownChart');
+        if (!ctx) return;
+        
+        const isDark = document.documentElement.classList.contains('dark-mode');
+        const textColor = isDark ? '#e0e0e0' : '#262626';
+        
+        // Calculate average scores by category (simplified for demo)
+        const latest = history[history.length - 1];
+        const score = latest.overall_score || 0;
+        
+        // Simulated breakdown - in a real implementation, this would come from detailed analysis
+        const cpuEfficiency = Math.min(100, score * 0.4);
+        const memoryUsage = Math.min(100, score * 0.3);
+        const ioPerformance = Math.min(100, score * 0.2);
+        const concurrency = Math.min(100, score * 0.1);
+        
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['CPU Efficiency', 'Memory Usage', 'I/O Performance', 'Concurrency'],
+                datasets: [{
+                    data: [cpuEfficiency, memoryUsage, ioPerformance, concurrency],
+                    backgroundColor: [
+                        'rgba(78, 205, 196, 0.8)',
+                        'rgba(255, 230, 109, 0.8)',
+                        'rgba(255, 107, 107, 0.8)',
+                        'rgba(168, 230, 207, 0.8)'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { color: textColor, font: { size: 11 } }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff'
+                    }
+                }
+            }
+        });
+        
+        // Update comparative analysis
+        updateComparativeAnalysis(history);
+    }
+    
+    // Update comparative analysis charts
+    function updateComparativeAnalysis(history) {
+        if (history.length < 2) {
+            return;
+        }
+        
+        // Calculate baseline (first snapshot) vs current (last snapshot)
+        const baseline = history[0];
+        const current = history[history.length - 1];
+        
+        // Update comparison chart
+        updateComparisonChart(baseline, current);
+        
+        // Update category comparison (simplified for demo)
+        updateCategoryComparisonChart(current);
+    }
+    
+    // Update baseline vs current comparison chart
+    function updateComparisonChart(baseline, current) {
+        const ctx = document.getElementById('comparisonChart');
+        if (!ctx) return;
+        
+        const isDark = document.documentElement.classList.contains('dark-mode');
+        const textColor = isDark ? '#e0e0e0' : '#262626';
+        const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+        
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Performance Score', 'Critical Issues', 'High Issues', 'Total Findings'],
+                datasets: [
+                    {
+                        label: 'Baseline',
+                        data: [baseline.overall_score, baseline.critical_count, baseline.high_count, baseline.total_findings],
+                        backgroundColor: 'rgba(168, 230, 207, 0.8)',
+                        borderColor: 'rgba(168, 230, 207, 1)',
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Current',
+                        data: [current.overall_score, current.critical_count, current.high_count, current.total_findings],
+                        backgroundColor: 'rgba(74, 111, 165, 0.8)',
+                        borderColor: 'rgba(74, 111, 165, 1)',
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        stacked: false,
+                        ticks: { color: textColor, font: { size: 10 } },
+                        grid: { color: gridColor }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: { color: textColor, font: { size: 10 } },
+                        grid: { color: gridColor }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: { color: textColor, font: { size: 10 } }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff'
+                    }
+                }
+            }
+        });
+    }
+    
+    // Update category comparison chart
+    function updateCategoryComparisonChart(current) {
+        const ctx = document.getElementById('categoryComparisonChart');
+        if (!ctx) return;
+        
+        const isDark = document.documentElement.classList.contains('dark-mode');
+        const textColor = isDark ? '#e0e0e0' : '#262626';
+        
+        // Simulated category data - in a real implementation, this would come from findings analysis
+        const score = current.overall_score || 0;
+        const categories = ['CPU', 'Memory', 'I/O', 'Concurrency', 'Other'];
+        const values = categories.map((_, i) => Math.max(10, score - i * 10));
+        
+        new Chart(ctx, {
+            type: 'polarArea',
+            data: {
+                labels: categories,
+                datasets: [{
+                    data: values,
+                    backgroundColor: [
+                        'rgba(78, 205, 196, 0.6)',
+                        'rgba(255, 230, 109, 0.6)',
+                        'rgba(255, 107, 107, 0.6)',
+                        'rgba(168, 230, 207, 0.6)',
+                        'rgba(144, 164, 174, 0.6)'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { color: gridColor },
+                        ticks: { color: textColor, font: { size: 10 } },
+                        pointLabels: { color: textColor, font: { size: 11 } }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { color: textColor, font: { size: 10 } }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff'
+                    }
+                }
+            }
+        });
     }
     
     function showLiveUpdateNotification() {

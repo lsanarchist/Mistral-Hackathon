@@ -37,6 +37,21 @@ type WebSocketServer struct {
 	authEnabled     bool
 	jwtSecretKey    string
 	compressionEnabled bool
+	performanceHistory []PerformanceSnapshot
+	historyMu       sync.Mutex
+	maxHistorySize  int
+}
+
+// PerformanceSnapshot represents a historical performance data point
+type PerformanceSnapshot struct {
+	Timestamp       time.Time `json:"timestamp"`
+	OverallScore    int       `json:"overall_score"`
+	CriticalCount   int       `json:"critical_count"`
+	HighCount       int       `json:"high_count"`
+	MediumCount     int       `json:"medium_count"`
+	LowCount        int       `json:"low_count"`
+	TotalFindings   int       `json:"total_findings"`
+	ClientCount     int       `json:"client_count"`
 }
 
 // JWTClaims represents the JWT token claims
@@ -87,6 +102,8 @@ func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth b
 		authEnabled:     enableAuth,
 		jwtSecretKey:    jwtSecretKey,
 		compressionEnabled: enableCompression,
+		performanceHistory: make([]PerformanceSnapshot, 0),
+		maxHistorySize:  100, // Keep last 100 snapshots
 	}
 
 	// Set up routes
@@ -100,6 +117,8 @@ func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth b
 	mux.HandleFunc("/plugins/install", s.handleInstallPlugin)
 	mux.HandleFunc("/plugins/update", s.handleUpdatePlugin)
 	mux.HandleFunc("/plugins/uninstall", s.handleUninstallPlugin)
+	mux.HandleFunc("/performance/history", s.handlePerformanceHistory)
+	mux.HandleFunc("/performance/analysis", s.handlePerformanceAnalysis)
 	
 	// Add auth endpoints if enabled
 	if enableAuth {
@@ -195,6 +214,7 @@ func (s *WebSocketServer) BroadcastData() {
 			"connected_clients":   len(s.clients),
 			"auth_enabled":        s.authEnabled,
 		},
+		"history": s.getPerformanceHistory(),
 	}
 
 	// Send to all clients
@@ -205,6 +225,28 @@ func (s *WebSocketServer) BroadcastData() {
 			delete(s.clients, client)
 		}
 	}
+}
+
+// GetPerformanceHistory returns the performance history for analysis
+func (s *WebSocketServer) GetPerformanceHistory() []PerformanceSnapshot {
+	s.historyMu.Lock()
+	defer s.historyMu.Unlock()
+
+	// Return a copy to avoid race conditions
+	historyCopy := make([]PerformanceSnapshot, len(s.performanceHistory))
+	copy(historyCopy, s.performanceHistory)
+	return historyCopy
+}
+
+// getPerformanceHistory returns performance history for broadcasting
+func (s *WebSocketServer) getPerformanceHistory() []PerformanceSnapshot {
+	s.historyMu.Lock()
+	defer s.historyMu.Unlock()
+
+	// Return a copy to avoid race conditions
+	historyCopy := make([]PerformanceSnapshot, len(s.performanceHistory))
+	copy(historyCopy, s.performanceHistory)
+	return historyCopy
 }
 
 // StartAutoRefresh enables periodic data broadcasting
@@ -236,8 +278,40 @@ func (s *WebSocketServer) UpdateData(findings *model.FindingsBundle, insights *m
 	
 	s.clientsMu.Unlock()
 	
+	// Record performance snapshot
+	s.recordPerformanceSnapshot()
+	
 	// Broadcast updated data immediately (outside the lock to avoid deadlock)
 	s.BroadcastData()
+}
+
+// recordPerformanceSnapshot captures current performance metrics for historical tracking
+func (s *WebSocketServer) recordPerformanceSnapshot() {
+	if s.findings == nil {
+		return
+	}
+
+	snapshot := PerformanceSnapshot{
+		Timestamp:     time.Now(),
+		OverallScore:  s.findings.Summary.OverallScore,
+		CriticalCount: countSeverity(s.findings.Findings, "critical"),
+		HighCount:     countSeverity(s.findings.Findings, "high"),
+		MediumCount:   countSeverity(s.findings.Findings, "medium"),
+		LowCount:      countSeverity(s.findings.Findings, "low"),
+		TotalFindings: len(s.findings.Findings),
+		ClientCount:   s.GetClientCount(),
+	}
+
+	s.historyMu.Lock()
+	defer s.historyMu.Unlock()
+
+	// Add new snapshot
+	s.performanceHistory = append(s.performanceHistory, snapshot)
+
+	// Enforce max history size
+	if len(s.performanceHistory) > s.maxHistorySize {
+		s.performanceHistory = s.performanceHistory[len(s.performanceHistory)-s.maxHistorySize:]
+	}
 }
 
 // GetClientCount returns the number of connected clients
@@ -776,6 +850,196 @@ func (s *WebSocketServer) handleUninstallPlugin(w http.ResponseWriter, r *http.R
 		"message": fmt.Sprintf("Plugin %s uninstalled successfully", request.PluginName),
 		"pluginName": request.PluginName,
 	})
+}
+
+// handlePerformanceHistory handles performance history requests
+func (s *WebSocketServer) handlePerformanceHistory(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	history := s.GetPerformanceHistory()
+	
+	// Add analysis to the response
+	response := map[string]interface{}{
+		"history": history,
+		"count":   len(history),
+		"analysis": s.analyzePerformanceTrends(history),
+	}
+	
+	json.NewEncoder(w).Encode(response)
+}
+
+// handlePerformanceAnalysis handles performance analysis requests
+func (s *WebSocketServer) handlePerformanceAnalysis(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	history := s.GetPerformanceHistory()
+	analysis := s.analyzePerformanceTrends(history)
+	
+	// Add current state
+	currentState := map[string]interface{}{
+		"overall_score": s.findings.Summary.OverallScore,
+		"critical_count": countSeverity(s.findings.Findings, "critical"),
+		"high_count":     countSeverity(s.findings.Findings, "high"),
+		"medium_count":   countSeverity(s.findings.Findings, "medium"),
+		"low_count":      countSeverity(s.findings.Findings, "low"),
+		"total_findings": len(s.findings.Findings),
+		"client_count":   s.GetClientCount(),
+	}
+	
+	response := map[string]interface{}{
+		"current":  currentState,
+		"analysis": analysis,
+		"trends":   s.calculatePerformanceTrends(history),
+	}
+	
+	json.NewEncoder(w).Encode(response)
+}
+
+// analyzePerformanceTrends analyzes historical performance data
+func (s *WebSocketServer) analyzePerformanceTrends(history []PerformanceSnapshot) map[string]interface{} {
+	if len(history) == 0 {
+		return map[string]interface{}{
+			"status": "no_data",
+			"message": "No performance history available",
+		}
+	}
+
+	// Calculate basic statistics
+	var totalScore, totalCritical, totalHigh, totalMedium, totalLow, totalFindings int
+	var minScore, maxScore int = 100, 0
+	
+	for i, snapshot := range history {
+		totalScore += snapshot.OverallScore
+		totalCritical += snapshot.CriticalCount
+		totalHigh += snapshot.HighCount
+		totalMedium += snapshot.MediumCount
+		totalLow += snapshot.LowCount
+		totalFindings += snapshot.TotalFindings
+		
+		if i == 0 || snapshot.OverallScore < minScore {
+			minScore = snapshot.OverallScore
+		}
+		if i == 0 || snapshot.OverallScore > maxScore {
+			maxScore = snapshot.OverallScore
+		}
+	}
+
+	avgScore := float64(totalScore) / float64(len(history))
+	avgCritical := float64(totalCritical) / float64(len(history))
+	avgHigh := float64(totalHigh) / float64(len(history))
+	avgMedium := float64(totalMedium) / float64(len(history))
+	avgLow := float64(totalLow) / float64(len(history))
+	avgFindings := float64(totalFindings) / float64(len(history))
+
+	// Determine trend direction
+	trend := "stable"
+	if len(history) >= 2 {
+		first := history[0]
+		last := history[len(history)-1]
+		
+		if last.OverallScore > first.OverallScore + 5 {
+			trend = "improving"
+		} else if last.OverallScore < first.OverallScore - 5 {
+			trend = "degrading"
+		}
+	}
+
+	return map[string]interface{}{
+		"status":               "analyzed",
+		"snapshot_count":      len(history),
+		"time_range":           fmt.Sprintf("%s to %s", history[0].Timestamp.Format("2006-01-02 15:04:05"), history[len(history)-1].Timestamp.Format("2006-01-02 15:04:05")),
+		"average_score":        avgScore,
+		"score_range":          fmt.Sprintf("%d-%d", minScore, maxScore),
+		"average_critical":    avgCritical,
+		"average_high":        avgHigh,
+		"average_medium":      avgMedium,
+		"average_low":         avgLow,
+		"average_findings":    avgFindings,
+		"trend":                trend,
+		"improvement_potential": calculateImprovementPotential(minScore, maxScore),
+	}
+}
+
+// calculatePerformanceTrends calculates detailed performance trends
+func (s *WebSocketServer) calculatePerformanceTrends(history []PerformanceSnapshot) map[string]interface{} {
+	if len(history) < 2 {
+		return map[string]interface{}{
+			"status": "insufficient_data",
+			"message": "Need at least 2 data points for trend analysis",
+		}
+	}
+
+	// Calculate score trend
+	scoreTrend := make([]map[string]interface{}, len(history))
+	for i, snapshot := range history {
+		scoreTrend[i] = map[string]interface{}{
+			"timestamp": snapshot.Timestamp.Format("2006-01-02 15:04:05"),
+			"score":     snapshot.OverallScore,
+		}
+	}
+
+	// Calculate severity trends
+	criticalTrend := make([]map[string]interface{}, len(history))
+	highTrend := make([]map[string]interface{}, len(history))
+	mediumTrend := make([]map[string]interface{}, len(history))
+	lowTrend := make([]map[string]interface{}, len(history))
+	
+	for i, snapshot := range history {
+		criticalTrend[i] = map[string]interface{}{
+			"timestamp": snapshot.Timestamp.Format("2006-01-02 15:04:05"),
+			"count":     snapshot.CriticalCount,
+		}
+		highTrend[i] = map[string]interface{}{
+			"timestamp": snapshot.Timestamp.Format("2006-01-02 15:04:05"),
+			"count":     snapshot.HighCount,
+		}
+		mediumTrend[i] = map[string]interface{}{
+			"timestamp": snapshot.Timestamp.Format("2006-01-02 15:04:05"),
+			"count":     snapshot.MediumCount,
+		}
+		lowTrend[i] = map[string]interface{}{
+			"timestamp": snapshot.Timestamp.Format("2006-01-02 15:04:05"),
+			"count":     snapshot.LowCount,
+		}
+	}
+
+	return map[string]interface{}{
+		"status":         "calculated",
+		"score_trend":    scoreTrend,
+		"critical_trend": criticalTrend,
+		"high_trend":     highTrend,
+		"medium_trend":   mediumTrend,
+		"low_trend":      lowTrend,
+	}
+}
+
+// calculateImprovementPotential calculates potential improvement based on score range
+func calculateImprovementPotential(minScore, maxScore int) map[string]interface{} {
+	if minScore == maxScore {
+		return map[string]interface{}{
+			"potential": 0,
+			"percentage": 0.0,
+			"message": "Performance is stable",
+		}
+	}
+
+	potential := maxScore - minScore
+	percentage := float64(potential) / float64(minScore) * 100
+	
+	message := "stable"
+	if percentage > 20 {
+		message = "significant improvement potential"
+	} else if percentage > 10 {
+		message = "moderate improvement potential"
+	} else if percentage > 5 {
+		message = "some improvement potential"
+	}
+
+	return map[string]interface{}{
+		"potential": potential,
+		"percentage": percentage,
+		"message":   message,
+	}
 }
 
 // isPluginInstalled checks if a plugin is installed

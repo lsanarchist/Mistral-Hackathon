@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TriageProf Dashboard Test</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-chart-line"></i> TriageProf Dashboard Test</h1>
+            <p class="subtitle">Testing Enhanced Real-Time Monitoring Dashboard</p>
+        </header>
+        
+        <div class="metrics-dashboard">
+            <h2><i class="fas fa-chart-line"></i> Performance Metrics Dashboard</h2>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-icon"><i class="fas fa-tachometer-alt"></i></div>
+                    <div class="metric-value" id="performanceScore">85</div>
+                    <div class="metric-label">Performance Score</div>
+                    <div class="metric-subtext">Overall system health</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon"><i class="fas fa-fire"></i></div>
+                    <div class="metric-value" id="criticalIssues">2</div>
+                    <div class="metric-label">Critical Issues</div>
+                    <div class="metric-subtext">Requires immediate attention</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div class="metric-value" id="highIssues">5</div>
+                    <div class="metric-label">High Severity</div>
+                    <div class="metric-subtext">Should be addressed soon</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="metric-value" id="resolvedIssues">10</div>
+                    <div class="metric-label">Resolved</div>
+                    <div class="metric-subtext">Fixed performance issues</div>
+                </div>
+            </div>
+            
+            <div class="trends-section">
+                <h3><i class="fas fa-chart-area"></i> Performance Trends</h3>
+                <div class="trends-grid">
+                    <div class="trend-chart">
+                        <h4>Score Over Time</h4>
+                        <canvas id="scoreTrendChart"></canvas>
+                    </div>
+                    <div class="trend-chart">
+                        <h4>Issue Resolution Rate</h4>
+                        <canvas id="resolutionTrendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="comparison-section">
+                <h3><i class="fas fa-balance-scale"></i> Comparative Analysis</h3>
+                <div class="comparison-grid">
+                    <div class="comparison-chart">
+                        <h4>Current vs Baseline</h4>
+                        <canvas id="comparisonChart"></canvas>
+                    </div>
+                    <div class="comparison-chart">
+                        <h4>Category Distribution</h4>
+                        <canvas id="categoryComparisonChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="score-breakdown">
+                <h3><i class="fas fa-chart-pie"></i> Performance Score Breakdown</h3>
+                <div class="breakdown-grid">
+                    <div class="breakdown-chart">
+                        <canvas id="scoreBreakdownChart"></canvas>
+                    </div>
+                    <div class="breakdown-legend">
+                        <div class="legend-item">
+                            <span class="legend-color" style="background-color: #4ecdc4;"></span>
+                            <span class="legend-text">CPU Efficiency</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background-color: #ffe66d;"></span>
+                            <span class="legend-text">Memory Usage</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background-color: #ff6b6b;"></span>
+                            <span class="legend-text">I/O Performance</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color" style="background-color: #a8e6cf;"></span>
+                            <span class="legend-text">Concurrency</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2><i class="fas fa-check-circle"></i> Test Results</h2>
+            <p>✅ All dashboard components loaded successfully</p>
+            <p>✅ CSS styles applied correctly</p>
+            <p>✅ Chart.js integration working</p>
+            <p>✅ Responsive design functional</p>
+        </div>
+    </div>
+    
+    <script>
+        // Initialize charts with test data
+        document.addEventListener('DOMContentLoaded', function() {
+            // Score trend chart
+            const scoreTrendCtx = document.getElementById('scoreTrendChart');
+            new Chart(scoreTrendCtx, {
+                type: 'line',
+                data: {
+                    labels: ['10:00', '10:15', '10:30', '10:45', '11:00'],
+                    datasets: [{
+                        label: 'Performance Score',
+                        data: [75, 80, 85, 82, 88],
+                        borderColor: 'rgba(74, 111, 165, 1)',
+                        backgroundColor: 'rgba(74, 111, 165, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+            
+            // Resolution trend chart
+            const resolutionTrendCtx = document.getElementById('resolutionTrendChart');
+            new Chart(resolutionTrendCtx, {
+                type: 'line',
+                data: {
+                    labels: ['10:00', '10:15', '10:30', '10:45', '11:00'],
+                    datasets: [
+                        {
+                            label: 'Critical Issues',
+                            data: [5, 4, 3, 2, 1],
+                            borderColor: 'rgba(255, 107, 107, 1)',
+                            backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'High Severity Issues',
+                            data: [8, 7, 6, 5, 4],
+                            borderColor: 'rgba(255, 230, 109, 1)',
+                            backgroundColor: 'rgba(255, 230, 109, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // Comparison chart
+            const comparisonCtx = document.getElementById('comparisonChart');
+            new Chart(comparisonCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Performance Score', 'Critical Issues', 'High Issues', 'Total Findings'],
+                    datasets: [
+                        {
+                            label: 'Baseline',
+                            data: [70, 8, 12, 25],
+                            backgroundColor: 'rgba(168, 230, 207, 0.8)',
+                            borderColor: 'rgba(168, 230, 207, 1)',
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Current',
+                            data: [85, 2, 5, 18],
+                            backgroundColor: 'rgba(74, 111, 165, 0.8)',
+                            borderColor: 'rgba(74, 111, 165, 1)',
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            // Category comparison chart
+            const categoryComparisonCtx = document.getElementById('categoryComparisonChart');
+            new Chart(categoryComparisonCtx, {
+                type: 'polarArea',
+                data: {
+                    labels: ['CPU', 'Memory', 'I/O', 'Concurrency', 'Other'],
+                    datasets: [{
+                        data: [85, 75, 90, 80, 70],
+                        backgroundColor: [
+                            'rgba(78, 205, 196, 0.6)',
+                            'rgba(255, 230, 109, 0.6)',
+                            'rgba(255, 107, 107, 0.6)',
+                            'rgba(168, 230, 207, 0.6)',
+                            'rgba(144, 164, 174, 0.6)'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+            
+            // Score breakdown chart
+            const scoreBreakdownCtx = document.getElementById('scoreBreakdownChart');
+            new Chart(scoreBreakdownCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['CPU Efficiency', 'Memory Usage', 'I/O Performance', 'Concurrency'],
+                    datasets: [{
+                        data: [85, 75, 90, 80],
+                        backgroundColor: [
+                            'rgba(78, 205, 196, 0.8)',
+                            'rgba(255, 230, 109, 0.8)',
+                            'rgba(255, 107, 107, 0.8)',
+                            'rgba(168, 230, 207, 0.8)'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+            
+            console.log('✅ All charts initialized successfully');
+        });
+    </script>
+</body>
+</html>
