@@ -15,9 +15,34 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// mockWebSocketConn is a mock WebSocket connection for testing that implements websocket.Conn interface
+type mockWebSocketConn struct {
+	*websocket.Conn
+}
+
+func newMockWebSocketConn() *mockWebSocketConn {
+	return &mockWebSocketConn{}
+}
+
+func (m *mockWebSocketConn) WriteJSON(v interface{}) error { return nil }
+func (m *mockWebSocketConn) Close() error { return nil }
+func (m *mockWebSocketConn) WriteMessage(messageType int, data []byte) error { return nil }
+func (m *mockWebSocketConn) WriteControl(messageType int, data []byte, deadline time.Time) error { return nil }
+func (m *mockWebSocketConn) ReadMessage() (messageType int, p []byte, err error) { return 0, nil, nil }
+func (m *mockWebSocketConn) SetReadLimit(limit int64) {}
+func (m *mockWebSocketConn) SetReadDeadline(t time.Time) error { return nil }
+func (m *mockWebSocketConn) SetPongHandler(h func(string) error) {}
+func (m *mockWebSocketConn) SetPingHandler(h func(string) error) {}
+func (m *mockWebSocketConn) SetWriteDeadline(t time.Time) error { return nil }
+func (m *mockWebSocketConn) RemoteAddr() string { return "test" }
+func (m *mockWebSocketConn) LocalAddr() string { return "test" }
+func (m *mockWebSocketConn) Subprotocol() string { return "" }
+func (m *mockWebSocketConn) CloseHandler() func(code int, text string) error { return nil }
+func (m *mockWebSocketConn) SetCloseHandler(h func(code int, text string) error) {}
+
 func TestWebSocketCompressionDisabled(t *testing.T) {
 	// Create WebSocket server with compression disabled
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// Test compression info endpoint
@@ -42,7 +67,7 @@ func TestWebSocketCompressionDisabled(t *testing.T) {
 
 func TestWebSocketCompressionEnabled(t *testing.T) {
 	// Create WebSocket server with compression enabled
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, true, false, 0, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, true, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// Test compression info endpoint
@@ -66,7 +91,7 @@ func TestWebSocketCompressionEnabled(t *testing.T) {
 }
 
 func TestWebSocketCompressionMethodNotAllowed(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// Test POST method (should not be allowed)
@@ -81,7 +106,7 @@ func TestWebSocketCompressionMethodNotAllowed(t *testing.T) {
 
 func TestPluginMarketplaceEndpoint(t *testing.T) {
 	// Create WebSocket server
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// Test marketplace endpoint
@@ -106,7 +131,7 @@ func TestPluginMarketplaceEndpoint(t *testing.T) {
 }
 
 func TestPluginInstallEndpoint(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// Test install endpoint with empty body
@@ -120,7 +145,7 @@ func TestPluginInstallEndpoint(t *testing.T) {
 }
 
 func TestPluginUpdateEndpoint(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// Test update endpoint with empty body
@@ -134,7 +159,7 @@ func TestPluginUpdateEndpoint(t *testing.T) {
 }
 
 func TestPluginUninstallEndpoint(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// Test uninstall endpoint with empty body
@@ -148,7 +173,7 @@ func TestPluginUninstallEndpoint(t *testing.T) {
 }
 
 func TestPerformanceHistory(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// Create test findings
@@ -187,7 +212,7 @@ func TestPerformanceHistory(t *testing.T) {
 }
 
 func TestPerformanceHistoryEndpoint(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// Create test findings
@@ -230,7 +255,7 @@ func TestPerformanceHistoryEndpoint(t *testing.T) {
 }
 
 func TestPerformanceAnalysisEndpoint(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// Create test findings
@@ -277,7 +302,7 @@ func TestPerformanceAnalysisEndpoint(t *testing.T) {
 }
 
 func TestPerformanceSnapshotLimit(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// Create test findings with different scores
@@ -304,7 +329,7 @@ func TestPerformanceSnapshotLimit(t *testing.T) {
 // JWT Authentication Tests
 
 func TestJWTTokenGeneration(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), true, false, false, 0, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), true, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// Test token generation
@@ -320,7 +345,7 @@ func TestJWTTokenGeneration(t *testing.T) {
 }
 
 func TestJWTTokenValidation(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), true, false, false, 0, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), true, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// Generate valid token
@@ -343,7 +368,7 @@ func TestJWTTokenValidation(t *testing.T) {
 }
 
 func TestJWTTokenExpiration(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), true, false, false, 0, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), true, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// Generate token with very short expiration for testing
@@ -357,7 +382,7 @@ func TestJWTTokenExpiration(t *testing.T) {
 }
 
 func TestJWTAuthDisabled(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// When auth is disabled, token generation should fail
@@ -424,7 +449,7 @@ func TestJWTTokenExtraction(t *testing.T) {
 }
 
 func TestJWTAuthTokenEndpoint(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), true, false, false, 0, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), true, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// Test token generation endpoint
@@ -488,7 +513,7 @@ func TestJWTAuthTokenEndpoint(t *testing.T) {
 }
 
 func TestJWTAuthDisabledTokenEndpoint(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// When auth is disabled, token endpoint should return error
@@ -520,7 +545,7 @@ func TestJWTSecretKeyGeneration(t *testing.T) {
 }
 
 func TestJWTWebSocketConnectionWithAuth(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), true, false, false, 0, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), true, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// Generate a valid token
@@ -541,7 +566,7 @@ func TestJWTWebSocketConnectionWithAuth(t *testing.T) {
 }
 
 func TestJWTWebSocketConnectionWithoutToken(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), true, false, false, 0, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), true, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// Test WebSocket connection without token
@@ -557,7 +582,7 @@ func TestJWTWebSocketConnectionWithoutToken(t *testing.T) {
 }
 
 func TestJWTWebSocketConnectionWithInvalidToken(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), true, false, false, 0, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), true, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// Test WebSocket connection with invalid token
@@ -574,7 +599,7 @@ func TestJWTWebSocketConnectionWithInvalidToken(t *testing.T) {
 }
 
 func TestJWTWebSocketConnectionWithAuthDisabled(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// When auth is disabled, validation should allow anonymous access
@@ -594,7 +619,7 @@ func TestJWTWebSocketConnectionWithAuthDisabled(t *testing.T) {
 // TestWebSocketClientHandling tests WebSocket client connection management
 func TestWebSocketClientHandling(t *testing.T) {
 	// Create WebSocket server
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// Test initial client count
@@ -631,7 +656,7 @@ func TestWebSocketClientHandling(t *testing.T) {
 
 func TestWebSocketBatchingDisabled(t *testing.T) {
 	// Create WebSocket server with batching disabled
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// Test batching info endpoint
@@ -656,7 +681,7 @@ func TestWebSocketBatchingDisabled(t *testing.T) {
 func TestWebSocketBatchingEnabled(t *testing.T) {
 	// Create WebSocket server with batching enabled
 	batchInterval := 50 * time.Millisecond
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, true, batchInterval, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, true, batchInterval, false, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// Test batching info endpoint
@@ -679,7 +704,7 @@ func TestWebSocketBatchingEnabled(t *testing.T) {
 }
 
 func TestWebSocketBatchingMethodNotAllowed(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// Test POST method (should not be allowed)
@@ -695,7 +720,7 @@ func TestWebSocketBatchingMethodNotAllowed(t *testing.T) {
 func TestWebSocketMessageQueue(t *testing.T) {
 	// Create WebSocket server with batching enabled
 	batchInterval := 100 * time.Millisecond
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, true, batchInterval, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, true, batchInterval, false, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// Create test findings
@@ -724,7 +749,7 @@ func TestWebSocketMessageQueue(t *testing.T) {
 func TestWebSocketBatchingIntegration(t *testing.T) {
 	// Create WebSocket server with batching enabled
 	batchInterval := 200 * time.Millisecond
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, true, batchInterval, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, true, batchInterval, false, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// Create test findings
@@ -754,7 +779,7 @@ func TestWebSocketBatchingIntegration(t *testing.T) {
 func TestWebSocketBatchingWithCompression(t *testing.T) {
 	// Create WebSocket server with both batching and compression enabled
 	batchInterval := 50 * time.Millisecond
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, true, true, batchInterval, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, true, true, batchInterval, false, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// Verify both features are enabled
@@ -777,7 +802,7 @@ func TestWebSocketBatchingWithCompression(t *testing.T) {
 func TestWebSocketBatchingStop(t *testing.T) {
 	// Create WebSocket server with batching enabled
 	batchInterval := 100 * time.Millisecond
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, true, batchInterval, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, true, batchInterval, false, nil, nil, ConnectionQualityConfig{}, false)
 
 	// Stop the server (should clean up batching timer)
 	err := server.Stop()
@@ -791,7 +816,7 @@ func TestWebSocketBatchingStop(t *testing.T) {
 func TestWebSocketBatchingConcurrency(t *testing.T) {
 	// Create WebSocket server with batching enabled
 	batchInterval := 200 * time.Millisecond
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, true, batchInterval, false, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, true, batchInterval, false, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// Create test findings
@@ -831,7 +856,7 @@ func TestWebSocketBatchingConcurrency(t *testing.T) {
 // Connection Quality Tests
 func TestConnectionQuality(t *testing.T) {
 	t.Run("ConnectionQualityInfo", func(t *testing.T) {
-		server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, true, nil, nil, ConnectionQualityConfig{})
+		server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, true, nil, nil, ConnectionQualityConfig{}, false)
 		defer server.Stop()
 
 		// Test connection quality info endpoint
@@ -850,10 +875,13 @@ func TestConnectionQuality(t *testing.T) {
 		assert.True(t, info["connection_quality_enabled"].(bool))
 		assert.Equal(t, float64(10000), info["ping_interval_ms"].(float64)) // 10 seconds
 		assert.Equal(t, float64(0), info["active_connections"].(float64))
+		assert.Equal(t, false, info["ml_model_enabled"].(bool)) // ML model disabled in this test
+		assert.Equal(t, float64(0), info["anomaly_count"])
+		assert.Equal(t, float64(0), info["anomaly_percentage"])
 	})
 
 	t.Run("ConnectionQualityDisabled", func(t *testing.T) {
-		server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{})
+		server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
 		defer server.Stop()
 
 		// Test connection quality info endpoint
@@ -874,7 +902,7 @@ func TestConnectionQuality(t *testing.T) {
 	})
 
 	t.Run("CalculateConnectionQuality", func(t *testing.T) {
-		server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, true, nil, nil, ConnectionQualityConfig{})
+		server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, true, nil, nil, ConnectionQualityConfig{}, false)
 		defer server.Stop()
 
 		// Test excellent quality
@@ -895,7 +923,7 @@ func TestConnectionQuality(t *testing.T) {
 	})
 
 	t.Run("CalculateAverageLatency", func(t *testing.T) {
-		server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, true, nil, nil, ConnectionQualityConfig{})
+		server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, true, nil, nil, ConnectionQualityConfig{}, false)
 		defer server.Stop()
 
 		// Test with no connections
@@ -1088,7 +1116,7 @@ func TestGetConnectionQualityInfoEnhanced(t *testing.T) {
 // Test WebSocket Connection Quality Data Broadcasting
 func TestWebSocketConnectionQualityBroadcasting(t *testing.T) {
 	// Create WebSocket server with connection quality enabled
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, true, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, true, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// Create a test WebSocket connection
@@ -1154,7 +1182,7 @@ func TestWebSocketConnectionQualityAlertsBroadcasting(t *testing.T) {
 		},
 	}
 
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, true, nil, qualityAlerts, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, true, nil, qualityAlerts, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// Create a test WebSocket connection
@@ -1222,7 +1250,7 @@ func TestWebSocketConnectionQualityAlertsBroadcasting(t *testing.T) {
 
 // Test WebSocket Message Handling
 func TestWebSocketMessageHandling(t *testing.T) {
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, true, nil, nil, ConnectionQualityConfig{})
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, true, nil, nil, ConnectionQualityConfig{}, false)
 	defer server.Stop()
 
 	// Create a test WebSocket connection
@@ -1271,4 +1299,136 @@ func TestWebSocketMessageHandling(t *testing.T) {
 
 	// Verify message type
 	assert.Equal(t, "connection_quality_update", data["type"])
+}
+
+// Test ML-based anomaly detection
+func TestMLAnomalyDetection(t *testing.T) {
+	// Create WebSocket server with ML model enabled
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, true, nil, nil, ConnectionQualityConfig{}, true)
+	defer server.Stop()
+
+	// Test that ML model is enabled
+	assert.True(t, server.mlModelEnabled)
+	
+	// Test anomaly alerts endpoint
+	req := httptest.NewRequest("GET", "/anomaly/alerts", nil)
+	w := httptest.NewRecorder()
+	
+	server.handleAnomalyAlerts(w, req)
+	
+	resp := w.Result()
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	
+	var response map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		t.Fatal(err)
+	}
+	
+	assert.Equal(t, "success", response["status"])
+	assert.Contains(t, response, "anomaly_alerts")
+	
+	// Test anomaly clusters endpoint
+	req = httptest.NewRequest("GET", "/anomaly/clusters", nil)
+	w = httptest.NewRecorder()
+	
+	server.handleAnomalyClusters(w, req)
+	
+	resp = w.Result()
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		t.Fatal(err)
+	}
+	
+	assert.Equal(t, "success", response["status"])
+	assert.Contains(t, response, "clusters")
+	
+	// Test anomaly patterns endpoint
+	req = httptest.NewRequest("GET", "/anomaly/patterns", nil)
+	w = httptest.NewRecorder()
+	
+	server.handleAnomalyPatterns(w, req)
+	
+	resp = w.Result()
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		t.Fatal(err)
+	}
+	
+	assert.Equal(t, "success", response["status"])
+	assert.Contains(t, response, "patterns")
+	
+	// Test ML model control endpoint
+	req = httptest.NewRequest("GET", "/anomaly/ml", nil)
+	w = httptest.NewRecorder()
+	
+	server.handleAnomalyML(w, req)
+	
+	resp = w.Result()
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		t.Fatal(err)
+	}
+	
+	assert.Equal(t, "success", response["status"])
+	assert.Equal(t, true, response["ml_enabled"])
+	assert.Contains(t, response, "pattern_count")
+	assert.Contains(t, response, "cluster_count")
+}
+
+// Test anomaly clustering functionality
+func TestAnomalyClustering(t *testing.T) {
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, true, nil, nil, ConnectionQualityConfig{}, true)
+	defer server.Stop()
+
+	// Create test connection stats
+	stats := &WebSocketConnectionStats{
+		ClientID: "test-client",
+		ConnectionTime: time.Now(),
+		Latency: 501 * time.Millisecond,
+		PacketLoss: 10.0,
+		ConnectionScore: 45.0,
+		ConnectionQuality: "fair",
+		IsAnomaly: true,
+		AnomalyScore: 0.8,
+		AnomalyReasons: []string{"high latency"},
+		AnomalyType: "latency",
+		AnomalyConfidence: 0.85,
+	}
+
+	// Test clustering
+	clusterID := server.clusterAnomaly(stats, "latency", []string{"high latency"})
+	
+	assert.NotEmpty(t, clusterID)
+	assert.True(t, strings.HasPrefix(clusterID, "cluster_"))
+	
+	// Verify cluster was added
+	server.anomalyClustersMu.Lock()
+	clusters := server.anomalyClusters
+	server.anomalyClustersMu.Unlock()
+	
+	assert.Contains(t, clusters, clusterID)
+	assert.Contains(t, clusters[clusterID], "test-client")
+	
+	// Test pattern signature creation
+	patternSig := server.createConnectionPatternSignature(stats)
+	assert.Equal(t, "high_medium_low_fair", patternSig)
+}
+
+// Test connection quality info with ML model
+func TestConnectionQualityInfoWithML(t *testing.T) {
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, true, nil, nil, ConnectionQualityConfig{}, true)
+	defer server.Stop()
+
+	// Test with empty connection stats for simplicity
+
+	// Test GetConnectionQualityInfo
+	info := server.GetConnectionQualityInfo()
+	
+	assert.Equal(t, true, info["connection_quality_enabled"])
+	assert.Equal(t, true, info["ml_model_enabled"])
+	assert.Equal(t, 0, info["anomaly_count"])
+	assert.Equal(t, 0.0, info["anomaly_percentage"])
 }

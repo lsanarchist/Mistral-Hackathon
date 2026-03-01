@@ -311,6 +311,7 @@ func runRunCommand(pipeline *core.Pipeline) {
 	websocketQualityAlerts := flagSet.String("websocket-quality-alerts", "", "WebSocket connection quality alert configuration file (JSON)")
 	websocketAdaptiveUpdates := flagSet.Bool("websocket-adaptive-updates", true, "Enable adaptive updates based on connection quality")
 	websocketBandwidthThrottling := flagSet.Bool("websocket-bandwidth-throttling", true, "Enable bandwidth throttling based on connection quality")
+	websocketMLModel := flagSet.Bool("websocket-ml-model", false, "Enable ML-based anomaly detection for WebSocket connections")
 	performanceAlerts := flagSet.String("performance-alerts", "", "Performance alert configuration file (JSON)")
 	flagSet.Parse(os.Args[2:])
 
@@ -413,10 +414,15 @@ func runRunCommand(pipeline *core.Pipeline) {
 			pipeline.WithWebSocketConnectionQualityConfig(qualityConfig)
 		}
 		
+		// Configure ML-based anomaly detection
+		pipeline.WithWebSocketMLModel(*websocketMLModel)
+		
 		if *performanceAlerts != "" {
 			pipeline.WithPerformanceAlerts(*performanceAlerts)
 		}
 		fmt.Printf("WebSocket server enabled on port %d\n", *websocketPort)
+		fmt.Printf("  Connection Quality: %s\n", boolToStatus(*websocketConnectionQuality))
+		fmt.Printf("  ML Anomaly Detection: %s\n", boolToStatus(*websocketMLModel))
 		if *websocketCompression {
 			fmt.Println("WebSocket compression: ENABLED")
 		} else {

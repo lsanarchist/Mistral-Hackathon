@@ -70,6 +70,22 @@ type WebSocketServer struct {
 	connectionQualityHistory []map[string]interface{} // Historical connection quality data
 	qualityHistoryMu       sync.Mutex
 	maxQualityHistorySize  int
+	anomalyAlerts          []AnomalyAlert
+	anomalyAlertsMu        sync.Mutex
+	anomalyClusters        map[string][]string // Cluster ID -> Client IDs
+	anomalyClustersMu      sync.Mutex
+	anomalyPatterns        map[string]PatternData // Pattern signatures -> pattern data
+	anomalyPatternsMu      sync.Mutex
+	mlModelEnabled         bool                  // Whether ML-based anomaly detection is enabled
+}
+
+// PatternData represents learned connection patterns for anomaly detection
+type PatternData struct {
+	PatternSignature string    `json:"pattern_signature"`
+	FirstSeen        time.Time `json:"first_seen"`
+	LastSeen         time.Time `json:"last_seen"`
+	OccurrenceCount  int       `json:"occurrence_count"`
+	IsNormal         bool      `json:"is_normal"` // Whether this pattern is considered normal
 }
 
 // PerformanceSnapshot represents a historical performance data point
@@ -127,6 +143,33 @@ type WebSocketConnectionStats struct {
 	AnomalyScore      float64       `json:"anomaly_score,omitempty"` // Anomaly detection score (0-1)
 	IsAnomaly         bool          `json:"is_anomaly,omitempty"` // Whether this connection is anomalous
 	AnomalyReasons    []string      `json:"anomaly_reasons,omitempty"` // Reasons for anomaly detection
+	AnomalyType       string        `json:"anomaly_type,omitempty"` // Type of anomaly (latency, packet_loss, score, pattern)
+	AnomalyConfidence float64       `json:"anomaly_confidence,omitempty"` // Confidence in anomaly detection (0-1)
+	AnomalyClusterID  string        `json:"anomaly_cluster_id,omitempty"` // Cluster ID for similar anomalies
+	AnomalyHistory    []AnomalyEvent `json:"anomaly_history,omitempty"` // Historical anomaly events
+	LastAnomalyTime   *time.Time    `json:"last_anomaly_time,omitempty"` // When last anomaly was detected
+}
+
+// AnomalyEvent represents a historical anomaly detection event
+type AnomalyEvent struct {
+	Timestamp       time.Time `json:"timestamp"`
+	AnomalyType     string    `json:"anomaly_type"`
+	AnomalyScore    float64   `json:"anomaly_score"`
+	AnomalyReasons  []string  `json:"anomaly_reasons"`
+	AnomalyClusterID string    `json:"anomaly_cluster_id,omitempty"`
+	Confidence      float64   `json:"confidence"`
+}
+
+// AnomalyAlert represents a configurable alert for anomaly detection
+type AnomalyAlert struct {
+	ID               string  `json:"id"`
+	Name             string  `json:"name"`
+	AnomalyType      string  `json:"anomaly_type,omitempty"` // specific type or "any"
+	ScoreThreshold   float64 `json:"score_threshold,omitempty"` // anomaly score threshold (0-1)
+	ConfidenceThreshold float64 `json:"confidence_threshold,omitempty"` // confidence threshold (0-1)
+	Active           bool    `json:"active"`
+	LastTriggered    *time.Time `json:"last_triggered,omitempty"`
+	NotificationSent bool    `json:"notification_sent,omitempty"`
 }
 
 // ConnectionQualityAlert represents a configurable alert for connection quality
@@ -177,7 +220,7 @@ type PluginHealth struct {
 }
 
 // NewWebSocketServer creates a new WebSocket server instance
-func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth bool, enableCompression bool, enableBatching bool, batchInterval time.Duration, enableConnectionQuality bool, alertsConfig []PerformanceAlert, qualityAlerts []ConnectionQualityAlert, qualityConfig ConnectionQualityConfig) *WebSocketServer {
+func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth bool, enableCompression bool, enableBatching bool, batchInterval time.Duration, enableConnectionQuality bool, alertsConfig []PerformanceAlert, qualityAlerts []ConnectionQualityAlert, qualityConfig ConnectionQualityConfig, enableMLModel bool) *WebSocketServer {
 	mux := http.NewServeMux()
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
@@ -261,7 +304,11 @@ func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth b
 		connectionQualityAlerts: qualityAlerts,
 		connectionQualityConfig: qualityConfig,
 		connectionQualityHistory: make([]map[string]interface{}, 0),
-		maxQualityHistorySize:  100, // Keep last 100 quality snapshots
+		maxQualityHistorySize:  100,
+		anomalyAlerts:          make([]AnomalyAlert, 0),
+		anomalyClusters:        make(map[string][]string),
+		anomalyPatterns:        make(map[string]PatternData),
+		mlModelEnabled:         enableMLModel, // Keep last 100 quality snapshots
 	}
 
 	// Initialize batching if enabled
@@ -293,6 +340,10 @@ func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth b
 	mux.HandleFunc("/connection/quality/history", s.handleConnectionQualityHistory)
 	mux.HandleFunc("/connection/quality/alerts", s.handleConnectionQualityAlerts)
 	mux.HandleFunc("/connection/quality/config", s.handleConnectionQualityConfig)
+	mux.HandleFunc("/anomaly/alerts", s.handleAnomalyAlerts)
+	mux.HandleFunc("/anomaly/clusters", s.handleAnomalyClusters)
+	mux.HandleFunc("/anomaly/patterns", s.handleAnomalyPatterns)
+	mux.HandleFunc("/anomaly/ml", s.handleAnomalyML)
 	
 	// Add auth endpoints if enabled
 	if enableAuth {
@@ -1101,6 +1152,23 @@ func (s *WebSocketServer) getBandwidthLimit(quality string) int {
 	}
 }
 
+// getAnomalyClusterInfo returns information about anomaly clusters
+func (s *WebSocketServer) getAnomalyClusterInfo() []map[string]interface{} {
+	s.anomalyClustersMu.Lock()
+	defer s.anomalyClustersMu.Unlock()
+	
+	clusterInfo := make([]map[string]interface{}, 0, len(s.anomalyClusters))
+	
+	for clusterID, clientIDs := range s.anomalyClusters {
+		clusterInfo = append(clusterInfo, map[string]interface{}{
+			"cluster_id":   clusterID,
+			"client_count": len(clientIDs),
+		})
+	}
+	
+	return clusterInfo
+}
+
 // getConnectionStats returns connection statistics for all clients
 func (s *WebSocketServer) getConnectionStats() []*WebSocketConnectionStats {
 	s.statsMu.Lock()
@@ -1148,8 +1216,25 @@ func (s *WebSocketServer) GetConnectionQualityInfo() map[string]interface{} {
 	}
 	s.qualityAlertsMu.Unlock()
 
+	// Count anomalies
+	anomalyCount := 0
+	for _, stat := range stats {
+		if stat.IsAnomaly {
+			anomalyCount++
+		}
+	}
+	
+	// Calculate anomaly percentage (handle division by zero)
+	anomalyPercentage := 0.0
+	if len(stats) > 0 {
+		anomalyPercentage = float64(anomalyCount) / float64(len(stats)) * 100
+	}
+	
 	return map[string]interface{}{
 		"connection_quality_enabled": s.connectionQualityEnabled,
+		"ml_model_enabled": s.mlModelEnabled,
+		"anomaly_count": anomalyCount,
+		"anomaly_percentage": anomalyPercentage,
 		"ping_interval_ms":           s.pingInterval.Milliseconds(),
 		"active_connections":        len(stats),
 		"quality_distribution": map[string]int{
@@ -1632,6 +1717,8 @@ func (s *WebSocketServer) detectConnectionAnomalies(stats *WebSocketConnectionSt
 	isAnomaly := false
 	reasons := make([]string, 0)
 	anomalyScore := 0.0
+	anomalyType := ""
+	confidence := 0.7 // Base confidence for statistical detection
 	
 	latency := float64(stats.Latency.Milliseconds())
 	
@@ -1640,6 +1727,12 @@ func (s *WebSocketServer) detectConnectionAnomalies(stats *WebSocketConnectionSt
 		isAnomaly = true
 		reasons = append(reasons, fmt.Sprintf("latency %.1fms (avg: %.1fms)", latency, avgLatency))
 		anomalyScore += 0.4 // High weight for latency anomalies
+		if anomalyType == "" {
+			anomalyType = "latency"
+		} else if anomalyType != "multiple" {
+			anomalyType = "multiple"
+		}
+		confidence = max(confidence, 0.85)
 	}
 
 	// Check packet loss anomaly
@@ -1647,6 +1740,12 @@ func (s *WebSocketServer) detectConnectionAnomalies(stats *WebSocketConnectionSt
 		isAnomaly = true
 		reasons = append(reasons, fmt.Sprintf("packet loss %.1f%% (avg: %.1f%%)", stats.PacketLoss, avgPacketLoss))
 		anomalyScore += 0.3 // Medium weight for packet loss anomalies
+		if anomalyType == "" {
+			anomalyType = "packet_loss"
+		} else if anomalyType != "multiple" {
+			anomalyType = "multiple"
+		}
+		confidence = max(confidence, 0.8)
 	}
 
 	// Check score anomaly
@@ -1654,6 +1753,12 @@ func (s *WebSocketServer) detectConnectionAnomalies(stats *WebSocketConnectionSt
 		isAnomaly = true
 		reasons = append(reasons, fmt.Sprintf("score %.1f (avg: %.1f)", stats.ConnectionScore, avgScore))
 		anomalyScore += 0.3 // Medium weight for score anomalies
+		if anomalyType == "" {
+			anomalyType = "score"
+		} else if anomalyType != "multiple" {
+			anomalyType = "multiple"
+		}
+		confidence = max(confidence, 0.8)
 	}
 
 	// Check for sudden quality changes
@@ -1666,6 +1771,12 @@ func (s *WebSocketServer) detectConnectionAnomalies(stats *WebSocketConnectionSt
 			isAnomaly = true
 			reasons = append(reasons, "sudden quality degradation")
 			anomalyScore += 0.2
+			if anomalyType == "" {
+				anomalyType = "pattern"
+			} else if anomalyType != "multiple" {
+				anomalyType = "multiple"
+			}
+			confidence = max(confidence, 0.75)
 		}
 	}
 
@@ -1674,9 +1785,190 @@ func (s *WebSocketServer) detectConnectionAnomalies(stats *WebSocketConnectionSt
 		anomalyScore = 1.0
 	}
 
+	// ML-based anomaly detection (if enabled)
+	if s.mlModelEnabled {
+		mlAnomalyScore, mlAnomalyType, mlConfidence := s.detectAnomaliesWithML(stats)
+		if mlAnomalyScore > 0 {
+			isAnomaly = true
+			anomalyScore = max(anomalyScore, mlAnomalyScore)
+			if mlAnomalyType != "" {
+				if anomalyType == "" {
+					anomalyType = mlAnomalyType
+				} else if anomalyType != "multiple" {
+					anomalyType = "multiple"
+				}
+			}
+			confidence = max(confidence, mlConfidence)
+			reasons = append(reasons, fmt.Sprintf("ML-based anomaly detection (score: %.2f, confidence: %.2f)", mlAnomalyScore, mlConfidence))
+		}
+	}
+
+	// Anomaly clustering
+	clusterID := ""
+	if isAnomaly {
+		clusterID = s.clusterAnomaly(stats, anomalyType, reasons)
+	}
+
+	// Update anomaly history
+	now := timeNow()
+	if isAnomaly {
+		anomalyEvent := AnomalyEvent{
+			Timestamp:       now,
+			AnomalyType:     anomalyType,
+			AnomalyScore:    anomalyScore,
+			AnomalyReasons:  reasons,
+			AnomalyClusterID: clusterID,
+			Confidence:      confidence,
+		}
+		stats.AnomalyHistory = append(stats.AnomalyHistory, anomalyEvent)
+		stats.LastAnomalyTime = &now
+	}
+
 	stats.IsAnomaly = isAnomaly
 	stats.AnomalyScore = anomalyScore
 	stats.AnomalyReasons = reasons
+	stats.AnomalyType = anomalyType
+	stats.AnomalyConfidence = confidence
+	stats.AnomalyClusterID = clusterID
+}
+
+// detectAnomaliesWithML performs ML-based anomaly detection using pattern recognition
+func (s *WebSocketServer) detectAnomaliesWithML(stats *WebSocketConnectionStats) (float64, string, float64) {
+	// Create a pattern signature for this connection
+	patternSig := s.createConnectionPatternSignature(stats)
+	
+	// Check if this pattern is known
+	s.anomalyPatternsMu.Lock()
+	patternData, exists := s.anomalyPatterns[patternSig]
+	s.anomalyPatternsMu.Unlock()
+	
+	if exists {
+		// Known pattern - check if it's normal or anomalous
+		if patternData.IsNormal {
+			// This is a known normal pattern
+			return 0, "", 0
+		} else {
+			// This is a known anomalous pattern
+			return 0.8, "pattern", 0.9
+		}
+	}
+	
+	// Unknown pattern - analyze for anomalies
+	anomalyScore := 0.0
+	anomalyType := ""
+	confidence := 0.0
+	
+	// Simple heuristic: if connection quality is poor and latency is high, it's likely anomalous
+	if stats.ConnectionQuality == "poor" && stats.Latency > 500*time.Millisecond {
+		anomalyScore = 0.7
+		anomalyType = "latency"
+		confidence = 0.8
+		
+		// Learn this as an anomalous pattern
+		s.anomalyPatternsMu.Lock()
+		s.anomalyPatterns[patternSig] = PatternData{
+			PatternSignature: patternSig,
+			FirstSeen:        timeNow(),
+			LastSeen:         timeNow(),
+			OccurrenceCount:  1,
+			IsNormal:         false,
+		}
+		s.anomalyPatternsMu.Unlock()
+	} else if stats.ConnectionQuality == "excellent" || stats.ConnectionQuality == "good" {
+		// Learn this as a normal pattern
+		s.anomalyPatternsMu.Lock()
+		s.anomalyPatterns[patternSig] = PatternData{
+			PatternSignature: patternSig,
+			FirstSeen:        timeNow(),
+			LastSeen:         timeNow(),
+			OccurrenceCount:  1,
+			IsNormal:         true,
+		}
+		s.anomalyPatternsMu.Unlock()
+	}
+	
+	return anomalyScore, anomalyType, confidence
+}
+
+// createConnectionPatternSignature creates a unique signature for connection patterns
+func (s *WebSocketServer) createConnectionPatternSignature(stats *WebSocketConnectionStats) string {
+	// Create a simple pattern signature based on key metrics
+	latencyRange := "low"
+	if stats.Latency > 200*time.Millisecond {
+		latencyRange = "medium"
+	}
+	if stats.Latency > 500*time.Millisecond {
+		latencyRange = "high"
+	}
+	
+	packetLossRange := "low"
+	if stats.PacketLoss > 5 {
+		packetLossRange = "medium"
+	}
+	if stats.PacketLoss > 20 {
+		packetLossRange = "high"
+	}
+	
+	scoreRange := "low"
+	if stats.ConnectionScore > 60 {
+		scoreRange = "high"
+	}
+	
+	return fmt.Sprintf("%s_%s_%s_%s", latencyRange, packetLossRange, scoreRange, stats.ConnectionQuality)
+}
+
+// clusterAnomaly assigns an anomaly to a cluster of similar anomalies
+func (s *WebSocketServer) clusterAnomaly(stats *WebSocketConnectionStats, anomalyType string, reasons []string) string {
+	// Simple clustering based on anomaly type and main reason
+	clusterKey := fmt.Sprintf("%s_%s", anomalyType, strings.Join(reasons, ","))
+	
+	// Use hash of cluster key for consistent cluster ID
+	h := fnv.New32a()
+	h.Write([]byte(clusterKey))
+	clusterID := fmt.Sprintf("cluster_%d", h.Sum32())
+	
+	// Add to cluster
+	s.anomalyClustersMu.Lock()
+	s.anomalyClusters[clusterID] = append(s.anomalyClusters[clusterID], stats.ClientID)
+	s.anomalyClustersMu.Unlock()
+	
+	return clusterID
+}
+
+// checkAnomalyAlerts checks if any anomaly alerts should be triggered
+func (s *WebSocketServer) checkAnomalyAlerts(stats *WebSocketConnectionStats) {
+	if !stats.IsAnomaly {
+		return
+	}
+	
+	s.anomalyAlertsMu.Lock()
+	defer s.anomalyAlertsMu.Unlock()
+	
+	for i, alert := range s.anomalyAlerts {
+		if !alert.Active {
+			continue
+		}
+		
+		// Check if alert conditions are met
+		alertTriggered := false
+		if alert.AnomalyType == "any" || alert.AnomalyType == stats.AnomalyType {
+			if stats.AnomalyScore >= alert.ScoreThreshold {
+				if stats.AnomalyConfidence >= alert.ConfidenceThreshold {
+					alertTriggered = true
+				}
+			}
+		}
+		
+		if alertTriggered {
+			now := timeNow()
+			s.anomalyAlerts[i].LastTriggered = &now
+			s.anomalyAlerts[i].NotificationSent = true
+			
+			// Log the alert
+			log.Printf("🚨 ANOMALY ALERT TRIGGERED: %s - Client: %s, Type: %s, Score: %.2f, Confidence: %.2f",
+				alert.Name, stats.ClientID, stats.AnomalyType, stats.AnomalyScore, stats.AnomalyConfidence)
+		}
+	}
 }
 
 // calculateStdDev calculates standard deviation for a given metric
@@ -3150,6 +3442,11 @@ func (s *WebSocketServer) BroadcastConnectionQualityData() {
 			"is_anomaly":         stats.IsAnomaly,
 			"anomaly_score":       stats.AnomalyScore,
 			"anomaly_reasons":     stats.AnomalyReasons,
+			"anomaly_type":        stats.AnomalyType,
+			"anomaly_confidence":  stats.AnomalyConfidence,
+			"anomaly_cluster_id":  stats.AnomalyClusterID,
+			"last_anomaly_time":  stats.LastAnomalyTime,
+			"anomaly_history":     stats.AnomalyHistory,
 		})
 	}
 	
@@ -3161,6 +3458,9 @@ func (s *WebSocketServer) BroadcastConnectionQualityData() {
 		avgPacketLoss = totalPacketLoss / float64(totalClients)
 	}
 	
+	// Get anomaly cluster information
+	clusterInfo := s.getAnomalyClusterInfo()
+	
 	// Prepare connection quality payload
 	payload := map[string]interface{}{
 		"type": "connection_quality_update",
@@ -3171,6 +3471,8 @@ func (s *WebSocketServer) BroadcastConnectionQualityData() {
 		"avg_packet_loss": avgPacketLoss,
 		"anomaly_count": anomalyCount,
 		"anomaly_percentage": float64(anomalyCount) / float64(totalClients) * 100,
+		"anomaly_clusters": clusterInfo,
+		"ml_enabled": s.mlModelEnabled,
 		"connection_stats": connectionStatsList,
 	}
 	
@@ -3314,6 +3616,130 @@ func (s *WebSocketServer) handleWebSocketMessage(conn *websocket.Conn, msg map[s
 		
 	default:
 		log.Printf("Unknown WebSocket message type: %s", msgType)
+	}
+}
+
+// handleAnomalyAlerts handles requests for anomaly alerts
+func (s *WebSocketServer) handleAnomalyAlerts(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		s.anomalyAlertsMu.Lock()
+		defer s.anomalyAlertsMu.Unlock()
+		
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"status": "success",
+			"anomaly_alerts": s.anomalyAlerts,
+		})
+		
+	case http.MethodPost:
+		var request struct {
+			Alerts []AnomalyAlert `json:"alerts"`
+		}
+		
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			http.Error(w, fmt.Sprintf("failed to parse request: %v", err), http.StatusBadRequest)
+			return
+		}
+		
+		s.anomalyAlertsMu.Lock()
+		s.anomalyAlerts = request.Alerts
+		s.anomalyAlertsMu.Unlock()
+		
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"status": "success",
+			"message": "Anomaly alerts updated successfully",
+		})
+		
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+// handleAnomalyClusters handles requests for anomaly clusters
+func (s *WebSocketServer) handleAnomalyClusters(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	
+	s.anomalyClustersMu.Lock()
+	defer s.anomalyClustersMu.Unlock()
+	
+	// Convert clusters to a more useful format
+	clusterInfo := make([]map[string]interface{}, 0, len(s.anomalyClusters))
+	
+	for clusterID, clientIDs := range s.anomalyClusters {
+		clusterInfo = append(clusterInfo, map[string]interface{}{
+			"cluster_id":   clusterID,
+			"client_count": len(clientIDs),
+			"clients":      clientIDs,
+		})
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status": "success",
+		"clusters": clusterInfo,
+	})
+}
+
+// handleAnomalyPatterns handles requests for learned connection patterns
+func (s *WebSocketServer) handleAnomalyPatterns(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	
+	s.anomalyPatternsMu.Lock()
+	defer s.anomalyPatternsMu.Unlock()
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"status": "success",
+		"patterns": s.anomalyPatterns,
+	})
+}
+
+// handleAnomalyML handles requests for ML model status and control
+func (s *WebSocketServer) handleAnomalyML(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"status": "success",
+			"ml_enabled": s.mlModelEnabled,
+			"pattern_count": len(s.anomalyPatterns),
+			"cluster_count": len(s.anomalyClusters),
+		})
+		
+	case http.MethodPost:
+		var request struct {
+			EnableML bool `json:"enable_ml"`
+		}
+		
+		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+			http.Error(w, fmt.Sprintf("failed to parse request: %v", err), http.StatusBadRequest)
+			return
+		}
+		
+		s.mlModelEnabled = request.EnableML
+		
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"status": "success",
+			"message": fmt.Sprintf("ML model %s", func() string {
+				if s.mlModelEnabled {
+					return "enabled"
+				}
+				return "disabled"
+			}()),
+			"ml_enabled": s.mlModelEnabled,
+		})
+		
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
 }
 

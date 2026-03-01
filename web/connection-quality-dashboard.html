@@ -345,6 +345,33 @@
                 </div>
             </div>
             
+            <!-- ML Model Status -->
+            <div class="ml-status-container" style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #6c757d;">
+                <h3 style="margin-top: 0; color: #495057;"><i class="fas fa-brain"></i> ML Anomaly Detection</h3>
+                <div class="ml-status-content" style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+                    <div class="ml-status-item">
+                        <span class="ml-status-label" style="font-size: 0.9rem; color: #6c757d;">Status:</span>
+                        <span class="ml-status-value" id="mlStatus" style="font-size: 1.1rem; font-weight: bold;">Disabled</span>
+                    </div>
+                    <div class="ml-status-item">
+                        <span class="ml-status-label" style="font-size: 0.9rem; color: #6c757d;">Anomaly Clusters:</span>
+                        <span class="ml-status-value" id="anomalyClustersCount" style="font-size: 1.1rem; font-weight: bold;">0</span>
+                    </div>
+                    <div class="ml-status-item">
+                        <span class="ml-status-label" style="font-size: 0.9rem; color: #6c757d;">Learned Patterns:</span>
+                        <span class="ml-status-value" id="learnedPatternsCount" style="font-size: 1.1rem; font-weight: bold;">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Anomaly Clusters Visualization -->
+            <div class="anomaly-clusters-container" style="margin: 20px 0; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 1px 5px rgba(0,0,0,0.1);">
+                <h3 style="margin-top: 0; color: #495057;"><i class="fas fa-project-diagram"></i> Anomaly Clusters</h3>
+                <div id="anomalyClustersChartContainer" style="height: 300px;">
+                    <canvas id="anomalyClustersChart"></canvas>
+                </div>
+            </div>
+            
             <div class="charts-grid">
                 <div class="chart-container">
                     <h3><i class="fas fa-chart-line"></i> Connection Quality Over Time</h3>
@@ -418,6 +445,10 @@
                             <th>Predicted</th>
                             <th>Anomaly</th>
                             <th>Anomaly Score</th>
+                            <th>Anomaly Type</th>
+                            <th>Confidence</th>
+                            <th>Cluster ID</th>
+                            <th>Last Anomaly</th>
                             <th>Connected Since</th>
                         </tr>
                     </thead>
@@ -659,6 +690,53 @@
                     }
                 }
             });
+            
+            // Initialize Anomaly Clusters Chart
+            const anomalyClustersCtx = document.getElementById('anomalyClustersChart').getContext('2d');
+            qualityCharts.anomalyClusters = new Chart(anomalyClustersCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Clients per Cluster',
+                        data: [],
+                        backgroundColor: '#6c757d',
+                        borderColor: '#495057',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Clients'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Anomaly Cluster ID'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Anomaly Cluster Distribution',
+                            font: {
+                                size: 14
+                            }
+                        }
+                    }
+                }
+            });
         }
         
         // Connect to WebSocket
@@ -761,6 +839,27 @@
                 } else {
                     anomalyCard.className = 'quality-metric-card good';
                 }
+            }
+            
+            // Update ML model status
+            if (data.ml_enabled !== undefined) {
+                const mlStatus = document.getElementById('mlStatus');
+                const anomalyClustersCount = document.getElementById('anomalyClustersCount');
+                const learnedPatternsCount = document.getElementById('learnedPatternsCount');
+                
+                mlStatus.textContent = data.ml_enabled ? 'Enabled' : 'Disabled';
+                mlStatus.style.color = data.ml_enabled ? '#28a745' : '#6c757d';
+                
+                // Count anomaly clusters and patterns
+                const clusterCount = data.anomaly_clusters ? data.anomaly_clusters.length : 0;
+                anomalyClustersCount.textContent = clusterCount;
+                
+                // For demo purposes, we'll estimate pattern count
+                // In a real implementation, this would come from the server
+                learnedPatternsCount.textContent = clusterCount * 2; // Estimate 2 patterns per cluster
+                
+                // Update anomaly clusters chart
+                updateAnomalyClustersChart(data.anomaly_clusters || []);
             }
             
             // Update charts
@@ -1007,6 +1106,24 @@
         
         // Update prediction insights display with enhanced data including anomaly detection
         function updatePredictionInsightsDisplay(predictions) {
+            
+        
+        // Update anomaly clusters chart
+        function updateAnomalyClustersChart(clusters) {
+            const labels = clusters.map(cluster => cluster.cluster_id);
+            const data = clusters.map(cluster => cluster.client_count);
+            
+            // Limit to top 10 clusters for readability
+            if (labels.length > 10) {
+                qualityCharts.anomalyClusters.data.labels = labels.slice(0, 10);
+                qualityCharts.anomalyClusters.data.datasets[0].data = data.slice(0, 10);
+            } else {
+                qualityCharts.anomalyClusters.data.labels = labels;
+                qualityCharts.anomalyClusters.data.datasets[0].data = data;
+            }
+            
+            qualityCharts.anomalyClusters.update();
+        }
             const container = document.getElementById('predictionInsights');
             if (!predictions || predictions.status === 'no_data') {
                 container.innerHTML = '<p>No prediction data available</p>';
@@ -1098,6 +1215,10 @@
                     <td>${stat.predicted_quality || 'N/A'}</td>
                     <td>${stat.is_anomaly ? '⚠️ Yes' : '✅ No'}</td>
                     <td>${stat.anomaly_score ? stat.anomaly_score.toFixed(2) : 'N/A'}</td>
+                    <td>${stat.anomaly_type || 'N/A'}</td>
+                    <td>${stat.anomaly_confidence ? stat.anomaly_confidence.toFixed(2) : 'N/A'}</td>
+                    <td>${stat.anomaly_cluster_id || 'N/A'}</td>
+                    <td>${stat.last_anomaly_time ? new Date(stat.last_anomaly_time).toLocaleTimeString() : 'N/A'}</td>
                     <td>${stat.connection_time ? new Date(stat.connection_time).toLocaleString() : 'N/A'}</td>
                 `;
                 

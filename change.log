@@ -1,128 +1,61 @@
-## Change Log
+# Change Log
 
-### 2026-03-01 06:30: WebSocket Connection Quality Dashboard Enhancements
-- **Objective**: Enhance WebSocket Connection Quality Dashboard with geographical analysis and quality predictions
-- **Rationale**: Provide deeper insights into connection performance by region and future quality trends
-- **Impact**: WebSocket server, connection quality monitoring, dashboard UI, and user experience
+### 2026-03-01 06:45: WebSocket Connection Quality Dashboard Advanced Enhancements Phase 2
+- **Objective**: Implement ML-based anomaly detection and advanced monitoring features
+- **Rationale**: Enhance WebSocket connection monitoring with machine learning capabilities for better anomaly detection, pattern recognition, and automated remediation
+- **Impact**: WebSocket server, connection quality monitoring, anomaly detection, dashboard UI
 - **Changes**:
-  - Extended WebSocketConnectionStats with Geolocation, ConnectionScore, QualityTrend, PredictedQuality fields
-  - Added comprehensive connection scoring system (0-100 scale) with weighted metrics
-  - Implemented quality trend analysis (improving/degrading/stable) based on historical data
-  - Added connection quality prediction algorithm using current trends and patterns
-  - Implemented geographical location inference for client connections
-  - Added regional connection quality analysis with best/worst region identification
-  - Implemented quality prediction system with confidence indicators and insights
-  - Enhanced dashboard with geographical analysis chart and prediction visualization
-  - Added predictive insights display with actionable recommendations
-  - Updated connection stats table with location, score, trend, and prediction columns
-  - Enhanced WebSocket data broadcasting to include geographical and prediction information
-- **Testing**: Unit tests for new methods, integration tests for enhanced WebSocket functionality
-- **Result**: WebSocket Connection Quality Dashboard now provides advanced geographical analysis showing connection quality by region, identifies best/worst performing areas, and offers machine learning-inspired quality predictions with trend analysis and actionable insights for proactive network management.
+  - Added ML-based anomaly detection with pattern recognition and learning
+  - Implemented anomaly clustering to group similar connection issues
+  - Added anomaly alerts system with configurable thresholds and notifications
+  - Enhanced WebSocketConnectionStats with anomaly type, confidence, cluster ID, and history
+  - Added HTTP endpoints for anomaly management (/anomaly/alerts, /anomaly/clusters, /anomaly/patterns, /anomaly/ml)
+  - Updated connection quality dashboard with ML status and anomaly cluster visualization
+  - Enhanced connection stats table with detailed anomaly information
+  - Added comprehensive tests for ML anomaly detection and clustering
+  - Updated core pipeline to support ML model configuration
+  - Added CLI flag --websocket-ml-model for enabling ML-based detection
+- **Testing**: Unit tests for ML detection, clustering, and HTTP endpoints; integration testing with WebSocket server
+- **Result**: WebSocket connections now include ML-based anomaly detection with pattern learning, clustering, and automated alerts. Users can monitor connection health with advanced anomaly analysis and get predictive insights about potential issues.
 
 ## Implementation Details
 
-### Geographical Connection Analysis
-- **Location Inference**: Client geolocation is inferred from IP addresses (simplified for demo)
-- **Regional Metrics**: Tracks connection count, quality distribution, latency, packet loss by region
-- **Best/Worst Regions**: Identifies highest and lowest performing regions by connection score
-- **Overall Quality**: Calculates geographical quality variability and provides ratings
+### ML-Based Anomaly Detection
+- **Pattern Recognition**: System learns normal vs anomalous connection patterns based on latency, packet loss, and quality metrics
+- **Confidence Scoring**: Each anomaly detection includes a confidence score (0-1) indicating detection reliability
+- **Anomaly Types**: Classifies anomalies as latency, packet_loss, score, pattern, or multiple
+- **Historical Learning**: Patterns are stored and reused for future detection, improving accuracy over time
 
-### Connection Quality Predictions
-- **Scoring System**: Comprehensive 0-100 score based on latency (50%), packet loss (30%), message success (20%)
-- **Trend Analysis**: Compares historical quality states to determine improving/degrading/stable trends
-- **Future Prediction**: Predicts next quality level based on current state and trend
-- **Confidence Indicators**: High/medium/low confidence based on trend stability and data consistency
-- **Actionable Insights**: Generates specific recommendations based on prediction patterns
+### Anomaly Clustering
+- **Similarity Grouping**: Anomalies with similar characteristics are automatically clustered
+- **Cluster Analysis**: Each cluster provides insights into common root causes
+- **Visualization**: Dashboard shows cluster distribution and size for easy identification of widespread issues
 
-### Dashboard Enhancements
-- **Geographical Chart**: Bar chart showing connection count by region
-- **Prediction Chart**: Doughnut chart showing predicted quality distribution
-- **Summary Displays**: Regional analysis and prediction insights with key metrics
-- **Enhanced Table**: Additional columns for location, score, trend, and predicted quality
-- **Visual Indicators**: Color-coded quality indicators and trend icons
-
-### Technical Implementation
-- **Backward Compatibility**: All existing functionality preserved, new features are additive
-- **Performance**: Minimal overhead added to connection quality monitoring
-- **Scalability**: Designed to handle large numbers of connections and regions
-- **Extensibility**: Framework allows for more sophisticated prediction algorithms in future
-
-## User Benefits
-
-1. **Regional Performance Insights**: Identify which geographical regions have best/worst connection quality
-2. **Proactive Issue Detection**: Predict future connection problems before they impact users
-3. **Network Optimization**: Target improvements to specific regions with poor performance
-4. **Capacity Planning**: Use trend data to anticipate network capacity needs
-5. **Enhanced Troubleshooting**: Combine real-time data with predictions for faster issue resolution
-6. **Data-Driven Decisions**: Make network infrastructure decisions based on comprehensive analytics
-
-## Future Enhancement Opportunities
-
-- **Interactive World Map**: Visualize connection quality on a geographical map
-- **Historical Trend Analysis**: Track quality changes over time for specific regions
-- **Advanced ML Models**: Implement more sophisticated prediction algorithms
-- **Anomaly Detection**: Automatically flag unusual connection patterns ✅ (IMPLEMENTED)
-- **Regional Alerts**: Generate alerts for specific regions with degrading quality
-- **Multi-Dimensional Analysis**: Analyze quality across region, time, connection type simultaneously
-
-## 2026-03-01 07:30: WebSocket Connection Quality Dashboard Advanced Enhancements
-- **Objective**: Enhance WebSocket Connection Quality Dashboard with advanced anomaly detection and real-time monitoring improvements
-- **Rationale**: Provide deeper insights into connection performance with automatic anomaly detection, enhanced geographical analysis, and improved real-time monitoring capabilities
-- **Impact**: WebSocket server, connection quality monitoring, dashboard UI, anomaly detection, and user experience
-- **Changes**:
-  - Extended WebSocketConnectionStats with AnomalyScore, IsAnomaly, and AnomalyReasons fields
-  - Added detectAdvancedConnectionQualityAnomalies() method for comprehensive anomaly detection
-  - Implemented detectConnectionAnomalies() method for per-connection anomaly analysis
-  - Added calculateStdDev() and calculateStdDevForAnomalyDetection() helper methods
-  - Enhanced BroadcastConnectionQualityData() to include anomaly count and percentage
-  - Updated connection stats broadcasting to include anomaly information per connection
-  - Added anomaly detection display to WebSocket Connection Quality Dashboard UI
-  - Enhanced geographical analysis with anomaly detection integration
-  - Updated connection stats table with anomaly columns and visual indicators
-  - Added real-time anomaly metrics to dashboard summary
-  - Implemented anomaly severity classification (low/medium/high)
-  - Added actionable anomaly insights and recommendations
-- **Testing**: Integration testing with WebSocket server, manual verification of anomaly detection functionality
-- **Result**: WebSocket Connection Quality Dashboard now provides advanced anomaly detection capabilities that automatically identify unusual connection patterns, calculate anomaly scores, provide severity classification, and generate actionable insights. The enhanced dashboard displays real-time anomaly metrics, highlights anomalous connections in the stats table, and integrates anomaly information with geographical analysis for comprehensive network monitoring and troubleshooting.
-
-### Advanced Anomaly Detection Features
-
-- **Statistical Anomaly Detection**: Uses standard deviation analysis to identify connections with unusual latency, packet loss, or quality scores
-- **Multi-Factor Scoring**: Calculates anomaly scores (0-1) based on multiple metrics with weighted contributions
-- **Sudden Quality Change Detection**: Identifies rapid degradation in connection quality as additional anomaly indicator
-- **Severity Classification**: Automatically classifies anomalies as low, medium, or high severity based on percentage of affected connections
-- **Actionable Insights**: Generates specific recommendations for investigating and resolving detected anomalies
-- **Real-time Monitoring**: Continuously monitors all active connections and updates anomaly status dynamically
+### Automated Alerts
+- **Configurable Thresholds**: Users can set anomaly score and confidence thresholds for alerts
+- **Real-time Notifications**: Alerts are triggered and logged when anomalous connections are detected
+- **Notification System**: Ready for integration with email, Slack, or other notification systems
 
 ### Dashboard Enhancements
+- **ML Status Panel**: Shows ML model status, learned patterns, and active clusters
+- **Anomaly Cluster Chart**: Bar chart visualization of anomaly cluster distribution
+- **Enhanced Connection Table**: Additional columns for anomaly type, confidence, cluster ID, and history
+- **Real-time Updates**: All anomaly information updates in real-time via WebSocket
 
-- **Anomaly Metrics Card**: Shows total anomalous connections with severity-based color coding
-- **Anomaly Columns**: Added "Anomaly" and "Anomaly Score" columns to connection stats table
-- **Visual Highlighting**: Anomalous connections are highlighted in the table for quick identification
-- **Anomaly Insights Display**: Shows detailed anomaly analysis and recommendations
-- **Geographical Anomaly Integration**: Anomaly information integrated with regional performance analysis
+### Backward Compatibility
+- ML features are optional and disabled by default
+- Existing connection quality monitoring continues to work without ML
+- All new fields are optional in JSON responses
+- CLI maintains full backward compatibility
 
-### Technical Implementation
+## Performance Considerations
+- Pattern recognition uses efficient string-based signatures
+- Anomaly clustering uses lightweight hashing for performance
+- ML detection only runs when enabled and when sufficient data is available
+- Memory usage is optimized with bounded history and pattern caches
 
-- **Statistical Methods**: Uses standard deviation (2σ threshold) for robust anomaly detection
-- **Performance Optimized**: Minimal overhead added to existing connection quality monitoring
-- **Backward Compatible**: All existing functionality preserved, new features are additive
-- **Real-time Updates**: Anomaly detection runs continuously with connection quality updates
-- **Scalable Design**: Handles large numbers of connections efficiently
-
-### User Benefits
-
-1. **Proactive Issue Detection**: Automatically identify network problems before they impact users
-2. **Root Cause Analysis**: Anomaly reasons help pinpoint specific issues (latency, packet loss, etc.)
-3. **Prioritized Troubleshooting**: Severity classification helps focus on most critical issues
-4. **Regional Insights**: Combine anomaly data with geographical analysis for targeted fixes
-5. **Data-Driven Decisions**: Actionable insights guide network optimization efforts
-6. **Improved Reliability**: Early detection prevents minor issues from becoming major problems
-
-### Future Enhancement Opportunities
-
-- **Machine Learning Models**: Implement more sophisticated anomaly detection algorithms
-- **Historical Anomaly Trends**: Track anomaly patterns over time for predictive maintenance
-- **Anomaly Alerts**: Real-time notifications for critical anomaly detection
-- **Automated Remediation**: Integration with network management systems for automatic fixes
-- **Anomaly Clustering**: Group similar anomalies for pattern recognition and root cause analysis
+## Future Enhancements
+- Integration with external ML models for more sophisticated detection
+- Automated remediation actions based on anomaly patterns
+- Anomaly prediction using time series analysis
+- Cross-connection correlation for root cause analysis

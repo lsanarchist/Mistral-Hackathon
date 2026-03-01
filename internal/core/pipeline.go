@@ -38,6 +38,7 @@ type Pipeline struct {
 	connectionQualityEnabled bool
 	connectionQualityAlerts []webserver.ConnectionQualityAlert
 	connectionQualityConfig webserver.ConnectionQualityConfig
+	mlModelEnabled          bool
 }
 
 func NewPipeline(pluginDir string) *Pipeline {
@@ -106,7 +107,7 @@ func (p *Pipeline) WithWebSocketServer(port int, dataDir string, enableAuth bool
 		log.Printf("Warning: Failed to load performance alerts: %v", err)
 	}
 	
-	p.wsServer = webserver.NewWebSocketServer(port, dataDir, pluginDir, enableAuth, enableCompression, enableBatching, batchInterval, p.connectionQualityEnabled, alertsConfig, p.connectionQualityAlerts, p.connectionQualityConfig)
+	p.wsServer = webserver.NewWebSocketServer(port, dataDir, pluginDir, enableAuth, enableCompression, enableBatching, batchInterval, p.connectionQualityEnabled, alertsConfig, p.connectionQualityAlerts, p.connectionQualityConfig, p.mlModelEnabled)
 }
 
 // WithWebSocketAutoRefresh configures auto-refresh interval for WebSocket server
@@ -129,6 +130,11 @@ func (p *Pipeline) WithWebSocketConnectionQualityAlerts(alerts []webserver.Conne
 // WithWebSocketConnectionQualityConfig configures connection quality adaptation settings
 func (p *Pipeline) WithWebSocketConnectionQualityConfig(config webserver.ConnectionQualityConfig) {
 	p.connectionQualityConfig = config
+}
+
+// WithWebSocketMLModel enables ML-based anomaly detection for WebSocket connections
+func (p *Pipeline) WithWebSocketMLModel(enabled bool) {
+	p.mlModelEnabled = enabled
 }
 
 // StartWebSocketServer starts the WebSocket server
