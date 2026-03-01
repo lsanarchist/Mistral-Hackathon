@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         .connection-quality-dashboard {
             margin: 20px 0;
@@ -238,6 +240,39 @@
         .insights-list li {
             margin-bottom: 5px;
         }
+        
+        .anomaly-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        
+        .anomaly-badge.high {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .anomaly-badge.medium {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .anomaly-badge.low {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .anomaly-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            background-color: #ffc107;
+        }
     </style>
 </head>
 <body>
@@ -303,6 +338,11 @@
                     <div class="quality-metric-label">Avg Latency</div>
                     <div class="quality-metric-value" id="avgLatency">0 ms</div>
                 </div>
+                
+                <div class="quality-metric-card" id="anomalyMetricCard" style="display: none;">
+                    <div class="quality-metric-label">Anomalous Connections</div>
+                    <div class="quality-metric-value" id="anomalyConnections">0</div>
+                </div>
             </div>
             
             <div class="charts-grid">
@@ -319,13 +359,13 @@
             
             <div class="charts-grid">
                 <div class="chart-container">
-                    <h3><i class="fas fa-globe-americas"></i> Geographical Connection Analysis</h3>
-                    <canvas id="geographicalChart"></canvas>
+                    <h3><i class="fas fa-globe-americas"></i> Interactive Geographical Connection Map</h3>
+                    <div id="geographicalMap" style="height: 400px; width: 100%; border: 1px solid #ddd; border-radius: 5px; background-color: #f8f9fa;"></div>
                     <div id="geographicalAnalysis" style="margin-top: 15px;"></div>
                 </div>
                 
                 <div class="chart-container">
-                    <h3><i class="fas fa-crystal-ball"></i> Connection Quality Predictions</h3>
+                    <h3><i class="fas fa-crystal-ball"></i> Advanced Connection Quality Predictions</h3>
                     <canvas id="predictionChart"></canvas>
                     <div id="predictionInsights" style="margin-top: 15px;"></div>
                 </div>
@@ -376,6 +416,8 @@
                             <th>Score</th>
                             <th>Trend</th>
                             <th>Predicted</th>
+                            <th>Anomaly</th>
+                            <th>Anomaly Score</th>
                             <th>Connected Since</th>
                         </tr>
                     </thead>
@@ -394,6 +436,8 @@
         let connectionStats = [];
         let connectionQualityAlerts = [];
         let autoRefreshInterval = null;
+        let geographicalMap;
+        let mapMarkers = [];
         
         // DOM Elements
         const connectWsBtn = document.getElementById('connectWsBtn');
@@ -703,12 +747,28 @@
             document.getElementById('totalClients').textContent = data.total_clients || 0;
             document.getElementById('avgLatency').textContent = data.avg_latency ? data.avg_latency.toFixed(2) + ' ms' : '0 ms';
             
+            // Update anomaly metrics if available
+            if (data.anomaly_count !== undefined) {
+                document.getElementById('anomalyConnections').textContent = data.anomaly_count || 0;
+                document.getElementById('anomalyMetricCard').style.display = 'block';
+                
+                // Add anomaly severity styling
+                const anomalyCard = document.getElementById('anomalyMetricCard');
+                if (data.anomaly_percentage > 30) {
+                    anomalyCard.className = 'quality-metric-card poor';
+                } else if (data.anomaly_percentage > 10) {
+                    anomalyCard.className = 'quality-metric-card fair';
+                } else {
+                    anomalyCard.className = 'quality-metric-card good';
+                }
+            }
+            
             // Update charts
             updateQualityTrendChart(data);
             updateQualityDistributionChart(data);
             updateLatencyTrendChart(data);
             updatePacketLossTrendChart(data);
-            updateGeographicalChart(data);
+            updateGeographicalMap(data);
             updatePredictionChart(data);
             
             // Update connection stats table
@@ -781,25 +841,88 @@
             qualityCharts.packetLossTrend.update();
         }
         
-        // Update geographical chart
-        function updateGeographicalChart(data) {
-            if (!data.geographical_analysis || !data.geographical_analysis.regions) {
+        // Initialize interactive geographical map
+        let geographicalMap;
+        let mapMarkers = [];
+        
+        function initializeGeographicalMap() {
+            geographicalMap = L.map('geographicalMap').setView([20, 0], 2);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(geographicalMap);
+        }
+        
+        // Update interactive geographical map
+        function updateGeographicalMap(data) {
+            // Clear existing markers
+            mapMarkers.forEach(marker => geographicalMap.removeLayer(marker));
+            mapMarkers = [];
+            
+            if (!data.geographical_analysis || !data.geographical_analysis.map_features || data.geographical_analysis.status !== "analyzed") {
                 return;
             }
             
-            const regions = data.geographical_analysis.regions;
-            const labels = regions.map(r => r.region);
-            const counts = regions.map(r => r.connection_count);
+            const features = data.geographical_analysis.map_features;
             
-            qualityCharts.geographical.data.labels = labels;
-            qualityCharts.geographical.data.datasets[0].data = counts;
-            qualityCharts.geographical.update();
+            // Add markers for each region
+            features.forEach(feature => {
+                const props = feature.properties;
+                const coords = feature.geometry.coordinates;
+                
+                // Skip regions with no coordinates
+                if (coords[0] === 0 && coords[1] === 0) {
+                    return;
+                }
+                
+                // Determine marker color based on predominant quality
+                let markerColor = 'green';
+                switch(props.predominant_quality) {
+                    case 'excellent':
+                        markerColor = 'darkgreen';
+                        break;
+                    case 'good':
+                        markerColor = 'blue';
+                        break;
+                    case 'fair':
+                        markerColor = 'orange';
+                        break;
+                    case 'poor':
+                        markerColor = 'red';
+                        break;
+                }
+                
+                // Create marker with popup
+                const marker = L.circleMarker([coords[1], coords[0]], {
+                    radius: 8 + Math.min(props.connection_count, 10),
+                    fillColor: markerColor,
+                    color: '#fff',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.7
+                }).addTo(geographicalMap);
+                
+                // Add popup with detailed information
+                const popupContent = `
+                    <div style="min-width: 200px;">
+                        <h4 style="margin: 5px 0;">${props.region}</h4>
+                        <p><strong>Connections:</strong> ${props.connection_count}</p>
+                        <p><strong>Quality:</strong> ${props.predominant_quality}</p>
+                        <p><strong>Avg Latency:</strong> ${props.avg_latency_ms.toFixed(1)} ms</p>
+                        <p><strong>Avg Packet Loss:</strong> ${props.avg_packet_loss.toFixed(1)}%</p>
+                        <p><strong>Avg Score:</strong> ${props.avg_connection_score.toFixed(1)}/100</p>
+                    </div>
+                `;
+                
+                marker.bindPopup(popupContent);
+                mapMarkers.push(marker);
+            });
             
             // Update geographical analysis display
             updateGeographicalAnalysisDisplay(data.geographical_analysis);
         }
         
-        // Update geographical analysis display
+        // Update geographical analysis display with advanced data
         function updateGeographicalAnalysisDisplay(analysis) {
             const container = document.getElementById('geographicalAnalysis');
             if (!analysis || analysis.status === 'no_data') {
@@ -812,8 +935,54 @@
             html += `<p><strong>Best Region:</strong> ${analysis.best_region.name} (Score: ${analysis.best_region.score.toFixed(1)})</p>`;
             html += `<p><strong>Worst Region:</strong> ${analysis.worst_region.name} (Score: ${analysis.worst_region.score.toFixed(1)})</p>`;
             html += `<p><strong>Overall Quality:</strong> ${analysis.overall_geographical_quality.rating} (${analysis.overall_geographical_quality.variability} variability)</p>`;
-            html += '</div>';
             
+            // Add anomaly detection information
+            if (analysis.anomaly_detection && analysis.anomaly_detection.status === 'analyzed') {
+                const anomalies = analysis.anomaly_detection;
+                html += `<div style="margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 5px;">`;
+                html += `<p><strong>Anomaly Detection:</strong> ${anomalies.anomaly_count} anomalies found (${anomalies.anomaly_percentage.toFixed(1)}%)</p>`;
+                html += `<p><strong>Severity:</strong> ${anomalies.severity}</p>`;
+                html += `</div>`;
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        // Update geographical analysis display with enhanced anomaly detection
+        function updateGeographicalAnalysisDisplay(analysis) {
+            const container = document.getElementById('geographicalAnalysis');
+            if (!analysis || analysis.status === 'no_data') {
+                container.innerHTML = '<p>No geographical data available</p>';
+                return;
+            }
+            
+            let html = '<div class="geographical-summary">';
+            html += `<p><strong>Regions:</strong> ${analysis.region_count}</p>`;
+            html += `<p><strong>Best Region:</strong> ${analysis.best_region.name} (Score: ${analysis.best_region.score.toFixed(1)})</p>`;
+            html += `<p><strong>Worst Region:</strong> ${analysis.worst_region.name} (Score: ${analysis.worst_region.score.toFixed(1)})</p>`;
+            html += `<p><strong>Overall Quality:</strong> ${analysis.overall_geographical_quality.rating} (${analysis.overall_geographical_quality.variability} variability)</p>`;
+            
+            // Add anomaly detection information
+            if (analysis.anomaly_detection && analysis.anomaly_detection.status === 'analyzed') {
+                const anomalies = analysis.anomaly_detection;
+                html += `<div style="margin-top: 15px; padding: 10px; background: #fff3cd; border-radius: 5px;">`;
+                html += `<p><strong>Anomaly Detection:</strong> ${anomalies.anomaly_count} anomalies found (${anomalies.anomaly_percentage.toFixed(1)}%)</p>`;
+                html += `<p><strong>Severity:</strong> ${anomalies.severity}</p>`;
+                
+                // Add anomaly insights if available
+                if (anomalies.anomaly_insights && anomalies.anomaly_insights.length > 0) {
+                    html += '<div class="insights-list" style="margin-top: 10px;">';
+                    html += '<strong>Anomaly Insights:</strong><ul>';
+                    anomalies.anomaly_insights.forEach(insight => {
+                        html += `<li>${insight}</li>`;
+                    });
+                    html += '</ul></div>';
+                }
+                html += `</div>`;
+            }
+            
+            html += '</div>';
             container.innerHTML = html;
         }
         
@@ -836,7 +1005,7 @@
             updatePredictionInsightsDisplay(data.quality_predictions);
         }
         
-        // Update prediction insights display
+        // Update prediction insights display with enhanced data including anomaly detection
         function updatePredictionInsightsDisplay(predictions) {
             const container = document.getElementById('predictionInsights');
             if (!predictions || predictions.status === 'no_data') {
@@ -846,12 +1015,52 @@
             
             let html = '<div class="prediction-summary">';
             html += `<p><strong>Overall Trend:</strong> ${predictions.overall_prediction_trend}</p>`;
-            html += `<p><strong>Confidence:</strong> ${predictions.prediction_confidence}</p>`;
+            
+            // Add enhanced confidence information
+            if (predictions.prediction_confidence) {
+                const confidence = predictions.prediction_confidence;
+                html += `<p><strong>Confidence Level:</strong> ${confidence.confidence_level} (Score: ${confidence.confidence_score.toFixed(2)})</p>`;
+                if (confidence.confidence_reasons && confidence.confidence_reasons.length > 0) {
+                    html += '<p><strong>Confidence Factors:</strong> ' + confidence.confidence_reasons.join(', ') + '</p>';
+                }
+            } else {
+                html += `<p><strong>Confidence:</strong> ${predictions.prediction_confidence}</p>`;
+            }
+            
             html += `<p><strong>Average Score:</strong> ${predictions.average_connection_score.toFixed(1)}/100</p>`;
+            
+            // Add trend analysis information
+            if (predictions.trend_analysis) {
+                const trendAnalysis = predictions.trend_analysis;
+                html += `<div style="margin-top: 10px; padding: 8px; background: #e7f3ff; border-radius: 5px;">`;
+                html += `<p><strong>Trend Strength:</strong> ${trendAnalysis.trend_strength}</p>`;
+                html += `<p><strong>Trend Direction:</strong> ${trendAnalysis.trend_direction}</p>`;
+                html += `<p><strong>Score Slope:</strong> ${trendAnalysis.score_slope.toFixed(3)}</p>`;
+                html += `</div>`;
+            }
+            
+            // Add anomaly detection information from predictions
+            if (predictions.anomaly_detection && predictions.anomaly_detection.status === 'analyzed') {
+                const anomalies = predictions.anomaly_detection;
+                html += `<div style="margin-top: 10px; padding: 8px; background: #fff3cd; border-radius: 5px;">`;
+                html += `<p><strong>Anomaly Detection:</strong> ${anomalies.anomaly_count} anomalies detected (${anomalies.anomaly_percentage.toFixed(1)}%)</p>`;
+                html += `<p><strong>Severity:</strong> ${anomalies.severity}</p>`;
+                
+                // Add anomaly insights if available
+                if (anomalies.anomaly_insights && anomalies.anomaly_insights.length > 0) {
+                    html += '<div class="insights-list" style="margin-top: 5px;">';
+                    html += '<strong>Anomaly Insights:</strong><ul>';
+                    anomalies.anomaly_insights.forEach(insight => {
+                        html += `<li>${insight}</li>`;
+                    });
+                    html += '</ul></div>';
+                }
+                html += `</div>`;
+            }
             
             if (predictions.predictive_insights && predictions.predictive_insights.length > 0) {
                 html += '<div class="insights-list" style="margin-top: 10px;">';
-                html += '<strong>Insights:</strong><ul>';
+                html += '<strong>Actionable Insights:</strong><ul>';
                 predictions.predictive_insights.forEach(insight => {
                     html += `<li>${insight}</li>`;
                 });
@@ -863,7 +1072,7 @@
             container.innerHTML = html;
         }
         
-        // Update connection stats table
+        // Update connection stats table with anomaly detection
         function updateConnectionStatsTable(stats) {
             const tbody = document.getElementById('connectionStatsTableBody');
             tbody.innerHTML = '';
@@ -887,8 +1096,16 @@
                     <td>${stat.connection_score ? stat.connection_score.toFixed(1) : 'N/A'}</td>
                     <td>${stat.quality_trend || 'N/A'}</td>
                     <td>${stat.predicted_quality || 'N/A'}</td>
+                    <td>${stat.is_anomaly ? '⚠️ Yes' : '✅ No'}</td>
+                    <td>${stat.anomaly_score ? stat.anomaly_score.toFixed(2) : 'N/A'}</td>
                     <td>${stat.connection_time ? new Date(stat.connection_time).toLocaleString() : 'N/A'}</td>
                 `;
+                
+                // Add anomaly styling if this connection is anomalous
+                if (stat.is_anomaly) {
+                    row.style.backgroundColor = '#fff3cd';
+                    row.style.fontWeight = 'bold';
+                }
                 
                 tbody.appendChild(row);
             });
@@ -1014,6 +1231,7 @@
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
             initializeCharts();
+            initializeGeographicalMap();
             
             // Start with auto-refresh enabled
             if (autoRefreshCheckbox.checked) {

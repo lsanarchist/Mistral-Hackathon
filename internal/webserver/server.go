@@ -124,6 +124,9 @@ type WebSocketConnectionStats struct {
 	ConnectionScore   float64       `json:"connection_score,omitempty"` // Comprehensive quality score (0-100)
 	QualityTrend      string        `json:"quality_trend,omitempty"` // improving, degrading, stable
 	PredictedQuality  string        `json:"predicted_quality,omitempty"` // Predicted future quality
+	AnomalyScore      float64       `json:"anomaly_score,omitempty"` // Anomaly detection score (0-1)
+	IsAnomaly         bool          `json:"is_anomaly,omitempty"` // Whether this connection is anomalous
+	AnomalyReasons    []string      `json:"anomaly_reasons,omitempty"` // Reasons for anomaly detection
 }
 
 // ConnectionQualityAlert represents a configurable alert for connection quality
@@ -969,6 +972,9 @@ func (s *WebSocketServer) updateConnectionStats(conn *websocket.Conn, bytesSent 
 	// Predict future quality
 	stats.PredictedQuality = s.predictConnectionQuality(stats.ConnectionQuality, stats.QualityTrend, stats.QualityHistory)
 	
+	// Detect anomalies
+	s.detectConnectionAnomalies(stats)
+	
 	// Record connection quality history
 	s.recordConnectionQualityHistory(conn, stats)
 	
@@ -1438,6 +1444,302 @@ func (s *WebSocketServer) calculateAverageLatency(stats []*WebSocketConnectionSt
 	}
 
 	return float64(totalLatency.Milliseconds()) / float64(count)
+}
+
+// detectAdvancedConnectionQualityAnomalies detects unusual patterns in connection quality with enhanced algorithms
+func (s *WebSocketServer) detectAdvancedConnectionQualityAnomalies() map[string]interface{} {
+	stats := s.getConnectionStats()
+	if len(stats) < 3 {
+		return map[string]interface{}{
+			"status": "insufficient_data",
+			"message": "Need at least 3 connections for advanced anomaly detection",
+		}
+	}
+
+	anomalies := make([]map[string]interface{}, 0)
+	anomalyCount := 0
+
+	// Calculate overall averages
+	var totalLatency, totalPacketLoss, totalScore float64
+	for _, stat := range stats {
+		totalLatency += float64(stat.Latency.Milliseconds())
+		totalPacketLoss += stat.PacketLoss
+		totalScore += stat.ConnectionScore
+	}
+
+	avgLatency := totalLatency / float64(len(stats))
+	avgPacketLoss := totalPacketLoss / float64(len(stats))
+	avgScore := totalScore / float64(len(stats))
+
+	// Define thresholds for anomaly detection (2 standard deviations from mean)
+	latencyStdDev := s.calculateStdDev(func(stat *WebSocketConnectionStats) float64 {
+		return float64(stat.Latency.Milliseconds())
+	})
+	packetLossStdDev := s.calculateStdDev(func(stat *WebSocketConnectionStats) float64 {
+		return stat.PacketLoss
+	})
+	scoreStdDev := s.calculateStdDev(func(stat *WebSocketConnectionStats) float64 {
+		return stat.ConnectionScore
+	})
+
+	// Detect anomalies for each connection with enhanced scoring
+	for _, stat := range stats {
+		isAnomaly := false
+		reasons := make([]string, 0)
+		anomalyScore := 0.0
+
+		// Check latency anomaly
+		latency := float64(stat.Latency.Milliseconds())
+		if latencyStdDev > 0 && math.Abs(latency-avgLatency) > 2*latencyStdDev {
+			isAnomaly = true
+			reasons = append(reasons, fmt.Sprintf("latency %.1fms (avg: %.1fms)", latency, avgLatency))
+			anomalyScore += 0.4 // High weight for latency anomalies
+		}
+
+		// Check packet loss anomaly
+		if packetLossStdDev > 0 && math.Abs(stat.PacketLoss-avgPacketLoss) > 2*packetLossStdDev {
+			isAnomaly = true
+			reasons = append(reasons, fmt.Sprintf("packet loss %.1f%% (avg: %.1f%%)", stat.PacketLoss, avgPacketLoss))
+			anomalyScore += 0.3 // Medium weight for packet loss anomalies
+		}
+
+		// Check score anomaly
+		if scoreStdDev > 0 && math.Abs(stat.ConnectionScore-avgScore) > 2*scoreStdDev {
+			isAnomaly = true
+			reasons = append(reasons, fmt.Sprintf("score %.1f (avg: %.1f)", stat.ConnectionScore, avgScore))
+			anomalyScore += 0.3 // Medium weight for score anomalies
+		}
+
+		// Check for sudden quality changes (additional anomaly indicator)
+		if len(stat.QualityHistory) >= 2 {
+			lastQuality := stat.QualityHistory[len(stat.QualityHistory)-1]
+			prevQuality := stat.QualityHistory[len(stat.QualityHistory)-2]
+			
+			qualityValues := map[string]int{"poor": 1, "fair": 2, "good": 3, "excellent": 4}
+			if qualityValues[lastQuality] < qualityValues[prevQuality]-1 {
+				isAnomaly = true
+				reasons = append(reasons, "sudden quality degradation")
+				anomalyScore += 0.2
+			}
+		}
+
+		// Cap anomaly score at 1.0
+		if anomalyScore > 1.0 {
+			anomalyScore = 1.0
+		}
+
+		if isAnomaly {
+			anomalyCount++
+			anomalies = append(anomalies, map[string]interface{}{
+				"client_id":       stat.ClientID,
+				"geolocation":     stat.Geolocation,
+				"connection_quality": stat.ConnectionQuality,
+				"anomaly_reasons": reasons,
+				"latency":         latency,
+				"packet_loss":     stat.PacketLoss,
+				"connection_score": stat.ConnectionScore,
+				"anomaly_score":    anomalyScore,
+			})
+		}
+	}
+
+	// Calculate anomaly severity
+	severity := "low"
+	if float64(anomalyCount)/float64(len(stats)) > 0.3 {
+		severity = "high"
+	} else if float64(anomalyCount)/float64(len(stats)) > 0.1 {
+		severity = "medium"
+	}
+
+	// Generate anomaly insights
+	anomalyInsights := make([]string, 0)
+	if severity == "high" {
+		anomalyInsights = append(anomalyInsights, "🚨 CRITICAL: High number of anomalous connections detected")
+		anomalyInsights = append(anomalyInsights, "🔍 RECOMMENDATION: Investigate network infrastructure and regional connectivity issues")
+	} else if severity == "medium" {
+		anomalyInsights = append(anomalyInsights, "⚠️ WARNING: Some anomalous connections detected")
+		anomalyInsights = append(anomalyInsights, "📊 RECOMMENDATION: Monitor connection quality and check for regional patterns")
+	}
+
+	return map[string]interface{}{
+		"status": "analyzed",
+		"anomaly_count": anomalyCount,
+		"anomaly_percentage": float64(anomalyCount) / float64(len(stats)) * 100,
+		"severity": severity,
+		"anomalies": anomalies,
+		"anomaly_insights": anomalyInsights,
+	}
+}
+
+// detectConnectionAnomalies detects if a connection has anomalous behavior
+func (s *WebSocketServer) detectConnectionAnomalies(stats *WebSocketConnectionStats) {
+	// Need at least 3 connections for meaningful anomaly detection
+	if len(s.connectionStats) < 3 {
+		stats.IsAnomaly = false
+		stats.AnomalyScore = 0
+		stats.AnomalyReasons = nil
+		return
+	}
+
+	// Calculate overall averages for comparison
+	var totalLatency, totalPacketLoss, totalScore float64
+	connectionCount := 0
+	
+	for _, otherStats := range s.connectionStats {
+		if otherStats.ClientID == stats.ClientID {
+			continue // Skip self
+		}
+		totalLatency += float64(otherStats.Latency.Milliseconds())
+		totalPacketLoss += otherStats.PacketLoss
+		totalScore += otherStats.ConnectionScore
+		connectionCount++
+	}
+
+	if connectionCount == 0 {
+		stats.IsAnomaly = false
+		stats.AnomalyScore = 0
+		stats.AnomalyReasons = nil
+		return
+	}
+
+	avgLatency := totalLatency / float64(connectionCount)
+	avgPacketLoss := totalPacketLoss / float64(connectionCount)
+	avgScore := totalScore / float64(connectionCount)
+
+	// Calculate standard deviations
+	latencyStdDev := s.calculateStdDevForAnomalyDetection(func(otherStat *WebSocketConnectionStats) float64 {
+		if otherStat.ClientID == stats.ClientID {
+			return 0
+		}
+		return float64(otherStat.Latency.Milliseconds())
+	})
+	
+	packetLossStdDev := s.calculateStdDevForAnomalyDetection(func(otherStat *WebSocketConnectionStats) float64 {
+		if otherStat.ClientID == stats.ClientID {
+			return 0
+		}
+		return otherStat.PacketLoss
+	})
+	
+	scoreStdDev := s.calculateStdDevForAnomalyDetection(func(otherStat *WebSocketConnectionStats) float64 {
+		if otherStat.ClientID == stats.ClientID {
+			return 0
+		}
+		return otherStat.ConnectionScore
+	})
+
+	// Detect anomalies and calculate anomaly score
+	isAnomaly := false
+	reasons := make([]string, 0)
+	anomalyScore := 0.0
+	
+	latency := float64(stats.Latency.Milliseconds())
+	
+	// Check latency anomaly
+	if latencyStdDev > 0 && math.Abs(latency-avgLatency) > 2*latencyStdDev {
+		isAnomaly = true
+		reasons = append(reasons, fmt.Sprintf("latency %.1fms (avg: %.1fms)", latency, avgLatency))
+		anomalyScore += 0.4 // High weight for latency anomalies
+	}
+
+	// Check packet loss anomaly
+	if packetLossStdDev > 0 && math.Abs(stats.PacketLoss-avgPacketLoss) > 2*packetLossStdDev {
+		isAnomaly = true
+		reasons = append(reasons, fmt.Sprintf("packet loss %.1f%% (avg: %.1f%%)", stats.PacketLoss, avgPacketLoss))
+		anomalyScore += 0.3 // Medium weight for packet loss anomalies
+	}
+
+	// Check score anomaly
+	if scoreStdDev > 0 && math.Abs(stats.ConnectionScore-avgScore) > 2*scoreStdDev {
+		isAnomaly = true
+		reasons = append(reasons, fmt.Sprintf("score %.1f (avg: %.1f)", stats.ConnectionScore, avgScore))
+		anomalyScore += 0.3 // Medium weight for score anomalies
+	}
+
+	// Check for sudden quality changes
+	if len(stats.QualityHistory) >= 2 {
+		lastQuality := stats.QualityHistory[len(stats.QualityHistory)-1]
+		prevQuality := stats.QualityHistory[len(stats.QualityHistory)-2]
+		
+		qualityValues := map[string]int{"poor": 1, "fair": 2, "good": 3, "excellent": 4}
+		if qualityValues[lastQuality] < qualityValues[prevQuality]-1 {
+			isAnomaly = true
+			reasons = append(reasons, "sudden quality degradation")
+			anomalyScore += 0.2
+		}
+	}
+
+	// Cap anomaly score at 1.0
+	if anomalyScore > 1.0 {
+		anomalyScore = 1.0
+	}
+
+	stats.IsAnomaly = isAnomaly
+	stats.AnomalyScore = anomalyScore
+	stats.AnomalyReasons = reasons
+}
+
+// calculateStdDev calculates standard deviation for a given metric
+func (s *WebSocketServer) calculateStdDev(metricFunc func(*WebSocketConnectionStats) float64) float64 {
+	stats := s.getConnectionStats()
+	if len(stats) < 2 {
+		return 0
+	}
+
+	// Calculate mean
+	var sum float64
+	for _, stat := range stats {
+		sum += metricFunc(stat)
+	}
+	mean := sum / float64(len(stats))
+
+	// Calculate variance
+	var varianceSum float64
+	for _, stat := range stats {
+		diff := metricFunc(stat) - mean
+		varianceSum += diff * diff
+	}
+	variance := varianceSum / float64(len(stats))
+
+	return math.Sqrt(variance)
+}
+
+// calculateStdDevForAnomalyDetection calculates standard deviation excluding a specific connection
+func (s *WebSocketServer) calculateStdDevForAnomalyDetection(metricFunc func(*WebSocketConnectionStats) float64) float64 {
+	stats := s.getConnectionStats()
+	if len(stats) < 2 {
+		return 0
+	}
+
+	// Calculate mean (excluding zero values which represent the current connection)
+	var sum float64
+	count := 0
+	for _, stat := range stats {
+		value := metricFunc(stat)
+		if value > 0 { // Exclude zero values (current connection)
+			sum += value
+			count++
+		}
+	}
+	
+	if count < 2 {
+		return 0
+	}
+	
+	mean := sum / float64(count)
+
+	// Calculate variance
+	var varianceSum float64
+	for _, stat := range stats {
+		value := metricFunc(stat)
+		if value > 0 { // Exclude zero values
+			diff := value - mean
+			varianceSum += diff * diff
+		}
+	}
+	variance := varianceSum / float64(count)
+
+	return math.Sqrt(variance)
 }
 
 // handleWebSocket handles WebSocket connections
@@ -2818,6 +3120,7 @@ func (s *WebSocketServer) BroadcastConnectionQualityData() {
 	var totalLatency float64
 	var totalPacketLoss float64
 	var connectionStatsList []map[string]interface{}
+	var anomalyCount int
 	
 	// Aggregate connection statistics
 	for _, stats := range s.connectionStats {
@@ -2826,7 +3129,12 @@ func (s *WebSocketServer) BroadcastConnectionQualityData() {
 		totalLatency += float64(stats.Latency.Milliseconds())
 		totalPacketLoss += stats.PacketLoss
 		
-		// Add to detailed stats list
+		// Count anomalies
+		if stats.IsAnomaly {
+			anomalyCount++
+		}
+		
+		// Add to detailed stats list with anomaly information
 		connectionStatsList = append(connectionStatsList, map[string]interface{}{
 			"client_id":            stats.ClientID,
 			"connection_quality":   stats.ConnectionQuality,
@@ -2839,6 +3147,9 @@ func (s *WebSocketServer) BroadcastConnectionQualityData() {
 			"connection_score":    stats.ConnectionScore,
 			"quality_trend":       stats.QualityTrend,
 			"predicted_quality":  stats.PredictedQuality,
+			"is_anomaly":         stats.IsAnomaly,
+			"anomaly_score":       stats.AnomalyScore,
+			"anomaly_reasons":     stats.AnomalyReasons,
 		})
 	}
 	
@@ -2858,6 +3169,8 @@ func (s *WebSocketServer) BroadcastConnectionQualityData() {
 		"total_clients": totalClients,
 		"avg_latency": avgLatency,
 		"avg_packet_loss": avgPacketLoss,
+		"anomaly_count": anomalyCount,
+		"anomaly_percentage": float64(anomalyCount) / float64(totalClients) * 100,
 		"connection_stats": connectionStatsList,
 	}
 	
