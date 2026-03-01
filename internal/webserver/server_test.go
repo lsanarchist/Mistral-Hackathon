@@ -42,7 +42,7 @@ func (m *mockWebSocketConn) SetCloseHandler(h func(code int, text string) error)
 
 func TestWebSocketCompressionDisabled(t *testing.T) {
 	// Create WebSocket server with compression disabled
-	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
+	server := NewWebSocketServer(8080, t.TempDir(), t.TempDir(), false, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false, false, false)
 	defer server.Stop()
 
 	// Test compression info endpoint

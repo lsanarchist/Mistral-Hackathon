@@ -313,6 +313,7 @@ func runRunCommand(pipeline *core.Pipeline) {
 	websocketBandwidthThrottling := flagSet.Bool("websocket-bandwidth-throttling", true, "Enable bandwidth throttling based on connection quality")
 	websocketMLModel := flagSet.Bool("websocket-ml-model", false, "Enable ML-based anomaly detection for WebSocket connections")
 	websocketAdvancedML := flagSet.Bool("websocket-advanced-ml", false, "Enable advanced ML features (root cause analysis, predictions, correlations)")
+	websocketPhase4Features := flagSet.Bool("websocket-phase4-features", false, "Enable Phase 4 advanced ML features (deep learning, time series forecasting, automated root cause analysis)")
 	performanceAlerts := flagSet.String("performance-alerts", "", "Performance alert configuration file (JSON)")
 	flagSet.Parse(os.Args[2:])
 
@@ -418,6 +419,7 @@ func runRunCommand(pipeline *core.Pipeline) {
 		// Configure ML-based anomaly detection
 		pipeline.WithWebSocketMLModel(*websocketMLModel)
 		pipeline.WithWebSocketAdvancedML(*websocketAdvancedML)
+		pipeline.WithWebSocketPhase4Features(*websocketPhase4Features)
 		
 		if *performanceAlerts != "" {
 			pipeline.WithPerformanceAlerts(*performanceAlerts)
@@ -425,6 +427,8 @@ func runRunCommand(pipeline *core.Pipeline) {
 		fmt.Printf("WebSocket server enabled on port %d\n", *websocketPort)
 		fmt.Printf("  Connection Quality: %s\n", boolToStatus(*websocketConnectionQuality))
 		fmt.Printf("  ML Anomaly Detection: %s\n", boolToStatus(*websocketMLModel))
+		fmt.Printf("  Advanced ML Features: %s\n", boolToStatus(*websocketAdvancedML))
+		fmt.Printf("  Phase 4 Features: %s\n", boolToStatus(*websocketPhase4Features))
 		if *websocketCompression {
 			fmt.Println("WebSocket compression: ENABLED")
 		} else {
@@ -630,6 +634,7 @@ func runWebSocketCommand(pipeline *core.Pipeline) {
 	qualityAlerts := flagSet.String("quality-alerts", "", "WebSocket connection quality alert configuration file (JSON)")
 	adaptiveUpdates := flagSet.Bool("adaptive-updates", true, "Enable adaptive updates based on connection quality")
 	bandwidthThrottling := flagSet.Bool("bandwidth-throttling", true, "Enable bandwidth throttling based on connection quality")
+	phase4Features := flagSet.Bool("phase4-features", false, "Enable Phase 4 advanced ML features (deep learning, time series forecasting, automated root cause analysis)")
 	flagSet.Parse(os.Args[2:])
 
 	if *findingsPath == "" {
@@ -641,6 +646,7 @@ func runWebSocketCommand(pipeline *core.Pipeline) {
 	batchIntervalDuration := time.Duration(*batchInterval) * time.Millisecond
 	pipeline.WithWebSocketServer(*port, *dataDir, false, *compression, *batching, batchIntervalDuration)
 	pipeline.WithWebSocketConnectionQuality(*connectionQuality)
+	pipeline.WithWebSocketPhase4Features(*phase4Features)
 	
 	// Configure connection quality enhancements
 	if *connectionQuality {
@@ -708,6 +714,11 @@ func runWebSocketCommand(pipeline *core.Pipeline) {
 		fmt.Printf("Bandwidth throttling: %s\n", boolToStatus(*bandwidthThrottling))
 		if *qualityAlerts != "" {
 			fmt.Printf("Quality alerts: LOADED from %s\n", *qualityAlerts)
+		}
+		if phase4Features != nil && *phase4Features {
+			fmt.Printf("Phase 4 features: ENABLED (deep learning, time series forecasting, automated root cause analysis)\n")
+		} else {
+			fmt.Printf("Phase 4 features: DISABLED\n")
 		}
 	} else {
 		fmt.Printf("Connection quality: DISABLED\n")

@@ -15,7 +15,7 @@ import (
 )
 
 func TestPerformanceAlerts(t *testing.T) {
-	server := NewWebSocketServer(8080, "./testdata", "./testdata", false, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
+	server := NewWebSocketServer(8080, "./testdata", "./testdata", false, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false, false, false)
 	defer server.Stop()
 
 	// Test GET empty alerts
@@ -76,7 +76,7 @@ func TestPerformanceAlerts(t *testing.T) {
 }
 
 func TestPerformanceAnnotations(t *testing.T) {
-	server := NewWebSocketServer(8080, "./testdata", "./testdata", false, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
+	server := NewWebSocketServer(8080, "./testdata", "./testdata", false, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false, false, false)
 	defer server.Stop()
 
 	// Test GET empty annotations
@@ -136,7 +136,7 @@ func TestPerformanceAnnotations(t *testing.T) {
 }
 
 func TestPerformanceExport(t *testing.T) {
-	server := NewWebSocketServer(8080, "./testdata", "./testdata", false, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
+	server := NewWebSocketServer(8080, "./testdata", "./testdata", false, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false, false, false)
 	defer server.Stop()
 
 	// Load some test data
@@ -170,7 +170,7 @@ func TestPerformanceExport(t *testing.T) {
 }
 
 func TestPerformanceCompare(t *testing.T) {
-	server := NewWebSocketServer(8080, "./testdata", "./testdata", false, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false)
+	server := NewWebSocketServer(8080, "./testdata", "./testdata", false, false, false, 0, false, nil, nil, ConnectionQualityConfig{}, false, false, false)
 	defer server.Stop()
 
 	compareRequest := map[string]interface{}{
