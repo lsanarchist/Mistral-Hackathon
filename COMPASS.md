@@ -211,6 +211,28 @@ Plugins are separate executables, discovered via manifests, and communicate with
 - **Testing**: Unit tests for batching functionality, integration tests, and concurrency tests
 - **Result**: WebSocket message batching with configurable intervals, reducing message frequency for high-volume scenarios while maintaining real-time capabilities
 
+### 2026-03-01 04:45: WebSocket Connection Quality Monitoring Implementation
+- **Objective**: Implement WebSocket Connection Quality Monitoring for enhanced real-time monitoring reliability
+- **Changes**:
+  - Added `WebSocketConnectionStats` struct to track connection quality metrics (latency, packet loss, message counts, bandwidth)
+  - Enhanced `WebSocketServer` struct with connection quality fields: `connectionStats`, `statsMu`, `pingInterval`, `connectionQualityEnabled`
+  - Updated `NewWebSocketServer()` constructor with `enableConnectionQuality` parameter
+  - Implemented `calculateConnectionQuality()` method for quality classification (excellent/good/fair/poor)
+  - Added `updateConnectionStats()` method for real-time connection statistics tracking
+  - Implemented `getConnectionStats()` and `GetConnectionQualityInfo()` methods for monitoring
+  - Added `calculateAverageLatency()` method for performance analysis
+  - Enhanced WebSocket handler with ping/pong monitoring using WebSocket control messages
+  - Added connection cleanup on client disconnect
+  - Updated `BroadcastData()` to include connection quality information in WebSocket payloads
+  - Added `/connection/quality` HTTP endpoint for connection quality monitoring
+  - Enhanced `handleWebSocket()` with connection quality monitoring when enabled
+  - Added CLI flag `--websocket-connection-quality` for enabling connection quality monitoring
+  - Updated core pipeline with `WithWebSocketConnectionQuality()` method
+  - Added comprehensive unit tests for connection quality functionality
+  - Enhanced WebSocket server output to show connection quality monitoring status
+- **Testing**: Unit tests for connection quality calculation, average latency calculation, HTTP endpoint, and integration with WebSocket server
+- **Result**: WebSocket connections now include comprehensive quality monitoring with latency tracking, packet loss detection, and quality classification. Users can monitor connection health in real-time and troubleshoot connectivity issues more effectively.
+
 ---
 
 ## How to Contribute
