@@ -84,6 +84,25 @@ func TestPromptBuilder_Build(t *testing.T) {
 	assert.Contains(t, prompt, "Severity: medium")
 	assert.Contains(t, prompt, "Score: 80")
 
+	// Verify enhanced analysis context
+	assert.Contains(t, prompt, "=== ANALYSIS CONTEXT ===")
+	assert.Contains(t, prompt, "You are an expert performance engineer analyzing profiling data.")
+	assert.Contains(t, prompt, "Provide deep technical analysis with actionable insights.")
+	assert.Contains(t, prompt, "=== ANALYSIS REQUIREMENTS ===")
+	assert.Contains(t, prompt, "Narrative explanation: Clear technical explanation of the root cause")
+	assert.Contains(t, prompt, "Likely root causes: 2-4 specific technical reasons with evidence")
+	assert.Contains(t, prompt, "Concrete suggestions: Actionable recommendations with code examples")
+	assert.Contains(t, prompt, "=== EXECUTIVE SUMMARY REQUIREMENTS ===")
+	assert.Contains(t, prompt, "Executive summary: Concise overview with overall severity assessment")
+	assert.Contains(t, prompt, "Top 3 risks: Most critical issues with impact analysis")
+	assert.Contains(t, prompt, "Top 3 action items: Prioritized recommendations with effort estimates")
+	assert.Contains(t, prompt, "Key themes: Patterns and common issues across findings")
+	assert.Contains(t, prompt, "Performance categories: Distribution of issues by type")
+	assert.Contains(t, prompt, "=== OUTPUT FORMAT REQUIREMENTS ===")
+	assert.Contains(t, prompt, "Use JSON format with the exact schema provided")
+	assert.Contains(t, prompt, "Be specific and technical in explanations")
+	assert.Contains(t, prompt, "Provide code examples where applicable")
+
 	// Verify function name redaction
 	assert.Contains(t, prompt, "runtime.allocm (proc.go:2276)")
 	assert.NotContains(t, prompt, "/home/user/project/") // Path should be redacted
@@ -330,6 +349,11 @@ func TestInsightsBundle_Serialization(t *testing.T) {
 				Categories:     []string{"code", "optimization"},
 			},
 		},
+		PerformanceCategories: map[string]int{
+			"cpu":      3,
+			"memory":   2,
+			"blocking": 1,
+		},
 		PerFinding: []model.FindingInsight{
 			{
 				FindingID:        "cpu",
@@ -361,6 +385,10 @@ func TestInsightsBundle_Serialization(t *testing.T) {
 	assert.Equal(t, 85, deserialized.ExecutiveSummary.Confidence)
 	assert.Equal(t, 1, len(deserialized.TopRisks))
 	assert.Equal(t, 1, len(deserialized.TopActions))
+	assert.Equal(t, 3, len(deserialized.PerformanceCategories))
+	assert.Equal(t, 3, deserialized.PerformanceCategories["cpu"])
+	assert.Equal(t, 2, deserialized.PerformanceCategories["memory"])
+	assert.Equal(t, 1, deserialized.PerformanceCategories["blocking"])
 	assert.Equal(t, 1, len(deserialized.PerFinding))
 }
 

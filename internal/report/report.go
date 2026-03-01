@@ -54,6 +54,14 @@ func (r *Reporter) GenerateWithInsights(findings model.FindingsBundle, insights 
 			sb.WriteString(fmt.Sprintf("\n*LLM Status*: %s", insights.DisabledReason))
 		}
 		
+		// Add performance categories if available
+		if len(insights.PerformanceCategories) > 0 {
+			sb.WriteString("\n\n#### 📊 Performance Categories\n\n")
+			for category, count := range insights.PerformanceCategories {
+				sb.WriteString(fmt.Sprintf("   - **%s**: %d findings\n", category, count))
+			}
+		}
+		
 		// Add top risks if available
 		if len(insights.TopRisks) > 0 {
 			sb.WriteString("\n\n#### 🚨 Top Risks\n\n")

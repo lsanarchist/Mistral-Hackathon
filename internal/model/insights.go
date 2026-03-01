@@ -12,6 +12,7 @@ type InsightsBundle struct {
     ExecutiveSummary ExecutiveSummary `json:"executive_summary"`
     TopRisks        []RiskItem        `json:"top_risks,omitempty"`
     TopActions      []ActionItem      `json:"top_actions,omitempty"`
+    PerformanceCategories map[string]int `json:"performance_categories,omitempty"`
     PerFinding      []FindingInsight   `json:"per_finding,omitempty"`
 }
 
