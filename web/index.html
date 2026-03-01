@@ -163,6 +163,92 @@
                 <h2><i class="fas fa-tasks"></i> Recommended Actions</h2>
                 <div class="action-cards" id="actionCards"></div>
             </div>
+
+            <!-- Performance Metrics Dashboard -->
+            <div class="metrics-dashboard" id="metricsDashboard">
+                <h2><i class="fas fa-chart-line"></i> Performance Metrics Dashboard</h2>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-icon"><i class="fas fa-tachometer-alt"></i></div>
+                        <div class="metric-value" id="performanceScore">-</div>
+                        <div class="metric-label">Performance Score</div>
+                        <div class="metric-subtext">Overall system health</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon"><i class="fas fa-fire"></i></div>
+                        <div class="metric-value" id="criticalIssues">-</div>
+                        <div class="metric-label">Critical Issues</div>
+                        <div class="metric-subtext">Requires immediate attention</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="metric-value" id="highIssues">-</div>
+                        <div class="metric-label">High Severity</div>
+                        <div class="metric-subtext">Should be addressed soon</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon"><i class="fas fa-check-circle"></i></div>
+                        <div class="metric-value" id="resolvedIssues">-</div>
+                        <div class="metric-label">Resolved</div>
+                        <div class="metric-subtext">Fixed performance issues</div>
+                    </div>
+                </div>
+                
+                <div class="trends-section">
+                    <h3><i class="fas fa-chart-area"></i> Performance Trends</h3>
+                    <div class="trends-grid">
+                        <div class="trend-chart">
+                            <h4>Score Over Time</h4>
+                            <canvas id="scoreTrendChart"></canvas>
+                        </div>
+                        <div class="trend-chart">
+                            <h4>Issue Resolution Rate</h4>
+                            <canvas id="resolutionTrendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="comparison-section">
+                    <h3><i class="fas fa-balance-scale"></i> Comparative Analysis</h3>
+                    <div class="comparison-grid">
+                        <div class="comparison-chart">
+                            <h4>Current vs Baseline</h4>
+                            <canvas id="comparisonChart"></canvas>
+                        </div>
+                        <div class="comparison-chart">
+                            <h4>Category Distribution</h4>
+                            <canvas id="categoryComparisonChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="score-breakdown">
+                    <h3><i class="fas fa-chart-pie"></i> Performance Score Breakdown</h3>
+                    <div class="breakdown-grid">
+                        <div class="breakdown-chart">
+                            <canvas id="scoreBreakdownChart"></canvas>
+                        </div>
+                        <div class="breakdown-legend">
+                            <div class="legend-item">
+                                <span class="legend-color" style="background-color: #4ecdc4;"></span>
+                                <span class="legend-text">CPU Efficiency</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background-color: #ffe66d;"></span>
+                                <span class="legend-text">Memory Usage</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background-color: #ff6b6b;"></span>
+                                <span class="legend-text">I/O Performance</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background-color: #a8e6cf;"></span>
+                                <span class="legend-text">Concurrency</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
             <div class="findings-section">
                 <h2><i class="fas fa-search"></i> Performance Findings</h2>

@@ -273,6 +273,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // Render findings
             renderFindings();
             
+            // Render metrics dashboard
+            renderMetricsDashboard();
+            
             // Show content
             loading.style.display = 'none';
             content.style.display = 'block';
@@ -762,5 +765,310 @@ document.addEventListener('DOMContentLoaded', function() {
         findingCard.appendChild(findingDetails);
         
         findingsList.appendChild(findingCard);
+    }
+
+    function renderMetricsDashboard() {
+        // Set up metrics data
+        const performanceScore = findingsData.summary?.OverallScore || 0;
+        const criticalCount = allFindings.filter(f => f.severity?.toLowerCase() === 'critical').length;
+        const highCount = allFindings.filter(f => f.severity?.toLowerCase() === 'high').length;
+        
+        // Update metric values
+        document.getElementById('performanceScore').textContent = performanceScore;
+        document.getElementById('criticalIssues').textContent = criticalCount;
+        document.getElementById('highIssues').textContent = highCount;
+        document.getElementById('resolvedIssues').textContent = '0'; // Placeholder for resolved issues
+        
+        // Set performance score color based on value
+        const scoreElement = document.getElementById('performanceScore');
+        if (performanceScore >= 80) {
+            scoreElement.style.color = '#2e7d32'; // Green for good
+        } else if (performanceScore >= 60) {
+            scoreElement.style.color = '#e65100'; // Orange for medium
+        } else {
+            scoreElement.style.color = '#c62828'; // Red for poor
+        }
+        
+        // Render trend charts
+        renderScoreTrendChart();
+        renderResolutionTrendChart();
+        
+        // Render comparison charts
+        renderComparisonChart();
+        renderCategoryComparisonChart();
+        
+        // Render score breakdown chart
+        renderScoreBreakdownChart();
+        
+        // Add hover effects to metric cards
+        const metricCards = document.querySelectorAll('.metric-card');
+        metricCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px) scale(1.02)';
+                this.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.2)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = '';
+                this.style.boxShadow = '';
+            });
+        });
+    }
+
+    function renderScoreTrendChart() {
+        const ctx = document.getElementById('scoreTrendChart').getContext('2d');
+        
+        // Mock data for trend - in a real scenario this would come from historical data
+        const labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Current'];
+        const data = [75, 78, 82, 80, findingsData.summary?.OverallScore || 0];
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Performance Score',
+                    data: data,
+                    borderColor: '#4a6fa5',
+                    backgroundColor: 'rgba(74, 111, 165, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointBackgroundColor: '#4a6fa5',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Score: ' + context.parsed.y;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            stepSize: 20
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function renderResolutionTrendChart() {
+        const ctx = document.getElementById('resolutionTrendChart').getContext('2d');
+        
+        // Mock data for resolution trend
+        const labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Current'];
+        const resolvedData = [5, 8, 12, 15, 20]; // Mock resolved issues
+        const createdData = [10, 12, 15, 18, allFindings.length]; // Current total + mock
+        
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Resolved',
+                    data: resolvedData,
+                    backgroundColor: '#4ecdc4',
+                    borderWidth: 1
+                }, {
+                    label: 'Created',
+                    data: createdData,
+                    backgroundColor: '#ff6b6b',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            padding: 15,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 5
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function renderComparisonChart() {
+        const ctx = document.getElementById('comparisonChart').getContext('2d');
+        
+        const currentScore = findingsData.summary?.OverallScore || 0;
+        const baselineScore = Math.max(0, currentScore - 15); // Mock baseline
+        
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Performance Score'],
+                datasets: [{
+                    label: 'Baseline',
+                    data: [baselineScore],
+                    backgroundColor: '#e0e0e0',
+                    borderWidth: 1
+                }, {
+                    label: 'Current',
+                    data: [currentScore],
+                    backgroundColor: '#4a6fa5',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                indexAxis: 'y',
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            padding: 15,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            stepSize: 20
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function renderCategoryComparisonChart() {
+        const ctx = document.getElementById('categoryComparisonChart').getContext('2d');
+        
+        // Count findings by category
+        const categoryCounts = {};
+        allFindings.forEach(finding => {
+            const category = finding.category || 'unknown';
+            categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+        });
+        
+        // Prepare chart data
+        const labels = Object.keys(categoryCounts);
+        const data = Object.values(categoryCounts);
+        
+        // Generate colors
+        const generateColors = (count) => {
+            const colors = [];
+            const baseColors = ['#4a6fa5', '#4ecdc4', '#ffe66d', '#ff6b6b', '#a8e6cf', '#ff8e53'];
+            for (let i = 0; i < count; i++) {
+                colors.push(baseColors[i % baseColors.length]);
+            }
+            return colors;
+        };
+        
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: generateColors(labels.length),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            padding: 15,
+                            font: {
+                                size: 11
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${label}: ${value} findings (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function renderScoreBreakdownChart() {
+        const ctx = document.getElementById('scoreBreakdownChart').getContext('2d');
+        
+        // Mock breakdown data - in a real scenario this would come from detailed analysis
+        const breakdownData = [
+            { category: 'CPU Efficiency', value: 30, color: '#4ecdc4' },
+            { category: 'Memory Usage', value: 25, color: '#ffe66d' },
+            { category: 'I/O Performance', value: 20, color: '#ff6b6b' },
+            { category: 'Concurrency', value: 25, color: '#a8e6cf' }
+        ];
+        
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: breakdownData.map(item => item.category),
+                datasets: [{
+                    data: breakdownData.map(item => item.value),
+                    backgroundColor: breakdownData.map(item => item.color),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false // We're using custom legend
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed || 0;
+                                return `${label}: ${value}%`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
     }
 });
