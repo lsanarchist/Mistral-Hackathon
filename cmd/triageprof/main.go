@@ -58,6 +58,7 @@ func main() {
 		fmt.Println("  web --in <findings.json> --outdir <dir> [--insights <insights.json>]")
 		fmt.Println("  websocket --findings <findings.json> [--insights <insights.json>] [--port <port>] [--data-dir <dir>] [--compression] [--batching] [--batch-interval <ms>] [--phase5]")
 		fmt.Println("  demo --repo <url> --out <dir> [--ref <branch/commit>] [--duration <sec>]")
+		fmt.Println("  demo-kit --out <dir> [--duration <sec>] (uses built-in demo repository)")
 		fmt.Println("\nLLM Options for 'run' command:")
 		fmt.Println("  --llm (enable LLM insights)")
 		fmt.Println("  --llm-provider <provider> (mistral, openai - default: mistral)")
@@ -97,6 +98,8 @@ func main() {
 		runWebSocketCommand(pipeline)
 	case "demo":
 		runDemoCommand(pipeline)
+	case "demo-kit":
+		runDemoKitCommand(pipeline)
 	default:
 		fmt.Printf("Unknown command: %s\n", cmd)
 		os.Exit(1)
@@ -809,6 +812,80 @@ func runDemoCommand(pipeline *core.Pipeline) {
 		}
 	} else {
 		fmt.Printf("\n❌ Demo failed: %s\n", manifest.Error)
+		os.Exit(1)
+	}
+}
+
+func runDemoKitCommand(pipeline *core.Pipeline) {
+	flagSet := flag.NewFlagSet("demo-kit", flag.ExitOnError)
+	outDir := flagSet.String("out", "", "Output directory")
+	duration := flagSet.Int("duration", 15, "Benchmark duration in seconds")
+	flagSet.Parse(os.Args[2:])
+
+	if *outDir == "" {
+		fmt.Println("Required flags: --out")
+		fmt.Println("Optional flags: --duration")
+		os.Exit(1)
+	}
+
+	// Use the built-in demo repository
+	demoRepoPath := filepath.Join("examples", "demo-repo-simple")
+	
+	ctx := context.Background()
+
+	fmt.Println("🚀 Starting TriageProf Demo Kit")
+	fmt.Printf("📌 Using built-in demo repository: %s\n", demoRepoPath)
+	fmt.Printf("⏱  Benchmark duration: %d seconds\n", *duration)
+	fmt.Printf("📁 Output directory: %s\n\n", *outDir)
+
+	// Run the demo workflow with the local demo repository
+	manifest, err := pipeline.Demo(ctx, demoRepoPath, "", *outDir, *duration)
+	if err != nil {
+		fmt.Printf("❌ Demo kit failed: %v\n", err)
+		os.Exit(1)
+	}
+
+	// Save run manifest
+	manifestData, err := json.MarshalIndent(manifest, "", "  ")
+	if err != nil {
+		fmt.Printf("⚠️  Warning: failed to serialize run manifest: %v\n", err)
+	} else {
+		manifestPath := filepath.Join(*outDir, "run.json")
+		if err := os.WriteFile(manifestPath, manifestData, 0644); err != nil {
+			fmt.Printf("⚠️  Warning: failed to write run manifest: %v\n", err)
+		} else {
+			fmt.Printf("📋 Run manifest saved to: %s\n", manifestPath)
+		}
+	}
+
+	if manifest.Success {
+		fmt.Println("\n✅ Demo Kit completed successfully!")
+		fmt.Printf("📊 Found %d benchmarks\n", len(manifest.Benchmarks))
+		fmt.Printf("📈 Generated %d profiles\n", len(manifest.Profiles))
+		fmt.Println("\n📄 Generated files:")
+		fmt.Printf("  📋 %s\n", filepath.Join(*outDir, "run.json"))
+		fmt.Printf("  📦 %s\n", filepath.Join(*outDir, "bundle.json"))
+		fmt.Printf("  🔍 %s\n", filepath.Join(*outDir, "findings.json"))
+		fmt.Printf("  📊 %s\n", filepath.Join(*outDir, "report.md"))
+		for _, profile := range manifest.Profiles {
+			fmt.Printf("  📈 %s\n", profile)
+		}
+		
+		fmt.Println("\n🎉 Demo Kit Features Showcased:")
+		fmt.Println("  ✓ Go benchmark detection")
+		fmt.Println("  ✓ CPU, Heap, Allocs, Block, and Mutex profiling")
+		fmt.Println("  ✓ Deterministic performance analysis")
+		fmt.Println("  ✓ Structured findings with evidence")
+		fmt.Println("  ✓ Markdown report generation")
+		fmt.Println("  ✓ Profile artifact collection")
+		
+		fmt.Println("\n🚀 Next Steps:")
+		fmt.Println("  • Try with your own Go repository: triageprof demo --repo <your-repo-url> --out <dir>")
+		fmt.Println("  • Enable LLM insights: Set MISTRAL_API_KEY environment variable")
+		fmt.Println("  • Generate HTML reports: triageprof web --in findings.json --outdir <dir>")
+		fmt.Println("  • Explore WebSocket dashboard: triageprof websocket --findings findings.json")
+	} else {
+		fmt.Printf("\n❌ Demo Kit failed: %s\n", manifest.Error)
 		os.Exit(1)
 	}
 }

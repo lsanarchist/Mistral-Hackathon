@@ -109,7 +109,7 @@ func detectBenchmarks(ctx context.Context, repoPath string) ([]string, error) {
 }
 
 // runBenchmarks runs Go benchmarks and collects profiles
-func runBenchmarks(ctx context.Context, repoPath string, durationSec int) ([]string, error) {
+func runBenchmarks(ctx context.Context, repoPath string, durationSec int, outDir string) ([]string, error) {
 	var profilePaths []string
 
 	// Change to repository directory
@@ -123,19 +123,31 @@ func runBenchmarks(ctx context.Context, repoPath string, durationSec int) ([]str
 		return nil, fmt.Errorf("failed to change to repository directory: %w", err)
 	}
 
-	// Create profiles directory
+	// Create profiles directory in repo
 	profilesDir := filepath.Join(repoPath, "profiles")
 	if err := os.MkdirAll(profilesDir, 0755); err != nil {
 		return nil, fmt.Errorf("failed to create profiles directory: %w", err)
 	}
+	
+	// Create profiles directory in output
+	outputProfilesDir := filepath.Join(outDir, "profiles")
+	if err := os.MkdirAll(outputProfilesDir, 0755); err != nil {
+		return nil, fmt.Errorf("failed to create output profiles directory: %w", err)
+	}
 
-	// Run benchmarks with profiling
-	profileTypes := []string{"cpu", "heap", "allocs", "block", "mutex"}
+	// Run benchmarks with profiling - use shorter duration for each profile type
+	// to avoid timeout issues, and run a subset of benchmarks
+	profileTypes := []string{"cpu", "heap", "allocs"} // Reduced set for demo
+	benchmarkDuration := durationSec / len(profileTypes) // Split duration among profile types
+	if benchmarkDuration < 1 {
+		benchmarkDuration = 1 // Minimum 1 second per profile
+	}
+
 	for _, profileType := range profileTypes {
 		profilePath := filepath.Join(profilesDir, fmt.Sprintf("%s.pprof", profileType))
 
-		// Build benchmark command
-		args := []string{"test", "-bench=.", "-benchtime", fmt.Sprintf("%ds", durationSec)}
+		// Build benchmark command - run a subset of benchmarks for demo
+		args := []string{"test", "-bench=BenchmarkProcessStrings|BenchmarkGenerateRandomData|BenchmarkProcessJSON", "-benchtime", fmt.Sprintf("%ds", benchmarkDuration)}
 		if profileType == "cpu" {
 			args = append(args, "-cpuprofile", profilePath)
 		} else if profileType == "heap" {
@@ -157,18 +169,28 @@ func runBenchmarks(ctx context.Context, repoPath string, durationSec int) ([]str
 			// Benchmarks might fail but still produce profiles
 			// Only return error if the profile file doesn't exist
 			if _, statErr := os.Stat(profilePath); statErr != nil {
+				log.Printf("Benchmark command failed: %v\nArgs: %v\nStdout: %s\nStderr: %s", err, args, stdout.String(), stderr.String())
 				return nil, fmt.Errorf("benchmark failed and no profile generated: %w\nstdout: %s\nstderr: %s", err, stdout.String(), stderr.String())
 			}
 		}
 
-		profilePaths = append(profilePaths, profilePath)
+		// Check if profile file was created and copy it immediately
+		if _, err := os.Stat(profilePath); err == nil {
+			// Copy the profile to a safe location immediately
+			destProfilePath := filepath.Join(outputProfilesDir, filepath.Base(profilePath))
+			if err := copyFile(profilePath, destProfilePath); err != nil {
+				log.Printf("Warning: Failed to copy profile %s to %s: %v", profilePath, destProfilePath, err)
+			} else {
+				profilePaths = append(profilePaths, destProfilePath)
+			}
+		}
 	}
 
 	return profilePaths, nil
 }
 
 // collectProfiles collects profiles from the repository
-func (p *Pipeline) collectProfiles(ctx context.Context, repoPath string, durationSec int) (*model.ProfileBundle, error) {
+func (p *Pipeline) collectProfiles(ctx context.Context, repoPath string, durationSec int, outDir string) (*model.ProfileBundle, error) {
 	// Detect benchmarks
 	benchmarks, err := detectBenchmarks(ctx, repoPath)
 	if err != nil {
@@ -180,7 +202,7 @@ func (p *Pipeline) collectProfiles(ctx context.Context, repoPath string, duratio
 	}
 
 	// Run benchmarks and collect profiles
-	profilePaths, err := runBenchmarks(ctx, repoPath, durationSec)
+	profilePaths, err := runBenchmarks(ctx, repoPath, durationSec, outDir)
 	if err != nil {
 		return nil, fmt.Errorf("failed to run benchmarks: %w", err)
 	}
@@ -225,14 +247,27 @@ func (p *Pipeline) Demo(ctx context.Context, repoURL, ref, outDir string, durati
 		DurationSec: durationSec,
 	}
 
-	// Clone repository
-	repoName := filepath.Base(strings.TrimSuffix(repoURL, ".git"))
-	repoPath := filepath.Join(outDir, "repo", repoName)
-	
-	if err := cloneRepo(ctx, repoURL, ref, repoPath); err != nil {
-		manifest.Success = false
-		manifest.Error = fmt.Sprintf("clone failed: %v", err)
-		return manifest, fmt.Errorf("demo failed: %w", err)
+	var repoPath string
+	var err error
+
+	// Check if repoURL is a local path or a git URL
+	if _, err := os.Stat(repoURL); err == nil {
+		// It's a local path
+		repoPath = repoURL
+		fmt.Printf("📁 Using local repository: %s\n", repoPath)
+	} else if strings.HasPrefix(repoURL, "http://") || strings.HasPrefix(repoURL, "https://") || strings.HasPrefix(repoURL, "git@") {
+		// It's a git URL - clone it
+		repoName := filepath.Base(strings.TrimSuffix(repoURL, ".git"))
+		repoPath = filepath.Join(outDir, "repo", repoName)
+		
+		if err := cloneRepo(ctx, repoURL, ref, repoPath); err != nil {
+			manifest.Success = false
+			manifest.Error = fmt.Sprintf("clone failed: %v", err)
+			return manifest, fmt.Errorf("demo failed: %w", err)
+		}
+	} else {
+		// Assume it's a local path that doesn't exist yet
+		repoPath = repoURL
 	}
 
 	manifest.LocalPath = repoPath
@@ -262,10 +297,22 @@ func (p *Pipeline) Demo(ctx context.Context, repoURL, ref, outDir string, durati
 	manifest.Benchmarks = benchmarks
 
 	// Collect profiles
-	bundle, err := p.collectProfiles(ctx, repoPath, durationSec)
+	bundle, err := p.collectProfiles(ctx, repoPath, durationSec, outDir)
 	if err != nil {
 		manifest.Success = false
 		manifest.Error = fmt.Sprintf("profile collection failed: %v", err)
+		return manifest, fmt.Errorf("demo failed: %w", err)
+	}
+
+	// Create output directory and profiles subdirectory if they don't exist
+	if err := os.MkdirAll(outDir, 0755); err != nil {
+		manifest.Success = false
+		manifest.Error = fmt.Sprintf("failed to create output directory: %v", err)
+		return manifest, fmt.Errorf("demo failed: %w", err)
+	}
+	if err := os.MkdirAll(filepath.Join(outDir, "profiles"), 0755); err != nil {
+		manifest.Success = false
+		manifest.Error = fmt.Sprintf("failed to create profiles directory: %v", err)
 		return manifest, fmt.Errorf("demo failed: %w", err)
 	}
 
@@ -301,22 +348,11 @@ func (p *Pipeline) Demo(ctx context.Context, repoURL, ref, outDir string, durati
 		return manifest, fmt.Errorf("demo failed: %w", err)
 	}
 
-	// Copy profile files to output directory
-	profileDir := filepath.Join(outDir, "profiles")
-	if err := os.MkdirAll(profileDir, 0755); err != nil {
-		manifest.Success = false
-		manifest.Error = fmt.Sprintf("failed to create profiles directory: %v", err)
-		return manifest, fmt.Errorf("demo failed: %w", err)
-	}
-
+	// Profiles were already copied during generation, just update the manifest
 	for _, artifact := range bundle.Artifacts {
 		if artifact.Kind == "profile" {
-			srcPath := artifact.Path
-			destPath := filepath.Join(profileDir, filepath.Base(srcPath))
-			if err := copyFile(srcPath, destPath); err != nil {
-				log.Printf("Warning: failed to copy profile %s: %v", srcPath, err)
-				continue
-			}
+			// Use the output directory path instead of the repo path
+			destPath := filepath.Join(outDir, "profiles", filepath.Base(artifact.Path))
 			manifest.Profiles = append(manifest.Profiles, destPath)
 		}
 	}
