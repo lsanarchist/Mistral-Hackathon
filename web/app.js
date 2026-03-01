@@ -92,6 +92,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const totalFindings = allFindings.length;
         const criticalCount = allFindings.filter(f => f.severity?.toLowerCase() === 'critical').length;
         const highCount = allFindings.filter(f => f.severity?.toLowerCase() === 'high').length;
+        const mediumCount = allFindings.filter(f => f.severity?.toLowerCase() === 'medium').length;
         
         // Calculate average score
         const scores = allFindings.map(f => f.score || 0).filter(score => score > 0);
@@ -102,6 +103,87 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('criticalFindings').textContent = criticalCount;
         document.getElementById('highFindings').textContent = highCount;
         document.getElementById('avgScore').textContent = avgScore;
+        
+        // Add visual indicators for severity levels
+        const criticalElement = document.getElementById('criticalFindings');
+        const highElement = document.getElementById('highFindings');
+        
+        if (criticalCount > 0) {
+            criticalElement.classList.add('critical-highlight');
+        }
+        if (highCount > 0) {
+            highElement.classList.add('high-highlight');
+        }
+        
+        // Add stat cards hover effects
+        const statCards = document.querySelectorAll('.stat-card');
+        statCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-3px) scale(1.02)';
+                this.style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.15)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = '';
+                this.style.boxShadow = '';
+            });
+        });
+    }
+    
+    function renderPluginInfo() {
+        const pluginInfoSection = document.getElementById('pluginInfoSection');
+        
+        // Create plugin info content
+        const pluginInfoHTML = `
+            <div class="plugin-info-content">
+                <div class="plugin-info-item">
+                    <div class="plugin-icon"><i class="fas fa-cogs"></i></div>
+                    <div class="plugin-info-text">
+                        <h3>Modular Plugin Architecture</h3>
+                        <p>TriageProf uses a powerful plugin system where each profiler operates as an independent module. Plugins are discovered automatically via JSON manifests and communicate using JSON-RPC 2.0 protocol.</p>
+                        <p><strong>Key Benefits:</strong> Easy extensibility, language-agnostic support, and stable API compatibility.</p>
+                    </div>
+                </div>
+                <div class="plugin-info-item">
+                    <div class="plugin-icon"><i class="fas fa-folder-open"></i></div>
+                    <div class="plugin-info-text">
+                        <h3>Plugin Locations</h3>
+                        <p>Plugins are organized in the <code>plugins/</code> directory:</p>
+                        <ul>
+                            <li><code>plugins/manifests/</code> - JSON manifest files for plugin discovery</li>
+                            <li><code>plugins/src/</code> - Source code for each plugin</li>
+                            <li><code>plugins/bin/</code> - Compiled plugin binaries</li>
+                        </ul>
+                        <p>Each plugin has its own manifest defining capabilities, SDK version, and metadata.</p>
+                    </div>
+                </div>
+                <div class="plugin-info-item">
+                    <div class="plugin-icon"><i class="fas fa-plus-circle"></i></div>
+                    <div class="plugin-info-text">
+                        <h3>Extensible & Maintainable</h3>
+                        <p>Add new profilers without modifying core code. The plugin API remains stable for backward compatibility.</p>
+                        <p><strong>Current Plugins:</strong> Go pprof, Node.js inspector, Python cProfile, Ruby stackprof</p>
+                        <p>New plugins can be added by implementing the JSON-RPC interface and providing a manifest.</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        pluginInfoSection.innerHTML = `<h2><i class="fas fa-puzzle-piece"></i> Plugin Information</h2>` + pluginInfoHTML;
+        pluginInfoSection.style.display = 'block';
+        
+        // Add hover effects to plugin info items
+        const pluginItems = document.querySelectorAll('.plugin-info-item');
+        pluginItems.forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateX(5px)';
+                this.style.transition = 'transform 0.3s ease';
+            });
+            
+            item.addEventListener('mouseleave', function() {
+                this.style.transform = '';
+            });
+        });
     }
     
     function renderData() {
@@ -175,7 +257,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Show AI summary section if insights are available
             if (insightsData) {
                 document.getElementById('aiSummarySection').style.display = 'block';
-                document.getElementById('pluginInfoSection').style.display = 'block';
+                renderPluginInfo();
             }
             
             // Render top risks if available

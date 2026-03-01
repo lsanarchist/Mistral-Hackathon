@@ -184,6 +184,16 @@ h1 {
     font-weight: bold;
     color: var(--primary-color);
     margin-bottom: 8px;
+    transition: all 0.3s ease;
+}
+
+.stat-value.critical-highlight {
+    color: var(--danger-color);
+    animation: pulse 1s ease-in-out;
+}
+
+.stat-value.high-highlight {
+    color: var(--accent-color);
 }
 
 .stat-label {
@@ -377,6 +387,30 @@ h1 {
     color: var(--text-color);
     font-size: 0.95rem;
     line-height: 1.6;
+    margin-bottom: 8px;
+}
+
+.plugin-info-text ul {
+    padding-left: 20px;
+    margin-top: 8px;
+}
+
+.plugin-info-text li {
+    margin-bottom: 4px;
+    line-height: 1.5;
+}
+
+.plugin-info-text strong {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.plugin-info-text code {
+    background-color: var(--white);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.9em;
 }
 
 .plugin-info-text code {
@@ -824,6 +858,62 @@ h1 {
     .summary-grid {
         grid-template-columns: 1fr;
     }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .plugin-info-content {
+        grid-template-columns: 1fr;
+    }
+
+    .ai-summary-content {
+        grid-template-columns: 1fr;
+    }
+
+    .chart-container {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stat-card {
+        padding: 15px;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+    }
+
+    .filters {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .filters select {
+        width: 100%;
+    }
+}
+
+/* Enhanced hover effects for better UX */
+.stat-card:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.plugin-info-item:hover {
+    transform: translateX(5px);
+    transition: transform 0.3s ease;
+}
+
+.finding-card:hover {
+    transform: translateY(-3px) scale(1.01);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* Animations */
