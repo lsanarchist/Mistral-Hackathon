@@ -13,8 +13,8 @@ import (
 )
 
 func TestWebSocketServerCreation(t *testing.T) {
-	// Create WebSocket server
-	server := NewWebSocketServer(8081, t.TempDir(), t.TempDir(), false)
+	// Test server creation without compression
+	server := NewWebSocketServer(8081, t.TempDir(), t.TempDir(), false, false)
 	
 	// Test server creation
 	if server == nil {
@@ -24,6 +24,31 @@ func TestWebSocketServerCreation(t *testing.T) {
 	// Test client count
 	if server.GetClientCount() != 0 {
 		t.Errorf("Expected 0 clients, got %d", server.GetClientCount())
+	}
+
+	// Test compression flag
+	if server.compressionEnabled {
+		t.Error("Expected compression to be disabled")
+	}
+}
+
+func TestWebSocketServerCreationWithCompression(t *testing.T) {
+	// Test server creation with compression
+	server := NewWebSocketServer(8082, t.TempDir(), t.TempDir(), false, true)
+	
+	// Test server creation
+	if server == nil {
+		t.Fatal("Failed to create WebSocket server with compression")
+	}
+
+	// Test compression flag
+	if !server.compressionEnabled {
+		t.Error("Expected compression to be enabled")
+	}
+
+	// Test that upgrader has compression enabled
+	if !server.upgrader.EnableCompression {
+		t.Error("Expected upgrader to have compression enabled")
 	}
 }
 
@@ -56,7 +81,7 @@ func TestWebSocketDataLoading(t *testing.T) {
 	os.WriteFile(findingsPath, findingsData, 0644)
 
 	// Create WebSocket server
-	server := NewWebSocketServer(8081, tempDir, tempDir, false)
+	server := NewWebSocketServer(8081, tempDir, tempDir, false, false)
 	
 	// Test data loading
 	err := server.LoadData(findingsPath, "")
@@ -72,7 +97,7 @@ func TestWebSocketDataLoading(t *testing.T) {
 
 func TestWebSocketDataUpdate(t *testing.T) {
 	// Create WebSocket server
-	server := NewWebSocketServer(8082, t.TempDir(), t.TempDir(), false)
+	server := NewWebSocketServer(8082, t.TempDir(), t.TempDir(), false, false)
 	
 	// Create initial findings
 	initialFindings := &model.FindingsBundle{
@@ -109,7 +134,7 @@ func TestWebSocketDataUpdate(t *testing.T) {
 // Test JWT token generation
 func TestJWTTokenGeneration(t *testing.T) {
 	// Create server with auth enabled
-	server := NewWebSocketServer(8084, t.TempDir(), t.TempDir(), true)
+	server := NewWebSocketServer(8084, t.TempDir(), t.TempDir(), true, false)
 	
 	// Test token generation
 	token, err := server.GenerateJWTToken("testuser", "viewer")
@@ -139,7 +164,7 @@ func TestJWTTokenGeneration(t *testing.T) {
 // Test JWT token validation with invalid tokens
 func TestJWTTokenValidation(t *testing.T) {
 	// Create server with auth enabled
-	server := NewWebSocketServer(8085, t.TempDir(), t.TempDir(), true)
+	server := NewWebSocketServer(8085, t.TempDir(), t.TempDir(), true, false)
 	
 	// Test invalid token
 	_, err := server.ValidateJWTToken("invalid.token.here")
@@ -157,7 +182,7 @@ func TestJWTTokenValidation(t *testing.T) {
 // Test token generation handler
 func TestTokenGenerationHandler(t *testing.T) {
 	// Create server with auth enabled
-	server := NewWebSocketServer(8086, t.TempDir(), t.TempDir(), true)
+	server := NewWebSocketServer(8086, t.TempDir(), t.TempDir(), true, false)
 	
 	// Create a test request
 	reqBody := `{"username": "testuser", "password": "testpass", "role": "admin"}`
@@ -195,7 +220,7 @@ func TestTokenGenerationHandler(t *testing.T) {
 // Test token generation with missing credentials
 func TestTokenGenerationMissingCredentials(t *testing.T) {
 	// Create server with auth enabled
-	server := NewWebSocketServer(8087, t.TempDir(), t.TempDir(), true)
+	server := NewWebSocketServer(8087, t.TempDir(), t.TempDir(), true, false)
 	
 	// Test with missing username
 	reqBody := `{"password": "testpass"}`
@@ -213,7 +238,7 @@ func TestTokenGenerationMissingCredentials(t *testing.T) {
 // Test auth disabled scenarios
 func TestAuthDisabled(t *testing.T) {
 	// Create server with auth disabled
-	server := NewWebSocketServer(8088, t.TempDir(), t.TempDir(), false)
+	server := NewWebSocketServer(8088, t.TempDir(), t.TempDir(), false, false)
 	
 	// Test token generation should fail
 	_, err := server.GenerateJWTToken("testuser", "viewer")
@@ -234,7 +259,7 @@ func TestAuthDisabled(t *testing.T) {
 
 func TestWebSocketAutoRefresh(t *testing.T) {
 	// Create WebSocket server
-	server := NewWebSocketServer(8083, t.TempDir(), t.TempDir(), false)
+	server := NewWebSocketServer(8083, t.TempDir(), t.TempDir(), false, false)
 	
 	// Test auto-refresh doesn't panic
 	server.StartAutoRefresh(1 * time.Second)

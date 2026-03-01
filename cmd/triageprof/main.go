@@ -31,7 +31,7 @@ func main() {
 		fmt.Println("  run --plugin <name> --target-type python --target-command <cmd> --duration <sec> --outdir <dir>")
 		fmt.Println("  run --plugin <name> --target-type node --target-command <cmd> --duration <sec> --outdir <dir>")
 		fmt.Println("  web --in <findings.json> --outdir <dir> [--insights <insights.json>]")
-		fmt.Println("  websocket --findings <findings.json> [--insights <insights.json>] [--port <port>] [--data-dir <dir>]")
+		fmt.Println("  websocket --findings <findings.json> [--insights <insights.json>] [--port <port>] [--data-dir <dir>] [--compression]")
 		fmt.Println("\nLLM Options for 'run' command:")
 		fmt.Println("  --llm (enable LLM insights)")
 		fmt.Println("  --llm-model <model> (default: devstral-small-latest)")
@@ -447,6 +447,7 @@ func runWebSocketCommand(pipeline *core.Pipeline) {
 	port := flagSet.Int("port", 8080, "WebSocket server port")
 	dataDir := flagSet.String("data-dir", "./data", "Directory for data files")
 	autoRefresh := flagSet.Int("auto-refresh", 0, "Auto-refresh interval in seconds (0 to disable)")
+	compression := flagSet.Bool("compression", false, "Enable WebSocket message compression")
 	flagSet.Parse(os.Args[2:])
 
 	if *findingsPath == "" {
@@ -455,7 +456,7 @@ func runWebSocketCommand(pipeline *core.Pipeline) {
 	}
 
 	// Configure WebSocket server
-	pipeline.WithWebSocketServer(*port, *dataDir, false)
+	pipeline.WithWebSocketServer(*port, *dataDir, false, *compression)
 
 	// Configure auto-refresh if enabled
 	if *autoRefresh > 0 {
@@ -475,6 +476,11 @@ func runWebSocketCommand(pipeline *core.Pipeline) {
 	fmt.Printf("WebSocket endpoint: ws://localhost:%d/ws\n", *port)
 	fmt.Printf("Health check: http://localhost:%d/health\n", *port)
 	fmt.Printf("Authentication: DISABLED (basic WebSocket connections)\n")
+	if compression != nil && *compression {
+		fmt.Printf("Compression: ENABLED (WebSocket messages will be compressed)\n")
+	} else {
+		fmt.Printf("Compression: DISABLED (WebSocket messages will be sent uncompressed)\n")
+	}
 	fmt.Println("Press Ctrl+C to stop the server")
 
 	// Start server in goroutine

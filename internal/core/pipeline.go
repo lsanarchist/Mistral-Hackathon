@@ -51,8 +51,13 @@ func (p *Pipeline) WithLLM(apiKey, model string, timeout, maxResponse, maxPrompt
 }
 
 // WithWebSocketServer configures WebSocket server for real-time monitoring
-func (p *Pipeline) WithWebSocketServer(port int, dataDir string, enableAuth bool) {
-	p.wsServer = webserver.NewWebSocketServer(port, dataDir, dataDir, enableAuth)
+func (p *Pipeline) WithWebSocketServer(port int, dataDir string, enableAuth bool, enableCompression bool) {
+	// Use the plugin directory from the pipeline's plugin manager
+	pluginDir := "./plugins"
+	if p.pluginManager != nil {
+		pluginDir = p.pluginManager.PluginDir
+	}
+	p.wsServer = webserver.NewWebSocketServer(port, dataDir, pluginDir, enableAuth, enableCompression)
 }
 
 // WithWebSocketAutoRefresh configures auto-refresh interval for WebSocket server

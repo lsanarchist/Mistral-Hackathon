@@ -36,6 +36,7 @@ type WebSocketServer struct {
 	pluginHealth    map[string]PluginHealth
 	authEnabled     bool
 	jwtSecretKey    string
+	compressionEnabled bool
 }
 
 // JWTClaims represents the JWT token claims
@@ -53,7 +54,7 @@ type PluginHealth struct {
 }
 
 // NewWebSocketServer creates a new WebSocket server instance
-func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth bool) *WebSocketServer {
+func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth bool, enableCompression bool) *WebSocketServer {
 	mux := http.NewServeMux()
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
@@ -66,6 +67,7 @@ func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth b
 		CheckOrigin: func(r *http.Request) bool {
 			return true // Allow all origins for demo purposes
 		},
+		EnableCompression: enableCompression,
 	}
 
 	// Generate JWT secret key if auth is enabled
@@ -84,6 +86,7 @@ func NewWebSocketServer(port int, dataDir string, pluginDir string, enableAuth b
 		lastUpdate:      time.Now(),
 		authEnabled:     enableAuth,
 		jwtSecretKey:    jwtSecretKey,
+		compressionEnabled: enableCompression,
 	}
 
 	// Set up routes
