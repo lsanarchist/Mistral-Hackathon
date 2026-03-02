@@ -1,1 +1,39 @@
+# Build outputs
+bin/
+main
+triageprof
+
+# API keys / secrets — NEVER commit
+apikey.swaga
+*.key
+*.secret
+.env
+.env.*
+
+# Demo / analysis outputs
+demo-output/
+out-demo/
+out-missing/
+out-node/
+out-python/
+out-ruby/
+test-llm-output/
+
+# Temp / scratch
+tmp/
+profiles/
+llm_prompt.json
+change.log
+
+# Raw profile files
+*.pb.gz
+goroutine.txt
+
+# LLM response cache
+/tmp/triageprof-insights-cache/
+
+# Local editor / OS
 .local/
+.DS_Store
+*.swp
+*.swo
