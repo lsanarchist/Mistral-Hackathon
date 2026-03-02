@@ -10,7 +10,7 @@ With Go installed and API key set:
 - `make demo` succeeds and produces:
   - `findings.json` (deterministic)
   - `llm_enrichment.json` (mandatory)
-  - `report.md` + web report folder
+  - `report.md` + web report folder with cool GUI
 
 If LLM cannot run (missing key/provider), `make demo` exits non-zero with clear instructions.
 

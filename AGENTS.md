@@ -4,4 +4,4 @@
 
 For temporary files use create tmp folder here(/home/doomguy/Documents/hackaton/Mistral-Hackathon/tmp/) if you need to.
 api token is at file apikey.swaga
-- Keep MVP Go-only; dont focus on non-Go plugins;
+- Keep MVP Go-only; dont focus on non-Go plugins; DELIVER COOL GUI on report
