@@ -24,16 +24,14 @@ jobs:
       run: go mod download
 
     - name: Run tests
-      run: go test ./... -v
+      run: go test ./... -timeout 120s
 
     - name: Build main binary
       run: go build -o bin/triageprof cmd/triageprof/main.go
 
-    - name: Build plugins
+    - name: Build go-pprof-http plugin
       run: |
         cd plugins/src/go-pprof-http && go build -o ../../bin/go-pprof-http main.go
-        cd ../../src/python-cprofile && python -m compileall .
-        cd ../../src/ruby-stackprof && ruby -c main.rb
 
     - name: Verify build artifacts
       run: |

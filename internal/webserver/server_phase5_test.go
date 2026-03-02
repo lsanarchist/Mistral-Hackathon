@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/mistral-hackathon/triageprof/internal/model"
 )
 
 // TestPhase5Features tests the Phase 5 advanced ML features
@@ -172,8 +171,8 @@ func TestPhase5AnomalyDetection(t *testing.T) {
 		t.Errorf("Expected analyzed status, got %s", anomalyDetection["status"])
 	}
 
-	if anomalyDetection["anomaly_count"] != 2 {
-		t.Errorf("Expected 2 anomalies, got %d", int(anomalyDetection["anomaly_count"].(float64)))
+	if anomalyDetection["anomaly_count"] != float64(2) {
+		t.Errorf("Expected 2 anomalies, got %v", anomalyDetection["anomaly_count"])
 	}
 
 	if anomalyDetection["severity"] != "high" {

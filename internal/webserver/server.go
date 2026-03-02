@@ -1289,8 +1289,8 @@ func (s *WebSocketServer) updateConnectionStats(conn *websocket.Conn, bytesSent 
 	stats.MessagesReceived++
 	stats.BytesReceived += int64(bytesReceived)
 
-	// Calculate latency if we have pong response
-	if !stats.LastPongTime.IsZero() {
+	// Calculate latency if we have pong response after ping
+	if !stats.LastPongTime.IsZero() && stats.LastPongTime.After(stats.LastPingTime) {
 		stats.Latency = stats.LastPongTime.Sub(stats.LastPingTime) / 2
 	}
 
@@ -1477,7 +1477,12 @@ func (s *WebSocketServer) getAnomalyClusterInfo() []map[string]interface{} {
 func (s *WebSocketServer) getConnectionStats() []*WebSocketConnectionStats {
 	s.statsMu.Lock()
 	defer s.statsMu.Unlock()
+	return s.getConnectionStatsLocked()
+}
 
+// getConnectionStatsLocked returns connection statistics without acquiring statsMu.
+// Callers MUST already hold s.statsMu.
+func (s *WebSocketServer) getConnectionStatsLocked() []*WebSocketConnectionStats {
 	stats := make([]*WebSocketConnectionStats, 0, len(s.connectionStats))
 	for _, stat := range s.connectionStats {
 		stats = append(stats, stat)
@@ -2048,7 +2053,7 @@ func (s *WebSocketServer) detectAdvancedConnectionQualityAnomaliesPhase4() map[s
 
 	return map[string]interface{}{
 		"status": "analyzed",
-		"anomaly_count": anomalyCount,
+		"anomaly_count": float64(anomalyCount),
 		"anomaly_percentage": anomalyPercentage,
 		"severity": severity,
 		"anomalies": anomalies,
@@ -2106,10 +2111,19 @@ func (s *WebSocketServer) deepLearningAnomalyDetectionPhase4(stat *WebSocketConn
 		anomalyScore = 0.80
 		anomalyType = "frequent_repeating_anomaly"
 		confidence = 0.90
+	} else if stat.Latency > 1000*time.Millisecond && stat.PacketLoss > 10 {
+		// Fallback: severe metrics without history still constitute an anomaly
+		anomalyScore = 0.85
+		anomalyType = "latency_packet_loss"
+		confidence = 0.90
+	} else if stat.Latency > 500*time.Millisecond && stat.PacketLoss > 20 {
+		anomalyScore = 0.80
+		anomalyType = "high_packet_loss"
+		confidence = 0.88
 	}
 	
 	// Add time-based patterns
-	if !stat.LastAnomalyTime.IsZero() && timeNow().Sub(*stat.LastAnomalyTime) < 5*time.Minute {
+	if stat.LastAnomalyTime != nil && timeNow().Sub(*stat.LastAnomalyTime) < 5*time.Minute {
 		anomalyScore = math.Min(1.0, anomalyScore+0.1) // Recent anomaly increases score
 		confidence = math.Min(1.0, confidence+0.05)
 	}
@@ -3877,7 +3891,8 @@ func (s *WebSocketServer) calculateStdDev(metricFunc func(*WebSocketConnectionSt
 
 // calculateStdDevForAnomalyDetection calculates standard deviation excluding a specific connection
 func (s *WebSocketServer) calculateStdDevForAnomalyDetection(metricFunc func(*WebSocketConnectionStats) float64) float64 {
-	stats := s.getConnectionStats()
+	// Use the locked variant because callers (e.g. updateConnectionStats) already hold statsMu.
+	stats := s.getConnectionStatsLocked()
 	if len(stats) < 2 {
 		return 0
 	}
@@ -5941,7 +5956,7 @@ func (s *WebSocketServer) detectAdvancedConnectionQualityAnomaliesPhase5() map[s
 
 	return map[string]interface{}{
 		"status": "analyzed",
-		"anomaly_count": anomalyCount,
+		"anomaly_count": float64(anomalyCount),
 		"anomaly_percentage": anomalyPercentage,
 		"severity": severity,
 		"anomalies": anomalies,
@@ -6018,7 +6033,7 @@ func (s *WebSocketServer) deepLearningAnomalyDetectionPhase5(stat *WebSocketConn
 	}
 	
 	// Add time-based patterns with Phase 5 enhancements
-	if !stat.LastAnomalyTime.IsZero() && timeNow().Sub(*stat.LastAnomalyTime) < 5*time.Minute {
+	if stat.LastAnomalyTime != nil && timeNow().Sub(*stat.LastAnomalyTime) < 5*time.Minute {
 		anomalyScore = math.Min(1.0, anomalyScore+0.15) // Recent anomaly increases score significantly
 		confidence = math.Min(1.0, confidence+0.10)
 	}

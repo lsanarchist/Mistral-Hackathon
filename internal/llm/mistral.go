@@ -25,9 +25,7 @@ type MistralProvider struct {
 
 // NewMistralProvider creates a new Mistral provider
 func NewMistralProvider(config ProviderConfig) (*MistralProvider, error) {
-	if config.APIKey == "" && !config.DryRun {
-		return nil, NewLLMError("mistral API key is required")
-	}
+	// Allow empty API key at construction; GenerateInsights will return disabled insights at call time.
 
 	if config.Model == "" {
 		config.Model = "devstral-small-latest"
@@ -66,11 +64,11 @@ func (p *MistralProvider) Model() string {
 // GenerateInsights calls Mistral API to generate insights
 func (p *MistralProvider) GenerateInsights(ctx context.Context, prompt string) (*model.InsightsBundle, error) {
 	if p.DryRun {
-		return createDisabledInsights("dry-run mode enabled"), nil
+		return createDisabledInsights("dry-run mode enabled - no API call made"), nil
 	}
 
 	if p.APIKey == "" {
-		return createDisabledInsights("mistral API key not configured"), nil
+		return createDisabledInsights("MISTRAL_API_KEY not configured"), nil
 	}
 
 	// Prepare request

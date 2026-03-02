@@ -24,9 +24,7 @@ type OpenAIProvider struct {
 
 // NewOpenAIProvider creates a new OpenAI provider
 func NewOpenAIProvider(config ProviderConfig) (*OpenAIProvider, error) {
-	if config.APIKey == "" && !config.DryRun {
-		return nil, NewLLMError("openai API key is required")
-	}
+	// Allow empty API key at construction; GenerateInsights will return disabled insights at call time.
 
 	if config.Model == "" {
 		config.Model = "gpt-3.5-turbo"

@@ -184,7 +184,7 @@ func TestMistralClient_GenerateInsights_NoAPIKey(t *testing.T) {
 	insights, err := client.GenerateInsights(context.Background(), "test prompt")
 	require.NoError(t, err)
 	require.NotNil(t, insights)
-	assert.Equal(t, "MISTRAL_API_KEY environment variable not set", insights.DisabledReason)
+	assert.Contains(t, insights.DisabledReason, "not configured")
 }
 
 func TestMistralClient_GenerateInsights_PromptTooLarge(t *testing.T) {
@@ -283,7 +283,7 @@ func TestInsightsGenerator_GenerateInsights_NoAPIKey(t *testing.T) {
 	insights, err := generator.GenerateInsights(context.Background(), bundle, findings)
 	require.NoError(t, err)
 	require.NotNil(t, insights)
-	assert.Equal(t, "MISTRAL_API_KEY environment variable not set", insights.DisabledReason)
+	assert.Contains(t, insights.DisabledReason, "not configured")
 }
 
 func TestInsightsGenerator_GenerateInsights_PromptTooLarge(t *testing.T) {

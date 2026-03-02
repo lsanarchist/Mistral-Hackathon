@@ -32,11 +32,6 @@ func NewRemediationGenerator(provider Provider, config model.RemediationConfig,
 	}
 }
 
-// GenerateRemediations creates automated code fix suggestions
-type GenerateRemediations struct {
-	ctx context.Context
-}
-
 func (rg *RemediationGenerator) GenerateRemediations(ctx context.Context) (*model.RemediationBundle, error) {
 	if !rg.config.Enabled {
 		return nil, fmt.Errorf("remediation is disabled in config")
@@ -109,26 +104,39 @@ func (rg *RemediationGenerator) buildRemediationPrompt() string {
 }
 
 func (rg *RemediationGenerator) generateRemediationWithProvider(ctx context.Context, prompt string) (string, error) {
-	// For now, use a simple mock implementation since we need to extend the Provider interface
-	// In a real implementation, this would call the LLM provider's remediation endpoint
-	
-	// Mock response for testing - this would be replaced with actual LLM call
-	mockResponse := `{
-		"version": "1.0",
-		"generated_by": "triageprof-remediation",
-		"timestamp": "` + time.Now().UTC().Format(time.RFC3339) + `",
-		"remediations": [],
-		"summary": {
-			"total_remediations": 0,
-			"high_impact": 0,
-			"medium_impact": 0,
-			"low_impact": 0,
-			"estimated_total_gain": "none",
-			"confidence_score": 0.0
-		}
-	}`
-	
-	return mockResponse, nil
+	// TextGenerator is an optional extended interface that providers may implement
+	// to return raw text responses (used by mocks and future providers).
+	type textGenerator interface {
+		Generate(ctx context.Context, prompt string) (string, error)
+	}
+
+	if tg, ok := rg.provider.(textGenerator); ok {
+		return tg.Generate(ctx, prompt)
+	}
+
+	// Fallback: use GenerateInsights and re-serialise to JSON so the caller
+	// can still parse it as a RemediationBundle when the provider returns a
+	// pre-built InsightsBundle (unlikely in production, but keeps the path
+	// consistent).  For the standard Mistral/OpenAI providers we build a
+	// plain prompt that asks for a JSON remediation response.
+	bundle, err := rg.provider.GenerateInsights(ctx, prompt)
+	if err != nil {
+		return "", fmt.Errorf("provider call failed: %w", err)
+	}
+	// If the provider returned a disabled reason we treat it as an empty result.
+	if bundle.DisabledReason != "" {
+		emptyResp := `{"version":"1.0","generated_by":"triageprof-remediation","timestamp":"` +
+			time.Now().UTC().Format(time.RFC3339) +
+			`","remediations":[],"summary":{"total_remediations":0,"high_impact":0,"medium_impact":0,"low_impact":0,"estimated_total_gain":"none","confidence_score":0}}`
+		return emptyResp, nil
+	}
+	// In the happy path the model should have returned valid JSON as the
+	// content; we just re-serialise whatever the provider gave us.
+	data, err := json.Marshal(bundle)
+	if err != nil {
+		return "", fmt.Errorf("failed to serialise provider response: %w", err)
+	}
+	return string(data), nil
 }
 
 func (rg *RemediationGenerator) parseAndValidateRemediationResponse(response string) (*model.RemediationBundle, error) {
@@ -283,14 +291,14 @@ func (rg *RemediationGenerator) updateRemediationSummary(bundle *model.Remediati
 
 	// Simple impact estimation
 	switch {
-		case summary.HighImpact >= 3:
-			summary.EstimatedTotalGain = "high (>30% improvement)"
-		case summary.HighImpact >= 1 || summary.MediumImpact >= 3:
-			summary.EstimatedTotalGain = "medium (15-30% improvement)"
-		case summary.MediumImpact >= 1 || summary.LowImpact >= 3:
-			summary.EstimatedTotalGain = "low (5-15% improvement)"
-		default:
-			summary.EstimatedTotalGain = "minimal (<5% improvement)"
+	case summary.HighImpact >= 1:
+		summary.EstimatedTotalGain = "high (>30% improvement)"
+	case summary.MediumImpact >= 3:
+		summary.EstimatedTotalGain = "medium (15-30% improvement)"
+	case summary.MediumImpact >= 1 || summary.LowImpact >= 3:
+		summary.EstimatedTotalGain = "low (5-15% improvement)"
+	default:
+		summary.EstimatedTotalGain = "minimal (<5% improvement)"
 	}
 
 	bundle.Summary = summary

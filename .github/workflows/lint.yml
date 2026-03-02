@@ -37,16 +37,9 @@ jobs:
 
     - name: Check for common issues
       run: |
-        # Check for TODO comments
-        todos=$(grep -r "TODO:" . --exclude-dir=.git || true)
+        # Check for TODO comments (informational only)
+        todos=$(grep -rn "TODO:" . --exclude-dir=.git --include="*.go" || true)
         if [ -n "$todos" ]; then
-          echo "TODO comments found:"
+          echo "ℹ️  TODO comments found (not blocking):"
           echo "$todos"
-        fi
-        
-        # Check for debug prints
-        debugs=$(grep -r "fmt.Println\|log.Println\|log.Printf" . --exclude-dir=.git || true)
-        if [ -n "$debugs" ]; then
-          echo "Debug prints found:"
-          echo "$debugs"
         fi

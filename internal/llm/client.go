@@ -433,7 +433,7 @@ func (c *MistralClient) GenerateInsights(ctx context.Context, prompt string) (*m
 	// Validate API key
 	if c.APIKey == "" {
 		return &model.InsightsBundle{
-			DisabledReason: "MISTRAL_API_KEY environment variable not set",
+			DisabledReason: "MISTRAL_API_KEY not configured",
 		}, nil
 	}
 

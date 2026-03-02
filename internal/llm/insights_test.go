@@ -199,7 +199,7 @@ func TestInsightsGuardrails(t *testing.T) {
 					FindingID:  "test-finding",
 					Narrative:  "This is an extremely long narrative that should definitely be truncated by the guardrails to ensure it doesn't exceed the maximum length",
 					Confidence: 90,
-					CodeExamples: []string{"This is a very long code example that exceeds the 200 character limit and should be truncated by the guardrails function to comply with the requirements"},
+					CodeExamples: []string{"This is a very long code example that exceeds the 200 character limit and should be truncated by the guardrails function to comply with the maximum length requirements imposed by the validation rules!!"},
 				},
 			},
 		}

@@ -2,8 +2,10 @@ package llm
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -80,6 +82,13 @@ func (g *InsightsGenerator) GenerateInsights(ctx context.Context,
 		return &model.InsightsBundle{
 			DisabledReason: fmt.Sprintf("failed to build prompt: %v", err),
 		}, nil
+	}
+
+	// In dry-run mode write the prompt to disk so callers can inspect it.
+	if isDryRun(g.Provider) {
+		if data, marshalErr := json.MarshalIndent(map[string]string{"prompt": prompt}, "", "  "); marshalErr == nil {
+			_ = os.WriteFile("llm_prompt.json", data, 0600)
+		}
 	}
 
 	// Generate insights using the provider
@@ -264,7 +273,11 @@ func applyInsightsGuardrails(insights *model.InsightsBundle) {
 	// Truncate long text fields to prevent excessive output
 	truncateField := func(s *string, maxLength int) {
 		if len(*s) > maxLength {
-			*s = (*s)[:maxLength] + "..."
+			cut := maxLength - 3
+			if cut < 0 {
+				cut = 0
+			}
+			*s = (*s)[:cut] + "..."
 		}
 	}
 
@@ -314,13 +327,21 @@ func applyInsightsGuardrails(insights *model.InsightsBundle) {
 // applyRedactionToInsights applies redaction to sensitive information in insights
 func applyRedactionToInsights(insights *model.InsightsBundle) {
 	replacePatterns := []struct {
-		pattern   *regexp.Regexp
+		pattern     *regexp.Regexp
 		replacement string
 	}{
-		{regexp.MustCompile(`(?i)(token|secret|key|password)=[^\s]+`), "$1=[REDACTED]"},
-		{regexp.MustCompile(`(?i)(localhost|127\.0\.0\.1|\d+\.\d+\.\d+\.\d+)`), "[REDACTED_HOSTNAME]"},
-		{regexp.MustCompile(`[A-Za-z0-9]{32,}`), "[REDACTED_TOKEN]"},
+		// URLs first (before hostname redaction)
 		{regexp.MustCompile(`(?i)(http|https)://[^\s]+`), "[REDACTED_URL]"},
+		// Hostnames / IP addresses
+		{regexp.MustCompile(`(?i)(localhost|\d+\.\d+\.\d+\.\d+)`), "[REDACTED_HOSTNAME]"},
+		// key=value style secrets
+		{regexp.MustCompile(`(?i)(token|secret|key|password|apikey|api_key)=[^\s]+`), "$1=[REDACTED]"},
+		// "API key is <word>", "password is <word>", "secret <word>" etc.
+		{regexp.MustCompile(`(?i)(api\s+key|password|secret)\s+(is\s+)?([A-Za-z0-9_\-]{6,})`), "$1 [REDACTED]"},
+		// Long random tokens (≥16 alphanumeric chars that look like secrets)
+		{regexp.MustCompile(`\b(token|key|secret)\s+([A-Za-z0-9]{8,})\b`), "$1 [REDACTED_TOKEN]"},
+		// Truly long opaque tokens (≥32 chars)
+		{regexp.MustCompile(`[A-Za-z0-9]{32,}`), "[REDACTED_TOKEN]"},
 	}
 
 	redactText := func(text string) string {
@@ -371,22 +392,33 @@ func applyRedactionToInsights(insights *model.InsightsBundle) {
 	}
 }
 
-// GenerateRemediations creates automated code fix suggestions from findings and insights
-	func (g *InsightsGenerator) GenerateRemediations(ctx context.Context, findings *model.FindingsBundle, insights *model.InsightsBundle, config model.RemediationConfig) (*model.RemediationBundle, error) {
-
-		// Validate inputs
-		if findings == nil || len(findings.Findings) == 0 {
-			return nil, fmt.Errorf("no findings available for remediation")
-		}
-
-		// Create remediation generator
-		remediationGen := NewRemediationGenerator(g.Provider, config, findings, insights)
-
-		// Generate remediations
-		remediations, err := remediationGen.GenerateRemediations(ctx)
-		if err != nil {
-			return nil, fmt.Errorf("failed to generate remediations: %w", err)
-		}
-
-		return remediations, nil
+// isDryRun reports whether the given provider is operating in dry-run mode.
+func isDryRun(p Provider) bool {
+	if mp, ok := p.(*MistralProvider); ok {
+		return mp.DryRun
 	}
+	if op, ok := p.(*OpenAIProvider); ok {
+		return op.DryRun
+	}
+	return false
+}
+
+// GenerateRemediations creates automated code fix suggestions from findings and insights
+func (g *InsightsGenerator) GenerateRemediations(ctx context.Context, findings *model.FindingsBundle, insights *model.InsightsBundle, config model.RemediationConfig) (*model.RemediationBundle, error) {
+
+	// Validate inputs
+	if findings == nil || len(findings.Findings) == 0 {
+		return nil, fmt.Errorf("no findings available for remediation")
+	}
+
+	// Create remediation generator
+	remediationGen := NewRemediationGenerator(g.Provider, config, findings, insights)
+
+	// Generate remediations
+	remediations, err := remediationGen.GenerateRemediations(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate remediations: %w", err)
+	}
+
+	return remediations, nil
+}
