@@ -48,9 +48,9 @@ func NewProvider(config ProviderConfig) (Provider, error) {
 func DefaultConfig() ProviderConfig {
 	return ProviderConfig{
 		ProviderName: "mistral",
-		Model:        "devstral-small-latest",
+		Model:        "mistral-large-latest",
 		Timeout:      20 * time.Second,
-		MaxResponse:  4096,
+		MaxResponse:  8192,
 		MaxPrompt:    12000,
 		DryRun:       false,
 		ProviderConfig: map[string]string{},

@@ -174,9 +174,9 @@ func (p *PromptBuilder) buildFindingsSummary() string {
 	sections = append(sections, `{`)
 	sections = append(sections, `  "schema_version": "2.0",`)
 	sections = append(sections, `  "executive_summary": {"overview": "...", "overall_severity": "high|medium|low|critical", "confidence": 85, "key_themes": ["theme1"]},`)
-	sections = append(sections, `  "per_finding": [{"finding_id": "<ID from Finding ID above>", "narrative": "Analysis for <ID from Finding ID above>: ...", "likely_root_causes": ["cause1"], "suggestions": ["fix1"], "confidence": 80, "code_examples": ["// short example"]}],`)
-	sections = append(sections, `  "top_risks": [{"description": "risk1", "severity": "high", "impact": "desc", "potential_impact": "impact"}],`)
-	sections = append(sections, `  "top_actions": [{"description": "action1", "priority": "high", "expected_impact": "impact", "code_examples": []}]`)
+	sections = append(sections, `  "per_finding": [{"finding_id": "<ID>", "narrative": "Analysis for <ID>: ...", "likely_root_causes": ["cause1"], "suggestions": ["fix1"], "next_measurements": ["metric1"], "caveats": ["caveat1"], "confidence": 80, "performance_impact": "20-30% reduction", "implementation_complexity": "Medium", "code_examples": ["// short example"], "before_after_metrics": ["Before: X ms, After: Y ms"]}],`)
+	sections = append(sections, `  "top_risks": [{"description": "risk1", "severity": "high", "impact": "desc", "potential_impact": "30% reduction"}],`)
+	sections = append(sections, `  "top_actions": [{"description": "action1", "priority": "high", "estimated_effort": "2-4 hours", "implementation_complexity": "Medium", "expected_impact": "30-50% improvement", "validation_metrics": ["metric to check after fix"], "code_examples": ["// short example"]}]`)
 	sections = append(sections, `}`)
 
 	// Add technical deep dive section

@@ -28,7 +28,7 @@ func NewMistralProvider(config ProviderConfig) (*MistralProvider, error) {
 	// Allow empty API key at construction; GenerateInsights will return disabled insights at call time.
 
 	if config.Model == "" {
-		config.Model = "devstral-small-latest"
+		config.Model = "mistral-large-latest"
 	}
 
 	if config.Timeout == 0 {
@@ -36,7 +36,7 @@ func NewMistralProvider(config ProviderConfig) (*MistralProvider, error) {
 	}
 
 	if config.MaxResponse == 0 {
-		config.MaxResponse = 4096
+		config.MaxResponse = 8192
 	}
 
 	return &MistralProvider{
@@ -148,10 +148,31 @@ func stripProblematicFields(raw string) string {
 	if err := json.Unmarshal([]byte(raw), &m); err != nil {
 		return raw // can't fix it, return as-is
 	}
-	// Drop roi_analysis if it exists (LLMs often return it as an object instead of array)
+	// Drop top-level roi_analysis (LLMs often return it as an object instead of array)
 	delete(m, "roi_analysis")
 	// Drop technical_deep_dive if present (complex nested object, optional)
 	delete(m, "technical_deep_dive")
+
+	// Also clean up executive_summary: some models nest extra fields inside it
+	// (e.g. roi_analysis, performance_categories as an object) which break unmarshal
+	if esRaw, ok := m["executive_summary"]; ok {
+		var es map[string]json.RawMessage
+		if err := json.Unmarshal(esRaw, &es); err == nil {
+			// Move performance_categories to top-level if nested inside executive_summary
+			if pc, hasPc := es["performance_categories"]; hasPc {
+				if _, topHas := m["performance_categories"]; !topHas {
+					m["performance_categories"] = pc
+				}
+				delete(es, "performance_categories")
+			}
+			// Drop roi_analysis from executive_summary too
+			delete(es, "roi_analysis")
+			if cleaned, err := json.Marshal(es); err == nil {
+				m["executive_summary"] = cleaned
+			}
+		}
+	}
+
 	result, err := json.Marshal(m)
 	if err != nil {
 		return raw

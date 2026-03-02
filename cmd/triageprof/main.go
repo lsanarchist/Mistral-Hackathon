@@ -450,7 +450,7 @@ func runRunCommand(pipeline *core.Pipeline) {
 				defaultModel := "gpt-3.5-turbo"
 				llmModel = &defaultModel
 			} else {
-				defaultModel := "devstral-small-latest"
+				defaultModel := "mistral-large-latest"
 				llmModel = &defaultModel
 			}
 		}
@@ -461,7 +461,7 @@ func runRunCommand(pipeline *core.Pipeline) {
 			Model:        *llmModel,
 			APIKey:       apiKey,
 			Timeout:      time.Duration(*llmTimeout) * time.Second,
-			MaxResponse:  4096,
+			MaxResponse:  8192,
 			MaxPrompt:    *llmMaxChars,
 			DryRun:       *llmDryRun,
 		}

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -774,97 +773,47 @@ func (p *Pipeline) GenerateWebReport(ctx context.Context, findingsPath, outDir s
 		return err
 	}
 
-	// Create web directory
+	// Generate self-contained HTML report (all data embedded inline)
+	htmlReporter := report.NewHTMLReporter()
+	html, err := htmlReporter.Generate(findings, insights)
+	if err != nil {
+		return fmt.Errorf("generate HTML report: %w", err)
+	}
+
+	// Write report.html (self-contained, no redirect)
+	reportPath := filepath.Join(outDir, "report.html")
+	if err := os.WriteFile(reportPath, []byte(html), 0644); err != nil {
+		return err
+	}
+
+	// Also write index.html for backward compatibility
+	indexPath := filepath.Join(outDir, "index.html")
+	if err := os.WriteFile(indexPath, []byte(html), 0644); err != nil {
+		return err
+	}
+
+	// Keep data directory for raw JSON access
 	webDir := filepath.Join(outDir, "web")
 	if err := os.MkdirAll(webDir, 0755); err != nil {
 		return err
 	}
-
-	// Copy new web assets for professional report
-	webAssets := []string{"report-template.html", "report.js", "style.css", "visualization.js"}
-	for _, asset := range webAssets {
-		srcPath := filepath.Join("web", asset)
-		dstPath := filepath.Join(webDir, asset)
-		
-		// Read source file
-		assetData, err := os.ReadFile(srcPath)
-		if err != nil {
-			return err
-		}
-		
-		// Write to destination
-		if err := os.WriteFile(dstPath, assetData, 0644); err != nil {
-			return err
-		}
-	}
-
-	// Create data directory for JSON files
 	dataDir := filepath.Join(webDir, "data")
 	if err := os.MkdirAll(dataDir, 0755); err != nil {
 		return err
 	}
-
-	// Copy findings.json to web/data/
-	findingsDst := filepath.Join(dataDir, "findings.json")
-	if err := os.WriteFile(findingsDst, data, 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(dataDir, "findings.json"), data, 0644); err != nil {
 		return err
 	}
-
-	// Copy insights.json if available
 	if insights != nil {
 		insightsData, err := json.MarshalIndent(insights, "", "  ")
 		if err != nil {
 			return err
 		}
-		insightsDst := filepath.Join(dataDir, "insights.json")
-		if err := os.WriteFile(insightsDst, insightsData, 0644); err != nil {
+		if err := os.WriteFile(filepath.Join(dataDir, "insights.json"), insightsData, 0644); err != nil {
 			return err
 		}
 	}
-
-	// Create report.html that loads the data with URL parameters
-	findingsJSON := url.QueryEscape(string(data))
-	var insightsJSON string
-	if insights != nil {
-		insightsData, _ := json.Marshal(insights)
-		insightsJSON = url.QueryEscape(string(insightsData))
-	}
-
-	// Create the main report HTML file
-	var reportHTML string
-	if insights != nil {
-		reportHTML = fmt.Sprintf(`<!DOCTYPE html>
-<html>
-<head>
-    <title>TriageProf Performance Report</title>
-    <meta http-equiv="refresh" content="0; url=web/report-template.html?findings=%s&insights=%s">
-</head>
-<body>
-    <p>Loading performance report...</p>
-</body>
-</html>`, findingsJSON, insightsJSON)
-	} else {
-		reportHTML = fmt.Sprintf(`<!DOCTYPE html>
-<html>
-<head>
-    <title>TriageProf Performance Report</title>
-    <meta http-equiv="refresh" content="0; url=web/report-template.html?findings=%s">
-</head>
-<body>
-    <p>Loading performance report...</p>
-</body>
-</html>`, findingsJSON)
-	}
-
-	// Create both report.html and index.html for compatibility
-	reportPath := filepath.Join(outDir, "report.html")
-	if err := os.WriteFile(reportPath, []byte(reportHTML), 0644); err != nil {
-		return err
-	}
-
-	// Also create index.html for backward compatibility
-	indexPath := filepath.Join(outDir, "index.html")
-	return os.WriteFile(indexPath, []byte(reportHTML), 0644)
+	return nil
 }
 
 // GetCacheStats returns cache statistics if caching is enabled

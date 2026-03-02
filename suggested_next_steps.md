@@ -1,5 +1,11 @@
 # Suggested Next Steps for TriageProf
 
+
+ALL THIS PHASES ARE FOR FUTURE 
+TOP PRIORITY IS FANCY GUY ON HTML REPORT
+
+
+
 ## 🎯 Immediate Priorities
 
 ### 1. **Phase 17 — CI/CD Integration Testing**

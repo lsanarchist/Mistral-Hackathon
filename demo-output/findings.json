@@ -32,139 +32,342 @@
           "function": "runtime.execute",
           "file": "/usr/lib/go-1.24/src/runtime/proc.go",
           "line": 3286,
-          "cum": 2,
-          "flat": 2
+          "cum": 3,
+          "flat": 3
         },
         {
           "function": "runtime.schedule",
           "file": "/usr/lib/go-1.24/src/runtime/proc.go",
           "line": 4127,
-          "cum": 2,
-          "flat": 2
+          "cum": 3,
+          "flat": 3
         },
         {
           "function": "runtime.park_m",
           "file": "/usr/lib/go-1.24/src/runtime/proc.go",
           "line": 4201,
-          "cum": 2,
-          "flat": 2
+          "cum": 3,
+          "flat": 3
         },
         {
           "function": "runtime.mcall",
           "file": "/usr/lib/go-1.24/src/runtime/asm_amd64.s",
           "line": 459,
-          "cum": 2,
-          "flat": 2
+          "cum": 3,
+          "flat": 3
         },
         {
-          "function": "internal/runtime/atomic.(*Bool).Load",
-          "file": "/usr/lib/go-1.24/src/internal/runtime/atomic/types.go",
-          "line": 168,
-          "cum": 1,
-          "flat": 1
+          "function": "runtime.futex",
+          "file": "/usr/lib/go-1.24/src/runtime/sys_linux_amd64.s",
+          "line": 558,
+          "cum": 3,
+          "flat": 3
         },
         {
-          "function": "runtime.findRunnable",
+          "function": "runtime.futexwakeup",
+          "file": "/usr/lib/go-1.24/src/runtime/os_linux.go",
+          "line": 88,
+          "cum": 3,
+          "flat": 3
+        },
+        {
+          "function": "runtime.notewakeup",
+          "file": "/usr/lib/go-1.24/src/runtime/lock_futex.go",
+          "line": 32,
+          "cum": 3,
+          "flat": 3
+        },
+        {
+          "function": "runtime.startm",
           "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 3328,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.schedule",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 4072,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.park_m",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 4201,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.mcall",
-          "file": "/usr/lib/go-1.24/src/runtime/asm_amd64.s",
-          "line": 459,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.nanotime",
-          "file": "/usr/lib/go-1.24/src/runtime/time_nofake.go",
-          "line": 33,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.pidleget",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 6733,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.pidlegetSpinning",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 6757,
-          "cum": 1,
-          "flat": 1
+          "line": 3063,
+          "cum": 3,
+          "flat": 3
         },
         {
           "function": "runtime.wakep",
           "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 3170,
-          "cum": 1,
-          "flat": 1
+          "line": 3185,
+          "cum": 3,
+          "flat": 3
         },
         {
           "function": "runtime.resetspinning",
           "file": "/usr/lib/go-1.24/src/runtime/proc.go",
           "line": 3937,
-          "cum": 1,
-          "flat": 1
+          "cum": 3,
+          "flat": 3
         },
         {
           "function": "runtime.schedule",
           "file": "/usr/lib/go-1.24/src/runtime/proc.go",
           "line": 4095,
-          "cum": 1,
-          "flat": 1
+          "cum": 3,
+          "flat": 3
         },
         {
           "function": "runtime.park_m",
           "file": "/usr/lib/go-1.24/src/runtime/proc.go",
           "line": 4201,
-          "cum": 1,
-          "flat": 1
+          "cum": 3,
+          "flat": 3
         },
         {
           "function": "runtime.mcall",
           "file": "/usr/lib/go-1.24/src/runtime/asm_amd64.s",
           "line": 459,
+          "cum": 3,
+          "flat": 3
+        },
+        {
+          "function": "runtime.write1",
+          "file": "/usr/lib/go-1.24/src/runtime/sys_linux_amd64.s",
+          "line": 99,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.write",
+          "file": "/usr/lib/go-1.24/src/runtime/time_nofake.go",
+          "line": 57,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.netpollBreak",
+          "file": "/usr/lib/go-1.24/src/runtime/netpoll_epoll.go",
+          "line": 76,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.findRunnable",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 3696,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.schedule",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 4072,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.park_m",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 4201,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.mcall",
+          "file": "/usr/lib/go-1.24/src/runtime/asm_amd64.s",
+          "line": 459,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.(*timers).run",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 1026,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.(*timers).check",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 985,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.stealWork",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 3764,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.findRunnable",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 3434,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.schedule",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 4072,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.park_m",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 4201,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.mcall",
+          "file": "/usr/lib/go-1.24/src/runtime/asm_amd64.s",
+          "line": 459,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.ready",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 1067,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.goroutineReady.goready.func1",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 456,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.goready",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 455,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.goroutineReady",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 417,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.(*timer).unlockAndRun",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 1176,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.(*timers).run",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 1051,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.(*timers).check",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 985,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.stealWork",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 3764,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.findRunnable",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 3434,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.schedule",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 4072,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.park_m",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 4201,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.mcall",
+          "file": "/usr/lib/go-1.24/src/runtime/asm_amd64.s",
+          "line": 459,
+          "cum": 2,
+          "flat": 2
+        },
+        {
+          "function": "runtime.casgstatus",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 1254,
           "cum": 1,
           "flat": 1
         },
         {
-          "function": "runtime.nanotime",
-          "file": "/usr/lib/go-1.24/src/runtime/time_nofake.go",
-          "line": 33,
+          "function": "runtime.ready",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 1074,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.goroutineReady.goready.func1",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 456,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.goready",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 455,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.goroutineReady",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 417,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.(*timer).unlockAndRun",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 1176,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.(*timers).run",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 1051,
           "cum": 1,
           "flat": 1
         },
         {
           "function": "runtime.(*timers).check",
           "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 963,
+          "line": 985,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.stealWork",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 3764,
           "cum": 1,
           "flat": 1
         },
         {
           "function": "runtime.findRunnable",
           "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 3340,
+          "line": 3434,
           "cum": 1,
           "flat": 1
         },
@@ -190,16 +393,37 @@
           "flat": 1
         },
         {
-          "function": "runtime.(*timer).unlock",
+          "function": "runtime.schedule",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 4072,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.park_m",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 4201,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.mcall",
+          "file": "/usr/lib/go-1.24/src/runtime/asm_amd64.s",
+          "line": 459,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.(*timers).addHeap",
           "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 240,
+          "line": 437,
           "cum": 1,
           "flat": 1
         },
         {
           "function": "runtime.(*timer).maybeAdd",
           "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 694,
+          "line": 692,
           "cum": 1,
           "flat": 1
         },
@@ -239,30 +463,338 @@
           "flat": 1
         },
         {
-          "function": "runtime.nanotime1",
-          "file": "/usr/lib/go-1.24/src/runtime/sys_linux_amd64.s",
-          "line": 239,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "internal/runtime/atomic.(*Int64).Store",
-          "file": "/usr/lib/go-1.24/src/internal/runtime/atomic/types.go",
-          "line": 81,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.(*timers).updateMinWhenHeap",
+          "function": "runtime.(*timers).siftDown",
           "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 1229,
+          "line": 1329,
           "cum": 1,
           "flat": 1
         },
         {
           "function": "runtime.(*timers).deleteMin",
           "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 536,
+          "line": 534,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.(*timer).updateHeap",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 274,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.(*timer).unlockAndRun",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 1105,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.(*timers).run",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 1051,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.(*timers).check",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 985,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.stealWork",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 3764,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.findRunnable",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 3434,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.schedule",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 4072,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.park_m",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 4201,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.mcall",
+          "file": "/usr/lib/go-1.24/src/runtime/asm_amd64.s",
+          "line": 459,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.(*timer).unlockAndRun",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 1176,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.(*timers).run",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 1051,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.(*timers).check",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 985,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.findRunnable",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 3340,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.schedule",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 4072,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.park_m",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 4201,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.mcall",
+          "file": "/usr/lib/go-1.24/src/runtime/asm_amd64.s",
+          "line": 459,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.park_m",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 4153,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.mcall",
+          "file": "/usr/lib/go-1.24/src/runtime/asm_amd64.s",
+          "line": 459,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.(*timers).siftUp",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 1288,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.(*timers).addHeap",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 438,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.(*timer).maybeAdd",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 692,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.(*timer).modify",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 620,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.(*timer).reset",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 706,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.resetForSleep",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 347,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.park_m",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 4180,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.mcall",
+          "file": "/usr/lib/go-1.24/src/runtime/asm_amd64.s",
+          "line": 459,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "main.goroutineLeakHandler.func1",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 506,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.ready",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 1067,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.goroutineReady.goready.func1",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 456,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.goready",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 455,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.goroutineReady",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 417,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.(*timer).unlockAndRun",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 1176,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.(*timers).run",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 1051,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.(*timers).check",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 985,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.findRunnable",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 3340,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.schedule",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 4072,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.park_m",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 4201,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.mcall",
+          "file": "/usr/lib/go-1.24/src/runtime/asm_amd64.s",
+          "line": 459,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.nanotime",
+          "file": "/usr/lib/go-1.24/src/runtime/time_nofake.go",
+          "line": 33,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "time.Sleep",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 324,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "main.goroutineLeakHandler.func1",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 503,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.gopark",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 436,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "time.Sleep",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 338,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "main.goroutineLeakHandler.func1",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 503,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.(*timers).siftDown",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 1329,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.(*timers).deleteMin",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 534,
           "cum": 1,
           "flat": 1
         },
@@ -323,58 +855,65 @@
           "flat": 1
         },
         {
-          "function": "runtime.lock2",
-          "file": "/usr/lib/go-1.24/src/runtime/lock_spinbit.go",
-          "line": 215,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.lockWithRank",
-          "file": "/usr/lib/go-1.24/src/runtime/lockrank_off.go",
-          "line": 24,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.lock",
-          "file": "/usr/lib/go-1.24/src/runtime/lock_spinbit.go",
-          "line": 150,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.(*timers).lock",
+          "function": "runtime.(*timers).unlock",
           "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 158,
+          "line": 171,
           "cum": 1,
           "flat": 1
         },
         {
-          "function": "runtime.(*timer).unlockAndRun",
+          "function": "runtime.(*timer).maybeAdd",
           "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 1189,
+          "line": 695,
           "cum": 1,
           "flat": 1
         },
         {
-          "function": "runtime.(*timers).run",
+          "function": "runtime.(*timer).modify",
           "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 1051,
+          "line": 620,
           "cum": 1,
           "flat": 1
         },
         {
-          "function": "runtime.(*timers).check",
+          "function": "runtime.(*timer).reset",
           "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 985,
+          "line": 706,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.resetForSleep",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 347,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.park_m",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 4180,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.mcall",
+          "file": "/usr/lib/go-1.24/src/runtime/asm_amd64.s",
+          "line": 459,
+          "cum": 1,
+          "flat": 1
+        },
+        {
+          "function": "runtime.(*randomEnum).next",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 7342,
           "cum": 1,
           "flat": 1
         },
         {
           "function": "runtime.stealWork",
           "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 3764,
+          "line": 3740,
           "cum": 1,
           "flat": 1
         },
@@ -407,576 +946,30 @@
           "flat": 1
         },
         {
-          "function": "runtime.write1",
-          "file": "/usr/lib/go-1.24/src/runtime/sys_linux_amd64.s",
-          "line": 99,
+          "function": "math/rand.(*Rand).Int31n",
+          "file": "/usr/lib/go-1.24/src/math/rand/rand.go",
+          "line": 149,
           "cum": 1,
           "flat": 1
         },
         {
-          "function": "runtime.write",
-          "file": "/usr/lib/go-1.24/src/runtime/time_nofake.go",
-          "line": 57,
+          "function": "math/rand.(*Rand).Intn",
+          "file": "/usr/lib/go-1.24/src/math/rand/rand.go",
+          "line": 183,
           "cum": 1,
           "flat": 1
         },
         {
-          "function": "runtime.netpollBreak",
-          "file": "/usr/lib/go-1.24/src/runtime/netpoll_epoll.go",
-          "line": 76,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.findRunnable",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 3696,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.schedule",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 4072,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.park_m",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 4201,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.mcall",
-          "file": "/usr/lib/go-1.24/src/runtime/asm_amd64.s",
-          "line": 459,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.(*timer).unlockAndRun",
-          "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 1083,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.(*timers).run",
-          "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 1051,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.(*timers).check",
-          "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 985,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.findRunnable",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 3340,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.schedule",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 4072,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.park_m",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 4201,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.mcall",
-          "file": "/usr/lib/go-1.24/src/runtime/asm_amd64.s",
-          "line": 459,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.futex",
-          "file": "/usr/lib/go-1.24/src/runtime/sys_linux_amd64.s",
-          "line": 558,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.futexwakeup",
-          "file": "/usr/lib/go-1.24/src/runtime/os_linux.go",
-          "line": 88,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.semawakeup",
-          "file": "/usr/lib/go-1.24/src/runtime/lock_futex.go",
-          "line": 161,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.unlock2Wake",
-          "file": "/usr/lib/go-1.24/src/runtime/lock_spinbit.go",
-          "line": 365,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.unlock2",
-          "file": "/usr/lib/go-1.24/src/runtime/lock_spinbit.go",
-          "line": 268,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.unlockWithRank",
-          "file": "/usr/lib/go-1.24/src/runtime/lockrank_off.go",
-          "line": 35,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.unlock",
-          "file": "/usr/lib/go-1.24/src/runtime/lock_spinbit.go",
-          "line": 253,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.(*timers).unlock",
-          "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 171,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.(*timer).unlockAndRun",
-          "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 1128,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.(*timers).run",
-          "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 1051,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.(*timers).check",
-          "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 985,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.findRunnable",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 3340,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.schedule",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 4072,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.park_m",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 4201,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.mcall",
-          "file": "/usr/lib/go-1.24/src/runtime/asm_amd64.s",
-          "line": 459,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.(*timer).updateHeap",
-          "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 270,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.(*timers).run",
-          "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 1036,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.(*timers).check",
-          "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 985,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.findRunnable",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 3340,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.schedule",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 4072,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.park_m",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 4201,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.mcall",
-          "file": "/usr/lib/go-1.24/src/runtime/asm_amd64.s",
-          "line": 459,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.runqget",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 6931,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.findRunnable",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 3388,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.schedule",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 4072,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.park_m",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 4201,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.mcall",
-          "file": "/usr/lib/go-1.24/src/runtime/asm_amd64.s",
-          "line": 459,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "time.Sleep",
-          "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 340,
+          "function": "math/rand.Intn",
+          "file": "/usr/lib/go-1.24/src/math/rand/rand.go",
+          "line": 464,
           "cum": 1,
           "flat": 1
         },
         {
           "function": "main.goroutineLeakHandler.func1",
           "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
-          "line": 503,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.checkRunqsNoP",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 3806,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.findRunnable",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 3598,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.schedule",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 4072,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.park_m",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 4201,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.mcall",
-          "file": "/usr/lib/go-1.24/src/runtime/asm_amd64.s",
-          "line": 459,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.unlock2",
-          "file": "/usr/lib/go-1.24/src/runtime/lock_spinbit.go",
-          "line": 263,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.unlockWithRank",
-          "file": "/usr/lib/go-1.24/src/runtime/lockrank_off.go",
-          "line": 35,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.unlock",
-          "file": "/usr/lib/go-1.24/src/runtime/lock_spinbit.go",
-          "line": 253,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.(*timer).unlock",
-          "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 240,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.(*timer).maybeAdd",
-          "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 694,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.(*timer).modify",
-          "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 620,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.(*timer).reset",
-          "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 706,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.resetForSleep",
-          "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 347,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.park_m",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 4180,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.mcall",
-          "file": "/usr/lib/go-1.24/src/runtime/asm_amd64.s",
-          "line": 459,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "main.goroutineLeakHandler.func1",
-          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
-          "line": 506,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.futex",
-          "file": "/usr/lib/go-1.24/src/runtime/sys_linux_amd64.s",
-          "line": 558,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.futexwakeup",
-          "file": "/usr/lib/go-1.24/src/runtime/os_linux.go",
-          "line": 88,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.notewakeup",
-          "file": "/usr/lib/go-1.24/src/runtime/lock_futex.go",
-          "line": 32,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.startm",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 3063,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.wakep",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 3185,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.resetspinning",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 3937,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.schedule",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 4095,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.park_m",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 4201,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.mcall",
-          "file": "/usr/lib/go-1.24/src/runtime/asm_amd64.s",
-          "line": 459,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "internal/runtime/syscall.Syscall6",
-          "file": "/usr/lib/go-1.24/src/internal/runtime/syscall/asm_linux_amd64.s",
-          "line": 36,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "internal/runtime/syscall.EpollWait",
-          "file": "/usr/lib/go-1.24/src/internal/runtime/syscall/syscall_linux.go",
-          "line": 32,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.netpoll",
-          "file": "/usr/lib/go-1.24/src/runtime/netpoll_epoll.go",
-          "line": 119,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.findRunnable",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 3410,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.schedule",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 4072,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.park_m",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 4201,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.mcall",
-          "file": "/usr/lib/go-1.24/src/runtime/asm_amd64.s",
-          "line": 459,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.(*timers).addHeap",
-          "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 439,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.(*timer).maybeAdd",
-          "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 692,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.(*timer).modify",
-          "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 620,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.(*timer).reset",
-          "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 706,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.resetForSleep",
-          "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 347,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.park_m",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 4180,
-          "cum": 1,
-          "flat": 1
-        },
-        {
-          "function": "runtime.mcall",
-          "file": "/usr/lib/go-1.24/src/runtime/asm_amd64.s",
-          "line": 459,
+          "line": 504,
           "cum": 1,
           "flat": 1
         }
@@ -984,7 +977,7 @@
       "evidenceLegacy": {
         "artifactPath": "demo-output/cpu.pb.gz",
         "profileType": "cpu",
-        "extractedAt": "2026-03-02T02:24:46.561761118+01:00"
+        "extractedAt": "2026-03-02T03:03:40.276490003+01:00"
       }
     },
     {
@@ -1175,69 +1168,6 @@
           "flat": 43691
         },
         {
-          "function": "main.inefficientStringHandler",
-          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
-          "line": 314,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "net/http.HandlerFunc.ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2294,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "net/http.(*ServeMux).ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2822,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "net/http.serverHandler.ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 3301,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "net/http.(*conn).serve",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2102,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "main.generateFriends",
-          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
-          "line": 115,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "main.initializeDemoData",
-          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
-          "line": 98,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "main.main",
-          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
-          "line": 41,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "runtime.main",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 283,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
           "function": "fmt.Sprintf",
           "file": "/usr/lib/go-1.24/src/fmt/print.go",
           "line": 240,
@@ -1266,79 +1196,23 @@
           "flat": 32768
         },
         {
-          "function": "runtime.(*timers).addHeap",
-          "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 437,
+          "function": "main.initializeDemoData",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 97,
           "cum": 32768,
           "flat": 32768
         },
         {
-          "function": "runtime.(*timer).maybeAdd",
-          "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 692,
+          "function": "main.main",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 41,
           "cum": 32768,
           "flat": 32768
         },
         {
-          "function": "runtime.(*timer).modify",
-          "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 620,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "runtime.(*timer).reset",
-          "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 706,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "runtime.resetForSleep",
-          "file": "/usr/lib/go-1.24/src/runtime/time.go",
-          "line": 347,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "runtime.park_m",
+          "function": "runtime.main",
           "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 4180,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "runtime.mcall",
-          "file": "/usr/lib/go-1.24/src/runtime/asm_amd64.s",
-          "line": 459,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "net.IP.String",
-          "file": "/usr/lib/go-1.24/src/net/ip.go",
-          "line": 315,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "net.ipEmptyString",
-          "file": "/usr/lib/go-1.24/src/net/ip.go",
-          "line": 332,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "net.(*TCPAddr).String",
-          "file": "/usr/lib/go-1.24/src/net/tcpsock.go",
-          "line": 48,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "net/http.(*conn).serve",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 1939,
+          "line": 283,
           "cum": 32768,
           "flat": 32768
         },
@@ -1360,6 +1234,27 @@
           "function": "encoding/json.mapEncoder.encode",
           "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
           "line": 772,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.interfaceEncoder",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 680,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 784,
           "cum": 32768,
           "flat": 32768
         },
@@ -1451,27 +1346,6 @@
           "function": "net/http.(*conn).serve",
           "file": "/usr/lib/go-1.24/src/net/http/server.go",
           "line": 2102,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "main.initializeDemoData",
-          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
-          "line": 97,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "main.main",
-          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
-          "line": 41,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "runtime.main",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 283,
           "cum": 32768,
           "flat": 32768
         },
@@ -1602,6 +1476,146 @@
           "flat": 32768
         },
         {
+          "function": "main.generateFriends",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 115,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "main.initializeDemoData",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 98,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "main.main",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 41,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "runtime.main",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 283,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net.IP.String",
+          "file": "/usr/lib/go-1.24/src/net/ip.go",
+          "line": 315,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net.ipEmptyString",
+          "file": "/usr/lib/go-1.24/src/net/ip.go",
+          "line": 332,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net.(*TCPAddr).String",
+          "file": "/usr/lib/go-1.24/src/net/tcpsock.go",
+          "line": 48,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 1939,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "main.inefficientStringHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 314,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "runtime.(*timers).addHeap",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 437,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "runtime.(*timer).maybeAdd",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 692,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "runtime.(*timer).modify",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 620,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "runtime.(*timer).reset",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 706,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "runtime.resetForSleep",
+          "file": "/usr/lib/go-1.24/src/runtime/time.go",
+          "line": 347,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "runtime.park_m",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 4180,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "runtime.mcall",
+          "file": "/usr/lib/go-1.24/src/runtime/asm_amd64.s",
+          "line": 459,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
           "function": "reflect.copyVal",
           "file": "/usr/lib/go-1.24/src/reflect/value.go",
           "line": 1791,
@@ -1619,27 +1633,6 @@
           "function": "encoding/json.mapEncoder.encode",
           "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
           "line": 772,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "encoding/json.(*encodeState).reflectValue",
-          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
-          "line": 333,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "encoding/json.interfaceEncoder",
-          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
-          "line": 680,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "encoding/json.mapEncoder.encode",
-          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
-          "line": 784,
           "cum": 32768,
           "flat": 32768
         },
@@ -1770,41 +1763,6 @@
           "flat": 29950
         },
         {
-          "function": "main.goroutineLeakHandler",
-          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
-          "line": 499,
-          "cum": 21845,
-          "flat": 21845
-        },
-        {
-          "function": "net/http.HandlerFunc.ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2294,
-          "cum": 21845,
-          "flat": 21845
-        },
-        {
-          "function": "net/http.(*ServeMux).ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2822,
-          "cum": 21845,
-          "flat": 21845
-        },
-        {
-          "function": "net/http.serverHandler.ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 3301,
-          "cum": 21845,
-          "flat": 21845
-        },
-        {
-          "function": "net/http.(*conn).serve",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2102,
-          "cum": 21845,
-          "flat": 21845
-        },
-        {
           "function": "fmt.Sprintf",
           "file": "/usr/lib/go-1.24/src/fmt/print.go",
           "line": 240,
@@ -1836,6 +1794,41 @@
           "function": "runtime.main",
           "file": "/usr/lib/go-1.24/src/runtime/proc.go",
           "line": 283,
+          "cum": 21845,
+          "flat": 21845
+        },
+        {
+          "function": "main.goroutineLeakHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 499,
+          "cum": 21845,
+          "flat": 21845
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 21845,
+          "flat": 21845
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 21845,
+          "flat": 21845
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 21845,
+          "flat": 21845
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
           "cum": 21845,
           "flat": 21845
         },
@@ -2036,45 +2029,80 @@
           "flat": 8193
         },
         {
-          "function": "main.exportHandler",
-          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
-          "line": 287,
-          "cum": 6002,
-          "flat": 6002
+          "function": "runtime/pprof.writeHeapProto",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/protomem.go",
+          "line": 39,
+          "cum": 8192,
+          "flat": 8192
+        },
+        {
+          "function": "runtime/pprof.writeHeapInternal",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 634,
+          "cum": 8192,
+          "flat": 8192
+        },
+        {
+          "function": "runtime/pprof.writeHeap",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 593,
+          "cum": 8192,
+          "flat": 8192
+        },
+        {
+          "function": "runtime/pprof.(*Profile).WriteTo",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 377,
+          "cum": 8192,
+          "flat": 8192
+        },
+        {
+          "function": "net/http/pprof.handler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
+          "line": 272,
+          "cum": 8192,
+          "flat": 8192
+        },
+        {
+          "function": "net/http/pprof.Index",
+          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
+          "line": 389,
+          "cum": 8192,
+          "flat": 8192
         },
         {
           "function": "net/http.HandlerFunc.ServeHTTP",
           "file": "/usr/lib/go-1.24/src/net/http/server.go",
           "line": 2294,
-          "cum": 6002,
-          "flat": 6002
+          "cum": 8192,
+          "flat": 8192
         },
         {
           "function": "net/http.(*ServeMux).ServeHTTP",
           "file": "/usr/lib/go-1.24/src/net/http/server.go",
           "line": 2822,
-          "cum": 6002,
-          "flat": 6002
+          "cum": 8192,
+          "flat": 8192
         },
         {
           "function": "net/http.serverHandler.ServeHTTP",
           "file": "/usr/lib/go-1.24/src/net/http/server.go",
           "line": 3301,
-          "cum": 6002,
-          "flat": 6002
+          "cum": 8192,
+          "flat": 8192
         },
         {
           "function": "net/http.(*conn).serve",
           "file": "/usr/lib/go-1.24/src/net/http/server.go",
           "line": 2102,
-          "cum": 6002,
-          "flat": 6002
+          "cum": 8192,
+          "flat": 8192
         }
       ],
       "evidenceLegacy": {
         "artifactPath": "demo-output/heap.pb.gz",
         "profileType": "heap",
-        "extractedAt": "2026-03-02T02:24:46.562453543+01:00"
+        "extractedAt": "2026-03-02T03:03:40.277949636+01:00"
       }
     },
     {
@@ -2098,7 +2126,7 @@
       "evidenceLegacy": {
         "artifactPath": "demo-output/mutex.pb.gz",
         "profileType": "mutex",
-        "extractedAt": "2026-03-02T02:24:46.562513957+01:00"
+        "extractedAt": "2026-03-02T03:03:40.278040818+01:00"
       }
     },
     {
@@ -2122,7 +2150,7 @@
       "evidenceLegacy": {
         "artifactPath": "demo-output/block.pb.gz",
         "profileType": "block",
-        "extractedAt": "2026-03-02T02:24:46.562563129+01:00"
+        "extractedAt": "2026-03-02T03:03:40.278110319+01:00"
       }
     },
     {
@@ -2348,237 +2376,6 @@
           "flat": 32768
         },
         {
-          "function": "main.initializeDemoData",
-          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
-          "line": 97,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "main.main",
-          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
-          "line": 41,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "runtime.main",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 283,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "fmt.Sprintf",
-          "file": "/usr/lib/go-1.24/src/fmt/print.go",
-          "line": 240,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "main.initializeDemoData",
-          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
-          "line": 96,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "main.main",
-          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
-          "line": 41,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "runtime.main",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 283,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "main.generateFriends",
-          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
-          "line": 115,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "main.initializeDemoData",
-          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
-          "line": 98,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "main.main",
-          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
-          "line": 41,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "runtime.main",
-          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
-          "line": 283,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "net.IP.String",
-          "file": "/usr/lib/go-1.24/src/net/ip.go",
-          "line": 315,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "net.ipEmptyString",
-          "file": "/usr/lib/go-1.24/src/net/ip.go",
-          "line": 332,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "net.(*TCPAddr).String",
-          "file": "/usr/lib/go-1.24/src/net/tcpsock.go",
-          "line": 48,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "net/http.(*conn).serve",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 1939,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "reflect.copyVal",
-          "file": "/usr/lib/go-1.24/src/reflect/value.go",
-          "line": 1791,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "reflect.(*MapIter).Key",
-          "file": "/usr/lib/go-1.24/src/reflect/map_swiss.go",
-          "line": 267,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "encoding/json.mapEncoder.encode",
-          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
-          "line": 769,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "encoding/json.structEncoder.encode",
-          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
-          "line": 727,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "encoding/json.structEncoder.encode",
-          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
-          "line": 727,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "encoding/json.arrayEncoder.encode",
-          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
-          "line": 870,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "encoding/json.sliceEncoder.encode",
-          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
-          "line": 843,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "encoding/json.(*encodeState).reflectValue",
-          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
-          "line": 333,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "encoding/json.interfaceEncoder",
-          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
-          "line": 680,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "encoding/json.mapEncoder.encode",
-          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
-          "line": 784,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "encoding/json.(*encodeState).reflectValue",
-          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
-          "line": 333,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "encoding/json.(*encodeState).marshal",
-          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
-          "line": 309,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "encoding/json.(*Encoder).Encode",
-          "file": "/usr/lib/go-1.24/src/encoding/json/stream.go",
-          "line": 210,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "main.usersHandler",
-          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
-          "line": 160,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "net/http.HandlerFunc.ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2294,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "net/http.(*ServeMux).ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2822,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "net/http.serverHandler.ServeHTTP",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 3301,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
-          "function": "net/http.(*conn).serve",
-          "file": "/usr/lib/go-1.24/src/net/http/server.go",
-          "line": 2102,
-          "cum": 32768,
-          "flat": 32768
-        },
-        {
           "function": "reflect.copyVal",
           "file": "/usr/lib/go-1.24/src/reflect/value.go",
           "line": 1791,
@@ -2687,6 +2484,55 @@
           "function": "net/http.(*conn).serve",
           "file": "/usr/lib/go-1.24/src/net/http/server.go",
           "line": 2102,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "main.initializeDemoData",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 97,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "main.main",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 41,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "runtime.main",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 283,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "fmt.Sprintf",
+          "file": "/usr/lib/go-1.24/src/fmt/print.go",
+          "line": 240,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "main.initializeDemoData",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 96,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "main.main",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 41,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "runtime.main",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 283,
           "cum": 32768,
           "flat": 32768
         },
@@ -2869,6 +2715,188 @@
           "function": "runtime.mcall",
           "file": "/usr/lib/go-1.24/src/runtime/asm_amd64.s",
           "line": 459,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net.IP.String",
+          "file": "/usr/lib/go-1.24/src/net/ip.go",
+          "line": 315,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net.ipEmptyString",
+          "file": "/usr/lib/go-1.24/src/net/ip.go",
+          "line": 332,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net.(*TCPAddr).String",
+          "file": "/usr/lib/go-1.24/src/net/tcpsock.go",
+          "line": 48,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 1939,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "main.generateFriends",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 115,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "main.initializeDemoData",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 98,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "main.main",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 41,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "runtime.main",
+          "file": "/usr/lib/go-1.24/src/runtime/proc.go",
+          "line": 283,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "reflect.copyVal",
+          "file": "/usr/lib/go-1.24/src/reflect/value.go",
+          "line": 1791,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "reflect.(*MapIter).Key",
+          "file": "/usr/lib/go-1.24/src/reflect/map_swiss.go",
+          "line": 267,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 769,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.structEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 727,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.structEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 727,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.arrayEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 870,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.sliceEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 843,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.interfaceEncoder",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 680,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.mapEncoder.encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 784,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.(*encodeState).reflectValue",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 333,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.(*encodeState).marshal",
+          "file": "/usr/lib/go-1.24/src/encoding/json/encode.go",
+          "line": 309,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "encoding/json.(*Encoder).Encode",
+          "file": "/usr/lib/go-1.24/src/encoding/json/stream.go",
+          "line": 210,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "main.usersHandler",
+          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
+          "line": 160,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.HandlerFunc.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2294,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.(*ServeMux).ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2822,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.serverHandler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 3301,
+          "cum": 32768,
+          "flat": 32768
+        },
+        {
+          "function": "net/http.(*conn).serve",
+          "file": "/usr/lib/go-1.24/src/net/http/server.go",
+          "line": 2102,
           "cum": 32768,
           "flat": 32768
         },
@@ -3174,44 +3202,79 @@
           "flat": 8193
         },
         {
-          "function": "main.exportHandler",
-          "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
-          "line": 287,
-          "cum": 6002,
-          "flat": 6002
+          "function": "runtime/pprof.writeHeapProto",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/protomem.go",
+          "line": 39,
+          "cum": 8192,
+          "flat": 8192
+        },
+        {
+          "function": "runtime/pprof.writeHeapInternal",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 634,
+          "cum": 8192,
+          "flat": 8192
+        },
+        {
+          "function": "runtime/pprof.writeHeap",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 593,
+          "cum": 8192,
+          "flat": 8192
+        },
+        {
+          "function": "runtime/pprof.(*Profile).WriteTo",
+          "file": "/usr/lib/go-1.24/src/runtime/pprof/pprof.go",
+          "line": 377,
+          "cum": 8192,
+          "flat": 8192
+        },
+        {
+          "function": "net/http/pprof.handler.ServeHTTP",
+          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
+          "line": 272,
+          "cum": 8192,
+          "flat": 8192
+        },
+        {
+          "function": "net/http/pprof.Index",
+          "file": "/usr/lib/go-1.24/src/net/http/pprof/pprof.go",
+          "line": 389,
+          "cum": 8192,
+          "flat": 8192
         },
         {
           "function": "net/http.HandlerFunc.ServeHTTP",
           "file": "/usr/lib/go-1.24/src/net/http/server.go",
           "line": 2294,
-          "cum": 6002,
-          "flat": 6002
+          "cum": 8192,
+          "flat": 8192
         },
         {
           "function": "net/http.(*ServeMux).ServeHTTP",
           "file": "/usr/lib/go-1.24/src/net/http/server.go",
           "line": 2822,
-          "cum": 6002,
-          "flat": 6002
+          "cum": 8192,
+          "flat": 8192
         },
         {
           "function": "net/http.serverHandler.ServeHTTP",
           "file": "/usr/lib/go-1.24/src/net/http/server.go",
           "line": 3301,
-          "cum": 6002,
-          "flat": 6002
+          "cum": 8192,
+          "flat": 8192
         },
         {
           "function": "net/http.(*conn).serve",
           "file": "/usr/lib/go-1.24/src/net/http/server.go",
           "line": 2102,
-          "cum": 6002,
-          "flat": 6002
+          "cum": 8192,
+          "flat": 8192
         }
       ],
       "allocationAnalysis": {
-        "totalAllocations": 721401,
-        "topConcentration": 0.7925079116885061,
+        "totalAllocations": 742343,
+        "topConcentration": 0.7900162054468083,
         "severity": "critical",
         "score": 90,
         "hotspots": [
@@ -3220,42 +3283,42 @@
             "file": "/usr/lib/go-1.24/src/reflect/value.go",
             "line": 1791,
             "count": 65537,
-            "percent": 9.084683830490947
+            "percent": 8.828398732122482
           },
           {
             "function": "main.exportHandler",
             "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
             "line": 268,
             "count": 43692,
-            "percent": 6.056548299766703
+            "percent": 5.8856889604940035
           },
           {
             "function": "unique.addUniqueMap[go.shape.struct { net/netip.isV6 bool; net/netip.zoneV6 string }].func1",
             "file": "/usr/lib/go-1.24/src/unique/handle.go",
             "line": 134,
             "count": 43691,
-            "percent": 6.0564096806075955
+            "percent": 5.88555425187548
           },
           {
             "function": "main.inefficientStringHandler",
             "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
             "line": 314,
             "count": 32768,
-            "percent": 4.54227260566592
+            "percent": 4.414132011751979
           },
           {
-            "function": "main.initializeDemoData",
-            "file": "/home/doomguy/Documents/hackaton/Mistral-Hackathon/examples/demo-server/main.go",
-            "line": 97,
+            "function": "reflect.copyVal",
+            "file": "/usr/lib/go-1.24/src/reflect/value.go",
+            "line": 1791,
             "count": 32768,
-            "percent": 4.54227260566592
+            "percent": 4.414132011751979
           }
         ]
       },
       "evidenceLegacy": {
         "artifactPath": "demo-output/allocs.pb.gz",
         "profileType": "allocs",
-        "extractedAt": "2026-03-02T02:24:46.564536057+01:00"
+        "extractedAt": "2026-03-02T03:03:40.279278101+01:00"
       }
     }
   ]
