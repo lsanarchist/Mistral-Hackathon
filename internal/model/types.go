@@ -147,6 +147,7 @@ const (
 	ErrorCodeJSONParse             = "json_parse_failed"
 	ErrorCodeDependencyMissing     = "dependency_missing"
 	ErrorCodeInvalidConfiguration  = "invalid_configuration"
+	ErrorCodeInvalidInput          = "invalid_input"
 	ErrorCodeNetworkRequestFailed  = "network_request_failed"
 	ErrorCodeTimeout               = "operation_timeout"
 )

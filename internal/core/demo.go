@@ -567,6 +567,65 @@ func (p *Pipeline) DemoWithPerformance(ctx context.Context, repoURL, ref, outDir
 	// Update audit log directory to use the output directory
 	p.UpdateAuditLogDirectory(outDir)
 
+	// Validate environment dependencies
+	if errContext, ok := validateDemoEnvironment(ctx); !ok {
+		manifest.Success = false
+		manifest.Error = "environment validation failed"
+		manifest.ErrorContext = errContext
+		return manifest, errContext
+	}
+	
+	// Pre-flight validation
+	fmt.Println("🛫 Pre-flight validation...")
+	
+	// Validate duration
+	if durationSec < 1 {
+		errContext := model.NewErrorContext(
+			model.ErrorTypeValidation,
+			model.ErrorCodeInvalidInput,
+			"Invalid benchmark duration",
+			fmt.Sprintf("Duration must be at least 1 second, got: %d", durationSec),
+			"Use --duration flag with a value >= 1",
+			true,
+		)
+		manifest.Success = false
+		manifest.Error = "invalid duration"
+		manifest.ErrorContext = &errContext
+		return manifest, errContext
+	}
+
+	// Validate output directory
+	if outDir == "" {
+		errContext := model.NewErrorContext(
+			model.ErrorTypeValidation,
+			model.ErrorCodeInvalidInput,
+			"Output directory not specified",
+			"Output directory path is empty",
+			"Use --out flag to specify output directory",
+			true,
+		)
+		manifest.Success = false
+		manifest.Error = "output directory not specified"
+		manifest.ErrorContext = &errContext
+		return manifest, errContext
+	}
+
+	// Create output directory if it doesn't exist
+	if err := os.MkdirAll(outDir, 0755); err != nil {
+		errContext := model.NewErrorContext(
+			model.ErrorTypeIO,
+			model.ErrorCodeFileOperation,
+			"Failed to create output directory",
+			fmt.Sprintf("Directory: %s, Error: %v", outDir, err),
+			"Check directory permissions and disk space",
+			true,
+		)
+		manifest.Success = false
+		manifest.Error = fmt.Sprintf("failed to create output directory: %v", err)
+		manifest.ErrorContext = &errContext
+		return manifest, fmt.Errorf("demo failed: %w", err)
+	}
+
 	var repoPath string
 	var err error
 
@@ -580,6 +639,11 @@ func (p *Pipeline) DemoWithPerformance(ctx context.Context, repoURL, ref, outDir
 		repoName := filepath.Base(strings.TrimSuffix(repoURL, ".git"))
 		repoPath = filepath.Join(outDir, "repo", repoName)
 		
+		fmt.Printf("🌐 Cloning repository: %s\n", repoURL)
+		if ref != "" {
+			fmt.Printf("📌 Using reference: %s\n", ref)
+		}
+		
 		if err := cloneRepo(ctx, repoURL, ref, repoPath); err != nil {
 			manifest.Success = false
 			manifest.Error = fmt.Sprintf("clone failed: %v", err)
@@ -592,6 +656,7 @@ func (p *Pipeline) DemoWithPerformance(ctx context.Context, repoURL, ref, outDir
 			
 			return manifest, fmt.Errorf("demo failed: %w", err)
 		}
+		fmt.Printf("✅ Repository cloned to: %s\n", repoPath)
 	} else {
 		// Assume it's a local path that doesn't exist yet
 		repoPath = repoURL
@@ -735,21 +800,84 @@ func (p *Pipeline) DemoWithPerformance(ctx context.Context, repoURL, ref, outDir
 		return manifest, fmt.Errorf("demo failed: %w", err)
 	}
 
-	// Generate report
+	// Generate LLM insights (mandatory per COMPASS.md North Star)
+	var insights *model.InsightsBundle
+	if p.llmGenerator != nil {
+		// Read bundle for LLM
+		bundleData, err := os.ReadFile(bundlePath)
+		if err != nil {
+			return manifest, fmt.Errorf("demo failed: %w", err)
+		}
+		var profileBundle model.ProfileBundle
+		if err := json.Unmarshal(bundleData, &profileBundle); err != nil {
+			return manifest, fmt.Errorf("demo failed: %w", err)
+		}
+
+		// Read findings for LLM
+		findingsData, err := os.ReadFile(findingsPath)
+		if err != nil {
+			return manifest, fmt.Errorf("demo failed: %w", err)
+		}
+		var findingsBundle model.FindingsBundle
+		if err := json.Unmarshal(findingsData, &findingsBundle); err != nil {
+			return manifest, fmt.Errorf("demo failed: %w", err)
+		}
+
+		// Generate insights
+		insights, err = p.llmGenerator.GenerateInsights(ctx, &profileBundle, &findingsBundle)
+		if err != nil {
+			return manifest, fmt.Errorf("demo failed: %w", err)
+		}
+
+		// Save insights
+		if insights != nil {
+			insightsData, err := json.MarshalIndent(insights, "", "  ")
+			if err != nil {
+				return manifest, fmt.Errorf("demo failed: %w", err)
+			}
+			insightsPath := filepath.Join(outDir, "insights.json")
+			if err := os.WriteFile(insightsPath, insightsData, 0644); err != nil {
+				return manifest, fmt.Errorf("demo failed: %w", err)
+			}
+		}
+	}
+
+	// Generate report (with LLM insights if available)
 	reportPath := filepath.Join(outDir, "report.md")
-	if err := p.Report(ctx, findingsPath, reportPath); err != nil {
-		errContext := model.NewErrorContext(
-			model.ErrorTypeExecution,
-			model.ErrorCodeFileOperation,
-			"Report generation failed",
-			fmt.Sprintf("Error: %v", err),
-			"Check findings data and report template",
-			true,
-		)
-		manifest.Success = false
-		manifest.Error = fmt.Sprintf("report generation failed: %v", err)
-		manifest.ErrorContext = &errContext
-		return manifest, fmt.Errorf("demo failed: %w", err)
+	if insights != nil {
+		if err := p.ReportWithInsights(ctx, findingsPath, reportPath, insights); err != nil {
+			errContext := model.NewErrorContext(
+				model.ErrorTypeExecution,
+				model.ErrorCodeFileOperation,
+				"Report generation failed",
+				fmt.Sprintf("Error: %v", err),
+				"Check findings data and report template",
+				true,
+			)
+			manifest.Success = false
+			manifest.Error = fmt.Sprintf("report generation failed: %v", err)
+			manifest.ErrorContext = &errContext
+			return manifest, fmt.Errorf("demo failed: %w", err)
+		}
+		// Generate web report when LLM insights are available
+		if err := p.GenerateWebReport(ctx, findingsPath, outDir, insights); err != nil {
+			return manifest, fmt.Errorf("demo failed: %w", err)
+		}
+	} else {
+		if err := p.Report(ctx, findingsPath, reportPath); err != nil {
+			errContext := model.NewErrorContext(
+				model.ErrorTypeExecution,
+				model.ErrorCodeFileOperation,
+				"Report generation failed",
+				fmt.Sprintf("Error: %v", err),
+				"Check findings data and report template",
+				true,
+			)
+			manifest.Success = false
+			manifest.Error = fmt.Sprintf("report generation failed: %v", err)
+			manifest.ErrorContext = &errContext
+			return manifest, fmt.Errorf("demo failed: %w", err)
+		}
 	}
 
 	// Profiles were already copied during generation, just update the manifest
@@ -763,7 +891,94 @@ func (p *Pipeline) DemoWithPerformance(ctx context.Context, repoURL, ref, outDir
 
 	manifest.Success = true
 	manifest.EnterpriseConfig = p.enterpriseConfig
+	
+	// Post-demo verification
+	fmt.Println("\n🔍 Post-demo verification...")
+	
+	// Verify expected output files exist
+	fmt.Println("📋 Verifying output files...")
+	expectedFiles := []string{"bundle.json", "findings.json", "report.md"}
+	missingFiles := 0
+	
+	for _, file := range expectedFiles {
+		filePath := filepath.Join(outDir, file)
+		if _, err := os.Stat(filePath); err != nil {
+			fmt.Printf("❌ Missing expected file: %s\n", file)
+			missingFiles++
+		} else {
+			fmt.Printf("✅ Found: %s\n", file)
+		}
+	}
+	
+	if missingFiles > 0 {
+		fmt.Printf("⚠️  Warning: %d expected files missing\n", missingFiles)
+	} else {
+		fmt.Println("✅ All expected output files present")
+	}
+	
+	// Verify profiles were generated
+	if len(manifest.Profiles) == 0 {
+		fmt.Println("⚠️  Warning: No profiles were generated")
+	} else {
+		fmt.Printf("✅ Generated %d profiles\n", len(manifest.Profiles))
+	}
+	
+	// Verify benchmarks were found
+	if len(manifest.Benchmarks) == 0 {
+		fmt.Println("⚠️  Warning: No benchmarks were found")
+	} else {
+		fmt.Printf("✅ Found %d benchmarks\n", len(manifest.Benchmarks))
+	}
+	
+	fmt.Println("✅ Demo completed successfully!")
+	
+	// Cleanup temporary files if this was a remote repository
+	if strings.HasPrefix(repoURL, "http://") || strings.HasPrefix(repoURL, "https://") || strings.HasPrefix(repoURL, "git@") {
+		fmt.Println("🧹 Cleaning up temporary files...")
+		if err := cleanupTempFiles(repoPath); err != nil {
+			fmt.Printf("⚠️  Warning: Cleanup failed: %v\n", err)
+		} else {
+			fmt.Println("✅ Temporary files cleaned up")
+		}
+	}
+	
 	return manifest, nil
+}
+
+// validateDemoEnvironment validates that all required dependencies are available
+func validateDemoEnvironment(ctx context.Context) (*model.ErrorContext, bool) {
+	fmt.Println("🔧 Validating demo environment...")
+	
+	// Check if Go is available
+	if _, err := exec.LookPath("go"); err != nil {
+		errContext := model.NewErrorContext(
+			model.ErrorTypeDependency,
+			model.ErrorCodeDependencyMissing,
+			"Go is not installed or not in PATH",
+			"Go executable not found",
+			"Install Go and ensure it's in your system PATH",
+			true,
+		)
+		return &errContext, false
+	}
+	fmt.Println("✅ Go is available")
+	
+	// Check Go version
+	goVersion, err := getGoVersion(ctx)
+	if err != nil {
+		fmt.Printf("⚠️  Warning: Could not determine Go version: %v\n", err)
+	} else {
+		fmt.Printf("✅ Go version: %s\n", goVersion)
+	}
+	
+	// Check if git is available (only needed for remote repos)
+	if _, err := exec.LookPath("git"); err != nil {
+		fmt.Println("⚠️  Warning: Git is not available (required for remote repositories)")
+	} else {
+		fmt.Println("✅ Git is available")
+	}
+	
+	return nil, true
 }
 
 // getGoVersion gets the current Go version
@@ -774,6 +989,17 @@ func getGoVersion(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("failed to get Go version: %w", err)
 	}
 	return strings.TrimSpace(string(output)), nil
+}
+
+// cleanupTempFiles removes temporary files created during demo execution
+func cleanupTempFiles(repoPath string) error {
+	// Remove the cloned repository directory if it was created during this demo
+	if strings.Contains(repoPath, "repo") {
+		if err := os.RemoveAll(filepath.Dir(repoPath)); err != nil {
+			return fmt.Errorf("failed to cleanup temporary files: %w", err)
+		}
+	}
+	return nil
 }
 
 // copyFile copies a file from src to dst
