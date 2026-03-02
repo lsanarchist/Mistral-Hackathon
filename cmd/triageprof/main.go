@@ -1,23 +1,28 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
+	"log"
+	"net"
+	"net/http"
 	"os"
-	"path/filepath"
-	"strings"
-	"time"
+	"os/exec"
 	"os/signal"
+	"path/filepath"
+	"runtime"
+	"strings"
 	"syscall"
+	"time"
 
 	"github.com/mistral-hackathon/triageprof/internal/core"
 	"github.com/mistral-hackathon/triageprof/internal/llm"
 	"github.com/mistral-hackathon/triageprof/internal/model"
 	"github.com/mistral-hackathon/triageprof/internal/plugin"
 	"github.com/mistral-hackathon/triageprof/internal/webserver"
-	"log"
 )
 
 // boolToStatus converts a boolean to ENABLED/DISABLED string
@@ -565,7 +570,82 @@ func runRunCommand(pipeline *core.Pipeline) {
 		os.Exit(1)
 	}
 
-	fmt.Printf("Results saved to: %s/\n", *outDir)
+	fmt.Printf("\n✅ Results saved to: %s/\n", *outDir)
+	fmt.Printf("   📊 report.html  — interactive HTML report\n")
+	fmt.Printf("   🔍 findings.json — structured findings\n")
+	if _, e := os.Stat(filepath.Join(*outDir, "insights.json")); e == nil {
+		fmt.Printf("   🤖 insights.json — Mistral AI analysis\n")
+	}
+	fmt.Println()
+
+	serveReport(*outDir)
+}
+
+// serveReport offers to host the report on a local HTTP server and open it in the browser.
+func serveReport(outDir string) {
+	reportPath := filepath.Join(outDir, "report.html")
+	if _, err := os.Stat(reportPath); err != nil {
+		return // no report generated
+	}
+
+	fmt.Print("🌐 Open report in browser? [Y/n] ")
+	reader := bufio.NewReader(os.Stdin)
+	answer, _ := reader.ReadString('\n')
+	answer = strings.TrimSpace(strings.ToLower(answer))
+	if answer == "n" || answer == "no" {
+		fmt.Printf("   → Open manually: %s\n", reportPath)
+		return
+	}
+
+	// Find a free port
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		fmt.Printf("   → Could not start server. Open manually: %s\n", reportPath)
+		return
+	}
+	port := ln.Addr().(*net.TCPAddr).Port
+	ln.Close()
+
+	addr := fmt.Sprintf("127.0.0.1:%d", port)
+	url := fmt.Sprintf("http://%s/report.html", addr)
+
+	// Serve the output directory
+	fs := http.FileServer(http.Dir(outDir))
+	srv := &http.Server{Addr: addr, Handler: fs}
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			fmt.Printf("   Server error: %v\n", err)
+		}
+	}()
+
+	fmt.Printf("\n🚀 Serving report at %s\n", url)
+	fmt.Printf("   Press Ctrl+C to stop.\n\n")
+
+	// Open in browser
+	openBrowser(url)
+
+	// Wait for Ctrl+C
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	fmt.Println("\n   Stopped.")
+}
+
+// openBrowser opens the given URL in the default system browser.
+func openBrowser(url string) {
+	var cmd *exec.Cmd
+	switch runtime.GOOS {
+	case "linux":
+		cmd = exec.Command("xdg-open", url)
+	case "darwin":
+		cmd = exec.Command("open", url)
+	case "windows":
+		cmd = exec.Command("rundll32", "url.dll,FileProtocolHandler", url)
+	default:
+		return
+	}
+	cmd.Start()
 }
 
 func runLLMCommand() {

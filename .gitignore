@@ -1,7 +1,7 @@
 # Build outputs
-bin/
-main
-triageprof
+/bin/
+/main
+/triageprof
 
 # API keys / secrets — NEVER commit
 apikey.swaga
