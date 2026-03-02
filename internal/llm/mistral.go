@@ -126,8 +126,10 @@ func (p *MistralProvider) GenerateInsights(ctx context.Context, prompt string) (
 		return nil, NewLLMError("no insights generated")
 	}
 
+	rawContent := result.Choices[0].Message.Content
+
 	// Parse insights from response
-	insights, err := parseInsightsResponse(result.Choices[0].Message.Content)
+	insights, err := parseInsightsResponse(rawContent)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse insights: %w", err)
 	}
@@ -138,15 +140,53 @@ func (p *MistralProvider) GenerateInsights(ctx context.Context, prompt string) (
 	return insights, nil
 }
 
+// stripProblematicFields removes fields that LLMs commonly return with wrong types
+// to prevent json.Unmarshal failures on the main struct.
+func stripProblematicFields(raw string) string {
+	// Parse into a generic map, drop known-problematic optional fields, re-serialize
+	var m map[string]json.RawMessage
+	if err := json.Unmarshal([]byte(raw), &m); err != nil {
+		return raw // can't fix it, return as-is
+	}
+	// Drop roi_analysis if it exists (LLMs often return it as an object instead of array)
+	delete(m, "roi_analysis")
+	// Drop technical_deep_dive if present (complex nested object, optional)
+	delete(m, "technical_deep_dive")
+	result, err := json.Marshal(m)
+	if err != nil {
+		return raw
+	}
+	return string(result)
+}
+
 // parseInsightsResponse parses the LLM response into structured insights with strict validation
 func parseInsightsResponse(response string) (*model.InsightsBundle, error) {
+	// Strip markdown code fences if present (```json ... ``` or ``` ... ```)
+	trimmed := strings.TrimSpace(response)
+	if strings.HasPrefix(trimmed, "```") {
+		// Remove opening fence (```json or ```)
+		end := strings.Index(trimmed, "\n")
+		if end >= 0 {
+			trimmed = trimmed[end+1:]
+		}
+		// Remove closing fence
+		if idx := strings.LastIndex(trimmed, "```"); idx >= 0 {
+			trimmed = trimmed[:idx]
+		}
+		trimmed = strings.TrimSpace(trimmed)
+	}
+
 	// First try strict JSON parsing
 	var insights model.InsightsBundle
 	insights.GeneratedAt = time.Now()
 	insights.SchemaVersion = "2.0"
 
 	// Try to parse as JSON first (preferred format)
-	if err := json.Unmarshal([]byte(response), &insights); err == nil {
+	// Use a two-pass approach: first strip fields that could have wrong types (e.g. roi_analysis)
+	cleanJSON := stripProblematicFields(trimmed)
+	if err := json.Unmarshal([]byte(cleanJSON), &insights); err == nil {
+		// Apply guardrails (truncation) BEFORE validation so limits are enforced
+		applyInsightsGuardrails(&insights)
 		// JSON parsing succeeded, validate the structure
 		if err := validateParsedInsights(&insights); err != nil {
 			return nil, fmt.Errorf("insights validation failed: %v", err)

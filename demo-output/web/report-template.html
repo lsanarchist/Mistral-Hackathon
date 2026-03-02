@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TriageProf Performance Report</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Vis.js for interactive network visualization -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vis-network@9.1.2/dist/vis-network.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.2/dist/vis-network.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #4a6bff;
+            --secondary-color: #6a5acd;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+            --light-bg: #f8f9fa;
+            --dark-bg: #212529;
+            --light-text: #f8f9fa;
+            --dark-text: #212529;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        .dark-mode {
+            --primary-color: #5a7bff;
+            --secondary-color: #7a6acd;
+            --light-bg: #2d3136;
+            --dark-bg: #1a1d20;
+            --light-text: #e9ecef;
+            --dark-text: #e9ecef;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: var(--border-radius);
+            margin-bottom: 30px;
+            box-shadow: var(--box-shadow);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-top: 10px;
+        }
+
+        .report-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .report-info {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .report-item {
+            background: white;
+            padding: 15px 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dark-mode .report-item {
+            background: var(--dark-bg);
+            color: var(--light-text);
+        }
+
+        .report-item i {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+
+        .report-item strong {
+            color: var(--primary-color);
+        }
+
+        .summary-card {
+            background: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-bottom: 30px;
+        }
+
+        .dark-mode .summary-card {
+            background: var(--dark-bg);
+            color: var(--light-text);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .summary-item {
+            text-align: center;
+            padding: 15px;
+            background: var(--light-bg);
+            border-radius: var(--border-radius);
+        }
+
+        .dark-mode .summary-item {
+            background: #343a40;
+        }
+
+        .summary-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .summary-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .dark-mode .summary-label {
+            color: #adb5bd;
+        }
+
+        .severity-indicator {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: inline-block;
+        }
+
+        .severity-indicator.critical {
+            background: #dc3545;
+            color: white;
+        }
+
+        .severity-indicator.high {
+            background: #fd7e14;
+            color: white;
+        }
+
+        .severity-indicator.medium {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .severity-indicator.low {
+            background: #28a745;
+            color: white;
+        }
+
+        .overview-text {
+            background: var(--light-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-top: 20px;
+        }
+
+        .dark-mode .overview-text {
+            background: #343a40;
+        }
+
+        .ai-summary-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-bottom: 30px;
+        }
+
+        .ai-summary-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .ai-summary-header i {
+            font-size: 2rem;
+        }
+
+        .ai-summary-header h2 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        .ai-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .ai-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .ai-feature {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+
+        .ai-feature-icon {
+            font-size: 2rem;
+            opacity: 0.8;
+        }
+
+        .ai-feature-text h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.1rem;
+        }
+
+        .ai-feature-text p {
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        .ai-insights-content {
+            margin-top: 20px;
+        }
+
+        .ai-insight {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+        }
+
+        .ai-insight-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .ai-insight-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .ai-confidence {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            text-align: center;
+        }
+
+        .dark-mode .stat-card {
+            background: var(--dark-bg);
+            color: var(--light-text);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .dark-mode .stat-label {
+            color: #adb5bd;
+        }
+
+        .charts-section {
+            background: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-bottom: 30px;
+        }
+
+        .dark-mode .charts-section {
+            background: var(--dark-bg);
+            color: var(--light-text);
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        .findings-section {
+            margin-bottom: 30px;
+        }
+
+        .findings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .findings-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .severity-filter {
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: var(--border-radius);
+            background: white;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .dark-mode .severity-filter {
+            background: var(--dark-bg);
+            border-color: #495057;
+            color: var(--light-text);
+        }
+
+        .severity-filter:hover {
+            border-color: var(--primary-color);
+        }
+
+        .severity-filter.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .finding-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .dark-mode .finding-card {
+            background: var(--dark-bg);
+            color: var(--light-text);
+        }
+
+        .finding-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .finding-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .finding-title {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 600;
+            flex-grow: 1;
+        }
+
+        .finding-meta {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .finding-severity {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .finding-severity.critical {
+            background: #dc3545;
+        }
+
+        .finding-severity.high {
+            background: #fd7e14;
+        }
+
+        .finding-severity.medium {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .finding-severity.low {
+            background: #28a745;
+        }
+
+        .finding-score {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .finding-content {
+            padding: 30px;
+        }
+
+        .finding-section {
+            margin-bottom: 25px;
+        }
+
+        .finding-section h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .evidence-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .evidence-item {
+            background: var(--light-bg);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dark-mode .evidence-item {
+            background: #343a40;
+        }
+
+        .evidence-type {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .evidence-weight {
+            background: var(--primary-color);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .hotspots-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .hotspots-table th,
+        .hotspots-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .dark-mode .hotspots-table th,
+        .dark-mode .hotspots-table td {
+            border-bottom-color: #495057;
+        }
+
+        .hotspots-table th {
+            background: var(--primary-color);
+            color: white;
+            font-weight: 600;
+        }
+
+        .hotspots-table tr:hover {
+            background: var(--light-bg);
+        }
+
+        .dark-mode .hotspots-table tr:hover {
+            background: #343a40;
+        }
+
+        .ai-insights-section {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            margin-top: 20px;
+        }
+
+        .ai-insights-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .ai-insights-header h3 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ai-confidence-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .ai-content {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: var(--border-radius);
+        }
+
+        .ai-list {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+        }
+
+        .ai-list li {
+            padding: 8px 0;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .ai-list li:before {
+            content: "•";
+            color: white;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .callgraph-section {
+            background: var(--light-bg);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            white-space: pre;
+            overflow-x: auto;
+        }
+
+        .dark-mode .callgraph-section {
+            background: #343a40;
+        }
+
+        /* Advanced Visualization Section */
+        .advanced-visualization-section {
+            background: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-top: 30px;
+        }
+
+        .dark-mode .advanced-visualization-section {
+            background: var(--dark-bg);
+            color: var(--light-text);
+        }
+
+        .visualization-controls {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .dark-mode .visualization-controls {
+            background: #2d3136;
+        }
+
+        .export-buttons {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .export-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .export-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .json-export {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .csv-export {
+            background: #28a745;
+            color: white;
+        }
+
+        .pdf-export {
+            background: #dc3545;
+            color: white;
+        }
+
+        .visualization-tabs {
+            margin-bottom: 20px;
+        }
+
+        .visualization-tab-nav {
+            display: flex;
+            gap: 5px;
+            border-bottom: 2px solid #ddd;
+            overflow-x: auto;
+        }
+
+        .visualization-tab-button {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .visualization-tab-button:hover {
+            color: var(--primary-color);
+        }
+
+        .visualization-tab-button.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .visualization-tab-content {
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .dark-mode .visualization-tab-content {
+            background: #2d3136;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .dashboard-widget {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .dark-mode .dashboard-widget {
+            background: #2d3136;
+        }
+
+        .node-details-popup {
+            position: absolute;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            max-width: 400px;
+        }
+
+        .dark-mode .node-details-popup {
+            background: #2d3136;
+            color: var(--light-text);
+        }
+
+        .allocation-analysis {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-top: 20px;
+        }
+
+        .allocation-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .allocation-stat {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            text-align: center;
+        }
+
+        .allocation-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .allocation-stat-label {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .regression-analysis {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: #212529;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-top: 20px;
+        }
+
+        .regression-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .regression-stat {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            text-align: center;
+        }
+
+        .regression-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .regression-stat-label {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .hints-section {
+            background: var(--light-bg);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-top: 15px;
+        }
+
+        .dark-mode .hints-section {
+            background: #343a40;
+        }
+
+        .hints-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .hint-tag {
+            background: var(--primary-color);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .tags-section {
+            margin-top: 15px;
+        }
+
+        .tags-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag {
+            background: #e9ecef;
+            color: #495057;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .dark-mode .tag {
+            background: #495057;
+            color: #e9ecef;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-top: 40px;
+        }
+
+        .dark-mode footer {
+            color: #adb5bd;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .btn.primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn.secondary {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .btn.success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn.warning {
+            background: var(--warning-color);
+            color: #212529;
+        }
+
+        .btn.danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn.info {
+            background: var(--info-color);
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .dark-mode .error-message {
+            background: #491217;
+            color: #f5c2c7;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            header h1 {
+                font-size: 2rem;
+            }
+
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .findings-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .finding-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .finding-meta {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+
+        /* Responsive table */
+        @media (max-width: 600px) {
+            .hotspots-table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-chart-line"></i> TriageProf Performance Report</h1>
+            <p class="subtitle">Comprehensive Performance Analysis & Optimization Insights</p>
+        </header>
+
+        <div class="report-meta">
+            <div class="report-info">
+                <div class="report-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span><strong>Generated:</strong> <span id="reportDate"></span></span>
+                </div>
+                <div class="report-item">
+                    <i class="fas fa-file-alt"></i>
+                    <span><strong>Findings:</strong> <span id="findingsCount">0</span></span>
+                </div>
+                <div class="report-item">
+                    <i class="fas fa-brain"></i>
+                    <span><strong>AI Analysis:</strong> <span id="aiStatus">Disabled</span></span>
+                </div>
+            </div>
+            <button class="btn primary" id="darkModeToggle">
+                <i class="fas fa-moon"></i> Dark Mode
+            </button>
+        </div>
+
+        <div class="summary-card">
+            <h2><i class="fas fa-info-circle"></i> Executive Summary</h2>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-value" id="overallScore">-</div>
+                    <div class="summary-label">Overall Score</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value">
+                        <span class="severity-indicator" id="severity">-</span>
+                    </div>
+                    <div class="summary-label">Severity</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value" id="confidence">-</div>
+                    <div class="summary-label">Confidence</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-value" id="findingsTotal">0</div>
+                    <div class="summary-label">Total Findings</div>
+                </div>
+            </div>
+            <div class="overview-text" id="overview">
+                Loading performance analysis...
+            </div>
+        </div>
+
+        <!-- AI Insights Summary Section -->
+        <div class="ai-summary-section" id="aiSummarySection" style="display: none;">
+            <div class="ai-summary-header">
+                <i class="fas fa-robot"></i>
+                <h2>AI-Powered Performance Analysis</h2>
+                <span class="ai-badge">Powered by Mistral AI</span>
+            </div>
+            <div class="ai-features">
+                <div class="ai-feature">
+                    <div class="ai-feature-icon"><i class="fas fa-brain"></i></div>
+                    <div class="ai-feature-text">
+                        <h3>Intelligent Root Cause Analysis</h3>
+                        <p>Our AI examines performance data to identify the underlying causes of bottlenecks</p>
+                    </div>
+                </div>
+                <div class="ai-feature">
+                    <div class="ai-feature-icon"><i class="fas fa-lightbulb"></i></div>
+                    <div class="ai-feature-text">
+                        <h3>Actionable Recommendations</h3>
+                        <p>Get specific, prioritized suggestions for performance optimization</p>
+                    </div>
+                </div>
+                <div class="ai-feature">
+                    <div class="ai-feature-icon"><i class="fas fa-chart-line"></i></div>
+                    <div class="ai-feature-text">
+                        <h3>Data-Driven Insights</h3>
+                        <p>Analysis based on real profiling data, not guesswork</p>
+                    </div>
+                </div>
+            </div>
+            <div class="ai-insights-content" id="aiInsightsContent"></div>
+        </div>
+
+        <!-- Quick Stats Section -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="criticalCount">0</div>
+                <div class="stat-label">Critical Issues</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="highCount">0</div>
+                <div class="stat-label">High Severity</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="mediumCount">0</div>
+                <div class="stat-label">Medium Severity</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="lowCount">0</div>
+                <div class="stat-label">Low Severity</div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-section">
+            <h2><i class="fas fa-chart-bar"></i> Performance Visualization</h2>
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <h3>Severity Distribution</h3>
+                    <canvas id="severityChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Category Distribution</h3>
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Findings Section -->
+        <div class="findings-section">
+            <div class="findings-header">
+                <h2><i class="fas fa-list-ul"></i> Detailed Findings</h2>
+                <div class="findings-controls">
+                    <button class="severity-filter active" data-severity="all">
+                        <i class="fas fa-globe"></i> All
+                    </button>
+                    <button class="severity-filter" data-severity="critical">
+                        <i class="fas fa-exclamation-circle"></i> Critical
+                    </button>
+                    <button class="severity-filter" data-severity="high">
+                        <i class="fas fa-exclamation-triangle"></i> High
+                    </button>
+                    <button class="severity-filter" data-severity="medium">
+                        <i class="fas fa-info-circle"></i> Medium
+                    </button>
+                    <button class="severity-filter" data-severity="low">
+                        <i class="fas fa-check-circle"></i> Low
+                    </button>
+                </div>
+            </div>
+            <div id="findingsContainer"></div>
+        </div>
+
+        <!-- Advanced Visualization Section -->
+        <div class="advanced-visualization-section">
+            <h2><i class="fas fa-chart-area"></i> Advanced Visualization & Analysis</h2>
+            <div class="visualization-controls">
+                <p>Explore your performance data with interactive visualizations, comparative analysis, and custom dashboards.</p>
+                <div class="export-buttons">
+                    <button onclick="exportReport('json')" class="export-btn json-export">
+                        <i class="fas fa-file-export"></i> Export JSON
+                    </button>
+                    <button onclick="exportReport('csv')" class="export-btn csv-export">
+                        <i class="fas fa-file-csv"></i> Export CSV
+                    </button>
+                    <button onclick="exportReport('pdf')" class="export-btn pdf-export">
+                        <i class="fas fa-file-pdf"></i> Export PDF
+                    </button>
+                </div>
+            </div>
+            <div id="advancedVisualizationContainer"></div>
+        </div>
+
+        <footer>
+            <p><i class="fas fa-chart-line"></i> Generated by TriageProf Performance Analysis Tool</p>
+            <p style="margin-top: 10px; font-size: 0.8rem; color: #999;">
+                Performance data analysis with AI-powered insights for optimization
+            </p>
+        </footer>
+    </div>
+
+    <script src="report.js"></script>
+    <script src="visualization.js"></script>
+</body>
+</html>

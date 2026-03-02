@@ -447,9 +447,11 @@ func runRunCommand(pipeline *core.Pipeline) {
 		// Set default model if not specified
 		if *llmModel == "" {
 			if *llmProvider == "openai" {
-				llmModel = flagSet.String("llm-model", "gpt-3.5-turbo", "OpenAI model name")
+				defaultModel := "gpt-3.5-turbo"
+				llmModel = &defaultModel
 			} else {
-				llmModel = flagSet.String("llm-model", "devstral-small-latest", "Mistral model name")
+				defaultModel := "devstral-small-latest"
+				llmModel = &defaultModel
 			}
 		}
 		

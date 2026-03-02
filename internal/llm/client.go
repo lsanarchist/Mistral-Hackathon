@@ -169,6 +169,15 @@ func (p *PromptBuilder) buildFindingsSummary() string {
 	sections = append(sections, "- CRITICAL: Include evidence_refs for all insights citing specific finding IDs")
 	sections = append(sections, "- CRITICAL: All code examples must be limited to 200 characters maximum")
 	sections = append(sections, "- CRITICAL: Use schema_version 2.0 for all responses")
+	sections = append(sections, "- CRITICAL: The narrative field for each per_finding entry MUST include the finding_id value verbatim")
+	sections = append(sections, `- CRITICAL: Respond with ONLY valid JSON matching this schema exactly:`)
+	sections = append(sections, `{`)
+	sections = append(sections, `  "schema_version": "2.0",`)
+	sections = append(sections, `  "executive_summary": {"overview": "...", "overall_severity": "high|medium|low|critical", "confidence": 85, "key_themes": ["theme1"]},`)
+	sections = append(sections, `  "per_finding": [{"finding_id": "<ID from Finding ID above>", "narrative": "Analysis for <ID from Finding ID above>: ...", "likely_root_causes": ["cause1"], "suggestions": ["fix1"], "confidence": 80, "code_examples": ["// short example"]}],`)
+	sections = append(sections, `  "top_risks": [{"description": "risk1", "severity": "high", "impact": "desc", "potential_impact": "impact"}],`)
+	sections = append(sections, `  "top_actions": [{"description": "action1", "priority": "high", "expected_impact": "impact", "code_examples": []}]`)
+	sections = append(sections, `}`)
 
 	// Add technical deep dive section
 	sections = append(sections, "")
@@ -193,6 +202,7 @@ func (p *PromptBuilder) buildFindingsSummary() string {
 		finding := p.Findings.Findings[i]
 		sections = append(sections, "")
 		sections = append(sections, fmt.Sprintf("---"))
+		sections = append(sections, fmt.Sprintf("Finding ID: %s", finding.ID))
 		sections = append(sections, fmt.Sprintf("Finding: %s", finding.Title))
 		sections = append(sections, fmt.Sprintf("Category: %s", finding.Category))
 		sections = append(sections, fmt.Sprintf("Severity: %s", finding.Severity))

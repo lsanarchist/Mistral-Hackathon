@@ -94,6 +94,7 @@ func (a *Analyzer) AnalyzeWithOptions(bundle model.ProfileBundle, topN int, opti
 
 		// Create finding
 		finding := model.Finding{
+			ID:         fmt.Sprintf("finding_%s_001", artifact.ProfileType),
 			Category:   artifact.ProfileType,
 			Title:      fmt.Sprintf("Top %s hotspots", artifact.ProfileType),
 			Severity:   determineSeverity(topFuncs),

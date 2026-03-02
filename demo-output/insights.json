@@ -1,0 +1,168 @@
+{
+  "schema_version": "2.0",
+  "generated_at": "2026-03-02T02:24:55.552374118+01:00",
+  "model": "devstral-small-latest",
+  "request_id": "mistral-1772414695",
+  "executive_summary": {
+    "overview": "The profiling data reveals critical performance bottlenecks in heap allocations and JSON serialization, with moderate CPU and synchronization issues. The top risks are excessive memory allocations and inefficient JSON encoding, which significantly impact performance.",
+    "overall_severity": "high",
+    "key_themes": [
+      "heap allocations",
+      "JSON serialization",
+      "reflection overhead",
+      "concurrency"
+    ],
+    "confidence": 85
+  },
+  "top_risks": [
+    {
+      "description": "Excessive memory allocations in JSON serialization",
+      "severity": "high",
+      "impact": "High memory usage and GC pressure",
+      "likelihood": "",
+      "potential_impact": "Reduced throughput and increased latency"
+    },
+    {
+      "description": "Inefficient reflection usage",
+      "severity": "high",
+      "impact": "High CPU usage and memory overhead",
+      "likelihood": "",
+      "potential_impact": "Reduced performance and scalability"
+    },
+    {
+      "description": "Potential blocking operations",
+      "severity": "medium",
+      "impact": "Increased latency and reduced throughput",
+      "likelihood": "",
+      "potential_impact": "Degraded user experience"
+    }
+  ],
+  "top_actions": [
+    {
+      "description": "Replace reflection-based JSON encoding with struct-based encoding",
+      "priority": "high",
+      "estimated_effort": "",
+      "expected_impact": "Significant reduction in memory allocations and CPU usage",
+      "code_examples": [
+        "// Use struct-based JSON encoding\ntype Data struct {\n    Field1 string `json:\"field1\"`\n    Field2 int    `json:\"field2\"`\n}\ndata := Data{Field1: \"value\", Field2: 42}\njson.NewEncoder(w).Encode(data)"
+      ]
+    },
+    {
+      "description": "Implement object pooling for frequently allocated objects",
+      "priority": "high",
+      "estimated_effort": "",
+      "expected_impact": "Reduced memory allocations and GC pressure",
+      "code_examples": [
+        "// Use object pooling for frequently allocated objects\nvar pool = sync.Pool{\n    New: func() interface{} {\n        return \u0026Data{}\n    },\n}\nobj := pool.Get().(*Data)\ndefer pool.Put(obj)"
+      ]
+    },
+    {
+      "description": "Optimize synchronization primitives and reduce lock contention",
+      "priority": "medium",
+      "estimated_effort": "",
+      "expected_impact": "Reduced latency and improved throughput",
+      "code_examples": [
+        "// Use RWMutex for read-heavy workloads\nvar rwMutex sync.RWMutex\nrwMutex.RLock()\n// Read operation\nrwMutex.RUnlock()"
+      ]
+    }
+  ],
+  "performance_categories": {
+    "block": 20,
+    "cpu": 20,
+    "heap": 40,
+    "mutex": 20
+  },
+  "per_finding": [
+    {
+      "finding_id": "finding_cpu_001",
+      "narrative": "Analysis for finding_cpu_001: The CPU hotspots indicate runtime overhead and scheduling inefficiencies. The top hotspots are runtime functions, suggesting potential issues with goroutine scheduling or context switching.",
+      "likely_root_causes": [
+        "Excessive goroutine scheduling due to high concurrency",
+        "Inefficient runtime operations (e.g., atomic operations, time measurements)",
+        "Potential blocking operations causing context switches"
+      ],
+      "suggestions": [
+        "Reduce goroutine creation and reuse goroutines where possible",
+        "Optimize critical sections to minimize atomic operations",
+        "Profile and optimize blocking operations"
+      ],
+      "confidence": 70,
+      "code_examples": [
+        "// Reuse goroutines using a worker pool\npool := make(chan struct{}, 100)\nfor i := 0; i \u003c 100; i++ {\n    go func() {\n        for task := range tasks {\n            process(task)\n        }\n    }()\n}"
+      ]
+    },
+    {
+      "finding_id": "finding_heap_001",
+      "narrative": "Analysis for finding_heap_001: The heap hotspots show excessive memory allocations in JSON serialization and reflection operations. The top hotspots are reflect.copyVal and encoding/json functions, indicating inefficient data handling.",
+      "likely_root_causes": [
+        "Excessive use of reflection in JSON encoding",
+        "Inefficient data structures causing high allocation rates",
+        "Lack of pre-allocation or object pooling"
+      ],
+      "suggestions": [
+        "Replace reflection-based JSON encoding with struct-based encoding",
+        "Use object pooling for frequently allocated objects",
+        "Optimize data structures to reduce memory footprint"
+      ],
+      "confidence": 90,
+      "code_examples": [
+        "// Use struct-based JSON encoding\ntype Data struct {\n    Field1 string `json:\"field1\"`\n    Field2 int    `json:\"field2\"`\n}\ndata := Data{Field1: \"value\", Field2: 42}\njson.NewEncoder(w).Encode(data)"
+      ]
+    },
+    {
+      "finding_id": "finding_mutex_001",
+      "narrative": "Analysis for finding_mutex_001: The mutex hotspots indicate potential contention in synchronization primitives. The evidence suggests that mutex operations are causing delays, but the specific functions are not detailed.",
+      "likely_root_causes": [
+        "High contention on shared mutexes",
+        "Inefficient locking strategies",
+        "Potential deadlocks or long-held locks"
+      ],
+      "suggestions": [
+        "Use RWMutex for read-heavy workloads",
+        "Minimize lock duration and scope",
+        "Profile and optimize critical sections"
+      ],
+      "confidence": 60,
+      "code_examples": [
+        "// Use RWMutex for read-heavy workloads\nvar rwMutex sync.RWMutex\nrwMutex.RLock()\n// Read operation\nrwMutex.RUnlock()"
+      ]
+    },
+    {
+      "finding_id": "finding_block_001",
+      "narrative": "Analysis for finding_block_001: The block hotspots indicate potential blocking operations causing delays. The evidence suggests that blocking operations are causing delays, but the specific functions are not detailed.",
+      "likely_root_causes": [
+        "I/O operations blocking goroutines",
+        "Synchronization primitives causing delays",
+        "Potential deadlocks or long-held locks"
+      ],
+      "suggestions": [
+        "Use non-blocking I/O operations where possible",
+        "Optimize synchronization primitives",
+        "Profile and optimize critical sections"
+      ],
+      "confidence": 60,
+      "code_examples": [
+        "// Use non-blocking I/O operations\nconn.SetDeadline(time.Now().Add(5 * time.Second))\n// Non-blocking read operation\n"
+      ]
+    },
+    {
+      "finding_id": "finding_allocs_001",
+      "narrative": "Analysis for finding_allocs_001: The allocation hotspots show excessive memory allocations in JSON serialization and reflection operations. The top hotspots are reflect.copyVal and encoding/json functions, indicating inefficient data handling.",
+      "likely_root_causes": [
+        "Excessive use of reflection in JSON encoding",
+        "Inefficient data structures causing high allocation rates",
+        "Lack of pre-allocation or object pooling"
+      ],
+      "suggestions": [
+        "Replace reflection-based JSON encoding with struct-based encoding",
+        "Use object pooling for frequently allocated objects",
+        "Optimize data structures to reduce memory footprint"
+      ],
+      "confidence": 90,
+      "code_examples": [
+        "// Use object pooling for frequently allocated objects\nvar pool = sync.Pool{\n    New: func() interface{} {\n        return \u0026Data{}\n    },\n}\nobj := pool.Get().(*Data)\ndefer pool.Put(obj)"
+      ]
+    }
+  ],
+  "technical_deep_dive": {}
+}
