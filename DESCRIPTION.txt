@@ -1,0 +1,23 @@
+TriageProf — AI-Powered Go Performance Profiling
+=================================================
+
+Go services slow down in production and nobody knows why.
+pprof tells you *what* is slow. TriageProf tells you *why* — and *exactly* what to fix.
+
+It collects CPU, heap, allocation, mutex, and block profiles from any live Go service,
+runs deterministic bottleneck analysis across 8+ rule-based patterns, then sends the
+grounded findings to mistral-large-latest — which explains root causes, suggests
+concrete fixes with code examples, estimates effort and complexity, and predicts
+before/after impact. No hallucinated metrics. Every number the AI references comes
+from real pprof data.
+
+The output is a single self-contained HTML report: dark theme, interactive charts,
+severity breakdown, AI executive summary, prioritised recommendations, and per-finding
+cards with side-by-side root cause ↔ fix analysis. After every run, TriageProf serves
+the report locally and opens it in your browser automatically.
+
+The architecture is fully pluggable — profilers are separate executables talking
+JSON-RPC over stdio, making it trivial to add support for new runtimes.
+
+Built for the Mistral AI Hackathon.
+Repo: https://github.com/lsanarchist/Mistral-Hackathon

@@ -2,22 +2,14 @@ GO=go
 GOFLAGS=
 BIN=triageprof
 GO_PLUGIN=go-pprof-http
-PYTHON_PLUGIN=python-cprofile
-NODE_PLUGIN=node-inspector
-RUBY_PLUGIN=ruby-stackprof
 
-.PHONY: all build test clean lint release demo demo-python demo-node demo-ruby
+.PHONY: all build test clean lint release
 
 all: build
 
 build:
 	$(GO) build $(GOFLAGS) -o bin/$(BIN) ./cmd/triageprof
 	$(GO) build $(GOFLAGS) -o plugins/bin/$(GO_PLUGIN) ./plugins/src/$(GO_PLUGIN)
-	$(GO) build $(GOFLAGS) -o plugins/bin/$(NODE_PLUGIN) ./plugins/src/$(NODE_PLUGIN)
-	chmod +x plugins/src/$(PYTHON_PLUGIN)/main.py
-	cp plugins/src/$(PYTHON_PLUGIN)/main.py plugins/bin/$(PYTHON_PLUGIN)
-	chmod +x plugins/src/$(RUBY_PLUGIN)/main.rb
-	cp plugins/src/$(RUBY_PLUGIN)/main.rb plugins/bin/$(RUBY_PLUGIN)
 
 test:
 	$(GO) test $(GOFLAGS) ./...
@@ -36,100 +28,24 @@ release:
 	@echo "Release artifacts created in release/"
 
 demo: build
-	# Run the comprehensive demo script
-	chmod +x demo.sh
-	./demo.sh
-
-demo-python: build
-	# Start Python demo server in background
-	cd examples/python-demo-server && python3 demo.py &
-	SERVER_PID=$$!
-	echo "Python demo server started on PID $$SERVER_PID"
-	
-	# Wait for server to start
-	sleep 2
-	
-	# Generate load on Python server
-	curl -s http://localhost:8080/cpu-hotspot > /dev/null &
-	curl -s http://localhost:8080/alloc-heavy > /dev/null &
-	curl -s http://localhost:8080/memory-leak > /dev/null &
-	wait
-	
-	# Run triageprof with Python plugin
-	mkdir -p out-python
-	bin/$(BIN) run --plugin $(PYTHON_PLUGIN) --target-type python --target-command "python3 ../../examples/python-demo-server/demo.py" --duration 5 --outdir out-python
-	
-	# Cleanup
-	kill $$SERVER_PID || true
-	
-	echo "Python demo completed. Results in out-python/ directory."
-
-demo-node: build
-	# Start Node.js demo server in background
-	cd examples/node-demo-server && node server.js &
-	SERVER_PID=$$!
-	echo "Node.js demo server started on PID $$SERVER_PID"
-	
-	# Wait for server to start
-	sleep 2
-	
-	# Generate load on Node.js server
-	curl -s http://localhost:3000 > /dev/null &
-	curl -s http://localhost:3000 > /dev/null &
-	curl -s http://localhost:3000 > /dev/null &
-	wait
-	
-	# Run triageprof with Node.js plugin
-	mkdir -p out-node
-	bin/$(BIN) run --plugin $(NODE_PLUGIN) --target-type node --target-command "node ../../examples/node-demo-server/server.js" --duration 5 --outdir out-node
-	
-	# Cleanup
-	kill $$SERVER_PID || true
-	
-	echo "Node.js demo completed. Results in out-node/ directory."
-
-demo-ruby: build
-	# Start Ruby demo server in background
-	cd examples/ruby-demo-server && ruby server.rb &
-	SERVER_PID=$$!
-	echo "Ruby demo server started on PID $$SERVER_PID"
-	
-	# Wait for server to start
-	sleep 2
-	
-	# Generate load on Ruby server
-	curl -s http://localhost:4567/cpu-intensive > /dev/null &
-	curl -s http://localhost:4567/memory-heavy > /dev/null &
-	curl -s http://localhost:4567/object-creation > /dev/null &
-	wait
-	
-	# Run triageprof with Ruby plugin
-	mkdir -p out-ruby
-	bin/$(BIN) run --plugin $(RUBY_PLUGIN) --target-url http://localhost:4567 --duration 5 --outdir out-ruby
-	
-	# Cleanup
-	kill $$SERVER_PID || true
-	
-	echo "Ruby demo completed. Results in out-ruby/ directory."
+	# Start demo server and run triageprof against it
+	examples/demo-server/main &
+	sleep 1
+	mkdir -p demo-output
+	bin/$(BIN) run --plugin $(GO_PLUGIN) --target-url http://localhost:6060 --duration 10 --outdir demo-output
 
 clean:
 	rm -rf bin/ plugins/bin/ out/
 	@echo "Cleaned build artifacts"
 
-# Show help
 help:
 	@echo "Makefile targets:"
-	@echo "  all         - Build the project (default)"
-	@echo "  build       - Build binaries"
-	@echo "  test        - Run all tests"
-	@echo "  lint        - Run linter"
-	@echo "  clean       - Clean build artifacts"
-	@echo "  release     - Create release artifacts"
-	@echo "  demo        - Run demo"
-	@echo "  demo-python - Run Python demo"
-	@echo "  demo-node   - Run Node.js demo"
-	@echo "  demo-ruby   - Run Ruby demo"
-	@echo "  help        - Show this help"
+	@echo "  build   - Build binary and go-pprof-http plugin"
+	@echo "  test    - Run all tests"
+	@echo "  demo    - Run demo against built-in demo server"
+	@echo "  clean   - Remove build artifacts"
+	@echo "  release - Cross-compile release binaries"
+	@echo "  help    - Show this help"
 
 install:
 	mkdir -p bin/ plugins/bin/
