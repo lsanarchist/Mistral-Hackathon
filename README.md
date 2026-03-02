@@ -1,4 +1,4 @@
-# TriageProf - AI-Powered Go Performance Profiling
+# TriageProf - AI-Powered Performance Profiling
 
 [![Go](https://img.shields.io/badge/Go-1.24%2B-blue)](https://golang.org)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
