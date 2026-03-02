@@ -92,11 +92,36 @@ triageprof demo --repo <repository> --out <output-directory>
 - `--max-workers`: Maximum concurrent workers (default: 2)
 - `--sampling-rate`: Profile sampling rate (0.1-1.0)
 
-### `demo-kit` - Built-in Demo
+### `demo-kit` - Built-in Demo with Validation
+
+The `demo-kit` command now includes comprehensive validation and error handling:
 
 ```bash
 triageprof demo-kit --out <output-directory> --duration <seconds>
 ```
+
+**New Validation Features:**
+- Automatic environment validation (Go, Git dependencies)
+- Input validation with clear error messages
+- Progress tracking throughout execution
+- Post-demo verification of output files
+- Enhanced error handling with recovery suggestions
+
+**Example with validation:**
+```bash
+# Run demo with validation
+triageprof demo-kit --out my-analysis/ --duration 10
+
+# See validation in action with invalid input
+triageprof demo-kit --out my-analysis/ --duration 0  # Shows validation error
+```
+
+**Troubleshooting:**
+
+If you encounter validation errors:
+- **Environment errors**: Install missing dependencies (Go, Git)
+- **Input errors**: Check flag values (duration ≥ 1, output directory specified)
+- **Permission errors**: Ensure write access to output directory
 
 ## CI/CD Integration
 

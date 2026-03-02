@@ -2,13 +2,13 @@
 
 ## 🎯 Immediate Priorities
 
-### 1. **Phase 16 — Demo Kit Enhancement**
-- **Objective**: Enhance the `demo-kit` command with the same validation and verification features
-- **Impact**: Consistent user experience across all demo commands
+### 1. **Phase 17 — CI/CD Integration Testing**
+- **Objective**: Ensure the new validation system works correctly in CI/CD environments
+- **Impact**: Reliable automated testing and deployment
 - **Tasks**:
-  - Apply validation functions to `demo-kit` command
-  - Add progress tracking and verification
-  - Update CLI help text and documentation
+  - Add validation tests to GitHub Actions workflows
+  - Test error handling in headless environments
+  - Verify cleanup works in CI containers
 
 ### 2. **Phase 17 — CI/CD Integration Testing**
 - **Objective**: Ensure the new validation system works correctly in CI/CD environments
@@ -101,4 +101,4 @@
 
 **Phase 15 — Demo Validation and Enhancement System** ✅ COMPLETED
 
-The system now provides comprehensive validation, error handling, and user feedback for the demo workflow. Next priority is applying these improvements to the `demo-kit` command for consistency.
+The system now provides comprehensive validation, error handling, and user feedback for both `demo` and `demo-kit` commands. Next priority is ensuring these improvements work correctly in CI/CD environments.

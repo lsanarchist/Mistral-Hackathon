@@ -74,7 +74,7 @@ func (p *OpenAIProvider) GenerateInsights(ctx context.Context, prompt string) (*
 	url := "https://api.openai.com/v1/chat/completions"
 	
 	payload := map[string]interface{}{
-		"model":       p.Model,
+		"model":       p.modelName,
 		"messages":    []map[string]string{{"role": "user", "content": prompt}},
 		"max_tokens":  p.MaxResponse,
 		"temperature": 0.2,

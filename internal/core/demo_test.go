@@ -15,7 +15,7 @@ func TestValidateDemoEnvironment(t *testing.T) {
 	ctx := context.Background()
 	
 	// Test environment validation
-	errContext, ok := validateDemoEnvironment(ctx)
+	errContext, ok := ValidateDemoEnvironment(ctx)
 	
 	if !ok {
 		t.Logf("Environment validation failed: %+v", errContext)

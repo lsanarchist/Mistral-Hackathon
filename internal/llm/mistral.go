@@ -75,7 +75,7 @@ func (p *MistralProvider) GenerateInsights(ctx context.Context, prompt string) (
 	url := "https://api.mistral.ai/v1/chat/completions"
 	
 	payload := map[string]interface{}{
-		"model":       p.Model,
+		"model":       p.modelName,
 		"messages":    []map[string]string{{"role": "user", "content": prompt}},
 		"max_tokens":  p.MaxResponse,
 		"temperature": 0.2,

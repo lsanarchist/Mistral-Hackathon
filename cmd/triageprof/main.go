@@ -953,6 +953,40 @@ func runDemoCommand(pipeline *core.Pipeline) {
 	}
 	fmt.Printf("\n")
 
+	// Check for API key and enable LLM automatically (mandatory per COMPASS.md)
+	apiKey := os.Getenv("MISTRAL_API_KEY")
+	if apiKey == "" {
+		apiKey = os.Getenv("OPENAI_API_KEY")
+	}
+
+	if apiKey != "" {
+		fmt.Printf("🤖 LLM Insights: ENABLED (using %s provider)\n", 
+			func() string {
+				if os.Getenv("MISTRAL_API_KEY") != "" {
+					return "Mistral"
+				} else {
+					return "OpenAI"
+				}
+			}())
+		
+		// Configure LLM with automatic provider detection
+		var err error
+		if os.Getenv("MISTRAL_API_KEY") != "" {
+			pipeline, err = pipeline.WithLLM(apiKey, "mistral-large-latest", 30, 8000, 4000, false)
+		} else {
+			pipeline, err = pipeline.WithLLM(apiKey, "gpt-4o", 30, 8000, 4000, false)
+		}
+		if err != nil {
+			fmt.Printf("⚠️  Warning: Failed to configure LLM: %v\n", err)
+			fmt.Println("💡 Continuing without LLM insights (deterministic analysis only)")
+		}
+	} else {
+		fmt.Println("🤖 LLM Insights: DISABLED (no API key found)")
+		fmt.Println("📋 To enable LLM insights, set MISTRAL_API_KEY or OPENAI_API_KEY environment variable")
+		fmt.Println("   Example: export MISTRAL_API_KEY='your-api-key-here'")
+	}
+	fmt.Printf("\n")
+
 	// Create performance configuration
 	perfConfig := &model.PerformanceOptimizationConfig{
 		EnableConcurrentBenchmarks: *concurrentBenchmarks,
@@ -1238,6 +1272,51 @@ func runDemoKitCommand(pipeline *core.Pipeline) {
 	fmt.Printf("⏱  Benchmark duration: %d seconds\n", *duration)
 	fmt.Printf("📁 Output directory: %s\n", *outDir)
 	
+	fmt.Println("🛫 Pre-flight validation...")
+	
+	// Validate environment dependencies
+	if errContext, ok := core.ValidateDemoEnvironment(ctx); !ok {
+		fmt.Printf("❌ Environment validation failed: %s\n", errContext.Message)
+		fmt.Printf("💡 Suggestion: %s\n", errContext.Suggestion)
+		if errContext.IsRecoverable {
+			fmt.Println("🔄 This error is recoverable")
+		}
+		os.Exit(1)
+	}
+	
+	// Validate duration
+	if *duration < 1 {
+		errContext := model.NewErrorContext(
+			model.ErrorTypeValidation,
+			model.ErrorCodeInvalidInput,
+			"Invalid benchmark duration",
+			fmt.Sprintf("Duration must be at least 1 second, got: %d", *duration),
+			"Use --duration flag with a value >= 1",
+			true,
+		)
+		fmt.Printf("❌ Invalid duration: %s\n", errContext.Message)
+		fmt.Printf("💡 Suggestion: %s\n", errContext.Suggestion)
+		os.Exit(1)
+	}
+	
+	// Validate output directory
+	if *outDir == "" {
+		errContext := model.NewErrorContext(
+			model.ErrorTypeValidation,
+			model.ErrorCodeInvalidInput,
+			"Output directory not specified",
+			"Output directory path is empty",
+			"Use --out flag to specify output directory",
+			true,
+		)
+		fmt.Printf("❌ Invalid output directory: %s\n", errContext.Message)
+		fmt.Printf("💡 Suggestion: %s\n", errContext.Suggestion)
+		os.Exit(1)
+	}
+	
+	fmt.Println("✅ Pre-flight validation completed")
+	fmt.Println("🚀 Running demo workflow...")
+	
 	// Display performance optimization settings
 	fmt.Printf("\n🔧 Performance Optimization Settings:\n")
 	if *concurrentBenchmarks {
@@ -1259,6 +1338,40 @@ func runDemoKitCommand(pipeline *core.Pipeline) {
 		fmt.Printf("   ✅ Large codebase mode: ENABLED\n")
 	} else {
 		fmt.Printf("   ❌ Large codebase mode: DISABLED\n")
+	}
+	fmt.Printf("\n")
+
+	// Check for API key and enable LLM automatically (mandatory per COMPASS.md)
+	apiKey := os.Getenv("MISTRAL_API_KEY")
+	if apiKey == "" {
+		apiKey = os.Getenv("OPENAI_API_KEY")
+	}
+
+	if apiKey != "" {
+		fmt.Printf("🤖 LLM Insights: ENABLED (using %s provider)\n", 
+			func() string {
+				if os.Getenv("MISTRAL_API_KEY") != "" {
+					return "Mistral"
+				} else {
+					return "OpenAI"
+				}
+			}())
+		
+		// Configure LLM with automatic provider detection
+		var err error
+		if os.Getenv("MISTRAL_API_KEY") != "" {
+			pipeline, err = pipeline.WithLLM(apiKey, "mistral-large-latest", 30, 8000, 4000, false)
+		} else {
+			pipeline, err = pipeline.WithLLM(apiKey, "gpt-4o", 30, 8000, 4000, false)
+		}
+		if err != nil {
+			fmt.Printf("⚠️  Warning: Failed to configure LLM: %v\n", err)
+			fmt.Println("💡 Continuing without LLM insights (deterministic analysis only)")
+		}
+	} else {
+		fmt.Println("🤖 LLM Insights: DISABLED (no API key found)")
+		fmt.Println("📋 To enable LLM insights, set MISTRAL_API_KEY or OPENAI_API_KEY environment variable")
+		fmt.Println("   Example: export MISTRAL_API_KEY='your-api-key-here'")
 	}
 	fmt.Printf("\n")
 
@@ -1373,6 +1486,8 @@ func runDemoKitCommand(pipeline *core.Pipeline) {
 			fmt.Printf("📋 Run manifest saved to: %s\n", manifestPath)
 		}
 	}
+	
+	fmt.Println("✅ Demo workflow completed")
 
 	// Log audit action if enterprise features are enabled
 	if enterpriseConfig.Enabled && enterpriseConfig.AuditLogging {
@@ -1474,6 +1589,46 @@ func runDemoKitCommand(pipeline *core.Pipeline) {
 				fmt.Printf("  🛠️  %s\n", remediationsPath)
 			}
 		}
+		
+		// Post-demo verification
+		fmt.Println("\n🔍 Post-demo verification...")
+		
+		// Verify expected output files exist
+		fmt.Println("📋 Verifying output files...")
+		expectedFiles := []string{"bundle.json", "findings.json", "report.md"}
+		missingFiles := 0
+		
+		for _, file := range expectedFiles {
+			filePath := filepath.Join(*outDir, file)
+			if _, err := os.Stat(filePath); err != nil {
+				fmt.Printf("❌ Missing expected file: %s\n", file)
+				missingFiles++
+			} else {
+				fmt.Printf("✅ Found: %s\n", file)
+			}
+		}
+		
+		if missingFiles > 0 {
+			fmt.Printf("⚠️  Warning: %d expected files missing\n", missingFiles)
+		} else {
+			fmt.Println("✅ All expected output files present")
+		}
+		
+		// Verify profiles were generated
+		if len(manifest.Profiles) == 0 {
+			fmt.Println("⚠️  Warning: No profiles were generated")
+		} else {
+			fmt.Printf("✅ Generated %d profiles\n", len(manifest.Profiles))
+		}
+		
+		// Verify benchmarks were found
+		if len(manifest.Benchmarks) == 0 {
+			fmt.Println("⚠️  Warning: No benchmarks were found")
+		} else {
+			fmt.Printf("✅ Found %d benchmarks\n", len(manifest.Benchmarks))
+		}
+		
+		fmt.Println("✅ Demo verification completed!")
 		
 		fmt.Println("\n🎉 Demo Kit Features Showcased:")
 		fmt.Println("  ✓ Go benchmark detection")

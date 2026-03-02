@@ -80,7 +80,7 @@ triageprof demo --repo ./myapp --out analysis/ --sampling-rate 0.5 --large-codeb
 
 ### `demo-kit`
 
-Run built-in demo with sample benchmarks.
+Run built-in demo with sample benchmarks including comprehensive validation.
 
 **Usage:**
 ```bash
@@ -91,23 +91,42 @@ triageprof demo-kit --out <output-directory> [options]
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `--out` | Output directory | `out-demo/` |
-| `--duration` | Benchmark duration in seconds | 5 |
+| `--out` | Output directory (required) | `out-demo/` |
+| `--duration` | Benchmark duration in seconds (minimum: 1) | 5 |
 | `--concurrent` | Enable concurrent execution | false |
 | `--max-workers` | Maximum concurrent workers | 2 |
 | `--sampling-rate` | Profile sampling rate | 1.0 |
 
+**Validation Features:**
+
+The `demo-kit` command now includes comprehensive validation:
+- **Environment Validation**: Automatically checks for Go and Git dependencies
+- **Input Validation**: Validates duration (must be ≥ 1 second) and output directory
+- **Progress Tracking**: Detailed progress indicators throughout execution
+- **Post-Demo Verification**: Automatically verifies expected output files
+- **Error Handling**: Enhanced error messages with actionable suggestions
+
 **Examples:**
 
 ```bash
-# Quick demo
-triageprof demo-kit
-
-# Custom output directory
+# Quick demo with validation
 triageprof demo-kit --out my-demo/
 
-# Longer duration with concurrent execution
-triageprof demo-kit --duration 15 --concurrent --max-workers 3
+# Custom output directory with longer duration
+triageprof demo-kit --out my-demo/ --duration 15
+
+# Concurrent execution with validation
+triageprof demo-kit --duration 15 --concurrent --max-workers 3 --out performance-demo/
+```
+
+**Error Handling Examples:**
+
+```bash
+# Invalid duration (will show validation error)
+triageprof demo-kit --out my-demo/ --duration 0
+
+# Missing output directory (will show validation error)
+triageprof demo-kit --duration 10
 ```
 
 ### `plugins`

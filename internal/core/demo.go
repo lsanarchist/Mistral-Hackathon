@@ -568,7 +568,7 @@ func (p *Pipeline) DemoWithPerformance(ctx context.Context, repoURL, ref, outDir
 	p.UpdateAuditLogDirectory(outDir)
 
 	// Validate environment dependencies
-	if errContext, ok := validateDemoEnvironment(ctx); !ok {
+	if errContext, ok := ValidateDemoEnvironment(ctx); !ok {
 		manifest.Success = false
 		manifest.Error = "environment validation failed"
 		manifest.ErrorContext = errContext
@@ -945,8 +945,8 @@ func (p *Pipeline) DemoWithPerformance(ctx context.Context, repoURL, ref, outDir
 	return manifest, nil
 }
 
-// validateDemoEnvironment validates that all required dependencies are available
-func validateDemoEnvironment(ctx context.Context) (*model.ErrorContext, bool) {
+// ValidateDemoEnvironment validates that all required dependencies are available
+func ValidateDemoEnvironment(ctx context.Context) (*model.ErrorContext, bool) {
 	fmt.Println("🔧 Validating demo environment...")
 	
 	// Check if Go is available
